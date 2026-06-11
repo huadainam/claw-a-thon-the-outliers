@@ -1,8 +1,30 @@
+import re
 from difflib import SequenceMatcher
 from models import MATCH_THRESHOLD, AMBIGUOUS_THRESHOLD
 
-def _sim(a: str, b: str) -> float:
-    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+def _lead_name(title: str) -> str:
+    """The main app name before a separator, e.g. 'Zalopay' from
+    'Zalopay-Thanh toán & Tài chính'. App Store/Play titles often append a long
+    tagline that wrecks naive full-title similarity."""
+    return re.split(r"[-–—:|(]", title, 1)[0].strip()
+
+def _sim(query: str, title: str) -> float:
+    """Score how well `query` matches an app `title`. Compares against both the
+    full title and its leading name segment, and boosts prefix/substring hits so
+    long official titles aren't unfairly penalized."""
+    q = query.lower().strip()
+    t = title.lower().strip()
+    lead = _lead_name(title).lower().strip()
+    if q == t or q == lead:
+        return 1.0
+    if t.startswith(q) or lead.startswith(q):
+        return 0.95
+    if q in t:
+        return 0.9
+    return max(
+        SequenceMatcher(None, q, t).ratio(),
+        SequenceMatcher(None, q, lead).ratio(),
+    )
 
 def _merge_candidates(query, gp_list, as_list):
     """Merge per-store candidates by title similarity into unified app dicts."""

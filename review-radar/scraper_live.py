@@ -2,10 +2,17 @@ import requests
 from google_play_scraper import search as gp_search_fn, reviews, Sort
 
 def gp_search_live(name):
-    results = gp_search_fn(name, lang="vi", country="vn", n_hits=5)
+    # google-play-scraper's search() can raise (e.g. TypeError) on no-result or
+    # gibberish queries, and sometimes returns the top/featured hit with appId=None.
+    # Return [] on any failure and skip candidates without a usable appId so we
+    # never crash resolution or tag the google_play store with a null id.
+    try:
+        results = gp_search_fn(name, lang="vi", country="vn", n_hits=5)
+    except Exception:
+        return []
     return [{"title": r["title"], "developer": r.get("developer", ""),
              "icon": r.get("icon", ""), "app_id": r["appId"],
-             "store": "google_play"} for r in results]
+             "store": "google_play"} for r in results if r.get("appId")]
 
 def gp_reviews_live(app_id, count):
     result, _ = reviews(app_id, lang="vi", country="vn",
@@ -13,10 +20,13 @@ def gp_reviews_live(app_id, count):
     return result
 
 def as_search_live(name):
-    resp = requests.get("https://itunes.apple.com/search",
-                        params={"term": name, "country": "vn",
-                                "entity": "software", "limit": 5}, timeout=20)
-    items = resp.json().get("results", [])
+    try:
+        resp = requests.get("https://itunes.apple.com/search",
+                            params={"term": name, "country": "vn",
+                                    "entity": "software", "limit": 5}, timeout=20)
+        items = resp.json().get("results", [])
+    except Exception:
+        return []
     return [{"title": it["trackName"], "developer": it.get("artistName", ""),
              "icon": it.get("artworkUrl100", ""), "app_id": str(it["trackId"]),
              "store": "app_store"} for it in items]

@@ -21,3 +21,12 @@ def test_config_defaults(monkeypatch):
     cfg = config.get_config()
     assert cfg.store_backend == "local"
     assert cfg.model_name == "gpt-4o-mini"
+
+def test_config_review_limit(monkeypatch):
+    monkeypatch.delenv("REVIEW_LIMIT", raising=False)
+    import config
+    importlib.reload(config)
+    assert config.get_config().review_limit == 500
+    monkeypatch.setenv("REVIEW_LIMIT", "200")
+    importlib.reload(config)
+    assert config.get_config().review_limit == 200

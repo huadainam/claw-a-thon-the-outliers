@@ -8,13 +8,22 @@ BATCH_SIZE = 30
 def _now():
     return datetime.now(timezone.utc).isoformat()
 
-def _regroup(store):
-    todos = merge_with_existing_todos(group_bugs(store.load_reviews()), store.load_todos())
+def _regroup(store, canonicalize_fn):
+    """Canonicalize bug topics, group, and merge with existing todos (preserving
+    status). Canonicalization clusters varied free-text topics so mentions add up."""
+    reviews = store.load_reviews()
+    existing = store.load_todos()
+    raw_topics = sorted({(r.get("bug_topic") or "").strip() for r in reviews
+                         if r.get("label") == "BUG_REPORT" and r.get("bug_topic")})
+    preferred = [t["topic"] for t in existing]
+    topic_map = canonicalize_fn(raw_topics, preferred) if raw_topics else {}
+    groups = group_bugs(reviews, topic_map=topic_map)
+    todos = merge_with_existing_todos(groups, existing)
     store.save_todos(todos)
     return todos
 
 def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
-                 batch_size=BATCH_SIZE):
+                 canonicalize_fn=None, batch_size=BATCH_SIZE):
     # default wiring (production)
     if store is None:
         from storage import get_store, get_registry
@@ -28,6 +37,9 @@ def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
     if classify is None:
         from classifier import classify_reviews
         classify = classify_reviews
+    if canonicalize_fn is None:
+        from canonicalize import canonicalize_topics
+        canonicalize_fn = lambda topics, preferred: canonicalize_topics(topics, preferred=preferred)
 
     if not _run_lock.acquire(blocking=False):
         return {"skipped": True, "reason": "already running"}
@@ -47,20 +59,19 @@ def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
                 "last_updated": _now()}
         store.save_meta(meta)
 
-        # Classify in batches; persist + regroup after each so the dashboard can
-        # show results filling in progressively rather than after one long wait.
+        # Classify in batches so the review count + progress bar advance live.
         for i in range(0, total, batch_size):
             chunk = new_reviews[i:i + batch_size]
             classified = classify(chunk)
             store.append_reviews(classified)
             processed |= {r["id"] for r in classified}
             store.save_processed_ids(processed)
-            _regroup(store)
             meta["progress"]["done"] = min(i + batch_size, total)
             meta["last_updated"] = _now()
             store.save_meta(meta)
 
-        todos = _regroup(store)  # regroup runs even when there were no new reviews
+        # Canonicalize + group once at the end (correct clustering, one LLM call).
+        todos = _regroup(store, canonicalize_fn)
         store.save_meta({"status": "idle", "progress": {"done": total, "total": total},
                          "last_updated": _now()})
 

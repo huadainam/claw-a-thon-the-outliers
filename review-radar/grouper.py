@@ -5,14 +5,16 @@ from models import severity_for_mentions
 def _now_iso():
     return datetime.now(timezone.utc).isoformat()
 
-def group_bugs(reviews, id_gen=None, now=None):
+def group_bugs(reviews, id_gen=None, now=None, topic_map=None):
     id_gen = id_gen or (lambda: str(uuid.uuid4()))
     now = now or _now_iso()
+    topic_map = topic_map or {}
     buckets = {}  # topic.lower() -> group
     for r in reviews:
         if r.get("label") != "BUG_REPORT":
             continue
-        topic = (r.get("bug_topic") or "Khác").strip()
+        raw = (r.get("bug_topic") or "Khác").strip()
+        topic = (topic_map.get(raw) or raw).strip()  # canonical label when provided
         key = topic.lower()
         g = buckets.get(key)
         if g is None:

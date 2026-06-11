@@ -30,6 +30,20 @@ def test_group_bugs_ignores_non_bugs():
                 "content": "tốt", "source": "google_play", "at": "x"}]
     assert group_bugs(reviews, id_gen=fixed_id(), now="x") == []
 
+def test_group_bugs_with_topic_map_clusters_to_canonical():
+    raws = ["không đăng nhập được", "lỗi login google", "đăng nhập lỗi"]
+    reviews = [
+        {"id": str(i), "content": f"r{i}", "label": "BUG_REPORT",
+         "bug_topic": raws[i % 3], "source": "google_play", "at": "2026-06-01"}
+        for i in range(10)
+    ]
+    topic_map = {r: "Lỗi đăng nhập" for r in raws}
+    groups = group_bugs(reviews, id_gen=fixed_id(), now="x", topic_map=topic_map)
+    assert len(groups) == 1
+    assert groups[0]["topic"] == "Lỗi đăng nhập"
+    assert groups[0]["mention_count"] == 10
+    assert groups[0]["severity"] == "critical"
+
 def test_merge_preserves_done_status_and_updates_count():
     new = [{"id": "id-1", "topic": "Lỗi đăng nhập", "severity": "medium",
             "mention_count": 5, "sample_reviews": ["a"], "sources": ["google_play"],

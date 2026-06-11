@@ -7,6 +7,7 @@ def make_deps(gp_reviews, as_reviews):
         scrape_as=lambda app_id: list(as_reviews),
         classify=lambda revs: [dict(r, label="BUG_REPORT", bug_topic="Lỗi A",
                                     confidence=0.9) for r in revs],
+        canonicalize_fn=lambda topics, preferred: {t: t for t in topics},
     )
 
 def test_pipeline_sets_meta_status_and_progress(tmp_path):

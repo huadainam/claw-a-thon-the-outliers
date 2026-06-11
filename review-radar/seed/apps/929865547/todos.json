@@ -1,0 +1,287 @@
+[
+  {
+    "id": "1a7ceaf4-a320-4b63-9b05-a439782a411d",
+    "topic": "bị gỡ bàn phím tự động trên iOS 17.7",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Mình dùng Laban key lâu rồi mà dạo gần đây hay bị lỗi khi xài trên ios 17.7, cứ lâu lâu tự dưng bị gỡ đâu mất quay về bàn phím mặc định phải vô store cài lại khá khó chịu"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-29T02:06:06-07:00",
+    "last_seen": "2026-05-29T02:06:06-07:00",
+    "status": "open"
+  },
+  {
+    "id": "480aacb6-bcdf-457d-a4c2-cfcbaa7cab60",
+    "topic": "treo máy, không sử dụng được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ứng dụng này tải về treo máy tôi bị lỗi Sài k đc"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-25T02:04:12-07:00",
+    "last_seen": "2026-05-25T02:04:12-07:00",
+    "status": "open"
+  },
+  {
+    "id": "b32372ca-f1bd-4119-96ff-1d2a0cef9c46",
+    "topic": "bị nhảy bàn phím, không tương thích app ngân hàng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Đang gõ thì bị nhảy ra bàn phím mặc định của Apple. Lại phải chuyển lại Labankey. Không tương thích với app ngân hàng."
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-19T10:13:49-07:00",
+    "last_seen": "2026-05-19T10:13:49-07:00",
+    "status": "open"
+  },
+  {
+    "id": "80f2e508-6402-4a4c-85dc-08d634993eb2",
+    "topic": "phần mềm tự biến mất khỏi máy",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Tôi chả hiểu sao nhiều lần phần mềm tự biến mất khỏi máy luôn (iPhone)"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-18T20:39:12-07:00",
+    "last_seen": "2026-05-18T20:39:12-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f9724d7b-cd37-42a2-85c3-67c25bbd22b0",
+    "topic": "bị nhảy bàn phím",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Bị nhảy bản phím"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-17T03:42:27-07:00",
+    "last_seen": "2026-05-17T03:42:27-07:00",
+    "status": "open"
+  },
+  {
+    "id": "8fc3f7aa-4862-47a7-8551-a969a182a27c",
+    "topic": "không ấn được tiếng việt",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Dạo này bàn phím không ấn được tiếng việt í"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-14T21:38:32-07:00",
+    "last_seen": "2026-05-14T21:38:32-07:00",
+    "status": "open"
+  },
+  {
+    "id": "ef4caf47-6de9-4361-90d4-337783eb12ed",
+    "topic": "gõ không ra dấu tiếng việt",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Gõ ko ra dấu,chẳng khác bàn phím tiếng anh"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-14T21:18:28-07:00",
+    "last_seen": "2026-05-14T21:18:28-07:00",
+    "status": "open"
+  },
+  {
+    "id": "34d573aa-96d5-484d-862a-d4fdf09b9d92",
+    "topic": "không chọn được bàn phím",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Không chọn được bàn phím"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-14T05:58:39-07:00",
+    "last_seen": "2026-05-14T05:58:39-07:00",
+    "status": "open"
+  },
+  {
+    "id": "5919f566-5b91-47f3-8b9f-bba7aa806bb1",
+    "topic": "âm thanh gõ bị lỗi không nghe được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "App xài khá ổn nhưng âm thanh ghi gõ bị lỗi ko nghe đc. Nhưng xài khá ok"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-14T01:32:27-07:00",
+    "last_seen": "2026-05-14T01:32:27-07:00",
+    "status": "open"
+  },
+  {
+    "id": "b23af900-a15f-4881-83ba-42084a5259ee",
+    "topic": "không có ghi nhớ từ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Viết được nhưng không có ghi nhớ"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-03T00:55:38-07:00",
+    "last_seen": "2026-05-03T00:55:38-07:00",
+    "status": "open"
+  },
+  {
+    "id": "62fd24b5-7fa1-440f-b507-2218f83883f1",
+    "topic": "bàn phím biến mất sau khi thoát",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "lc đầu để rất đẹp và sau khi mình thoát ra và đợi một lúc rồi mik vào lại dể nhắn tin thì nó biến mất mik phải cài đặt lại"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-04-28T02:35:51-07:00",
+    "last_seen": "2026-04-28T02:35:51-07:00",
+    "status": "open"
+  },
+  {
+    "id": "7319f134-2ed8-45de-b43a-f1218520ff92",
+    "topic": "font chữ và phím tắt không thay đổi được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Font chữ cài theo ý thich k thay đổi, vị trí phím tắt phía trên cùng bàn phím không thay đổi cho nhau được"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-04-13T16:21:10-07:00",
+    "last_seen": "2026-04-13T16:21:10-07:00",
+    "status": "open"
+  },
+  {
+    "id": "97d6533e-d822-4287-8bd8-cb9c55cd469c",
+    "topic": "không gõ được tiếng việt sau thời gian sử dụng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ổn nhưng mà xài 1thời gian sau lại k gõ ra TV dc"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-04-12T07:10:13-07:00",
+    "last_seen": "2026-04-12T07:10:13-07:00",
+    "status": "open"
+  },
+  {
+    "id": "c20cef30-aa3f-495e-b12a-e361f15dde30",
+    "topic": "bàn phím treo",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Bàn phím ngày nào cũng treo ít nhất 2-4 lần. Không thao tác được buộc phải chuyển về bàn phím iphone mặc định. Khá là khó chịu"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-03-19T20:32:46-07:00",
+    "last_seen": "2026-03-19T20:32:46-07:00",
+    "status": "open"
+  },
+  {
+    "id": "a12a0eb5-6a3a-4303-aa52-c792960ba693",
+    "topic": "cỡ chữ quá nhỏ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "không có mục cỡ chữ .chữ và con số quá nhỏ"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-03-12T06:48:16-07:00",
+    "last_seen": "2026-03-12T06:48:16-07:00",
+    "status": "open"
+  },
+  {
+    "id": "1e1b3e7b-4c60-4be4-8158-ef8f598b782f",
+    "topic": "lỗi chuyển ngôn ngữ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Sao mà lúc nhắn tin là nó cứ bị như là bấm tiếng lúc thì bấm tiếng Việt là sao vậy nhà phát hành😔"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-03-05T06:28:26-07:00",
+    "last_seen": "2026-03-05T06:28:26-07:00",
+    "status": "open"
+  },
+  {
+    "id": "c51456e6-6231-4014-843b-fcc6458ee27c",
+    "topic": "tự động chuyển tiếng Anh",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Đang gõ tiếng việt ngon lành cái chuyển qua tiếng anh khó chịu vô cùng"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-02-28T02:48:58-07:00",
+    "last_seen": "2026-02-28T02:48:58-07:00",
+    "status": "open"
+  },
+  {
+    "id": "2e53591f-18c6-4d95-97ee-5835f6cb3dab",
+    "topic": "không viết được tiếng Việt",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Ko viết được tiếng việt"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-02-25T03:27:02-07:00",
+    "last_seen": "2026-02-25T03:27:02-07:00",
+    "status": "open"
+  },
+  {
+    "id": "eb67979b-5fbc-4dfd-868b-73bb13491055",
+    "topic": "không ghi được trên TikTok, lag",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Không thể ghi bên tik tok và hơi lag nhẹ!"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-02-20T20:25:12-07:00",
+    "last_seen": "2026-02-20T20:25:12-07:00",
+    "status": "open"
+  }
+]

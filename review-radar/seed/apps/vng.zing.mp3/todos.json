@@ -1,0 +1,470 @@
+[
+  {
+    "id": "86d89b2a-0dd3-4b07-9d5e-789e8e5a1544",
+    "topic": "nút bấm không hoạt động",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "cứ dùng 1 tí thì ko bấm được phím"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-05-27 12:58:22",
+    "last_seen": "2026-05-27 12:58:22",
+    "status": "open"
+  },
+  {
+    "id": "24429735-f4d2-40d6-8a6a-fae7c370cd4d",
+    "topic": "màn hình lag sọc",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "đít cos mes lag sọc màn hình luôn"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-05-22 14:17:17",
+    "last_seen": "2026-05-22 14:17:17",
+    "status": "open"
+  },
+  {
+    "id": "1f401198-5bf5-4c0f-b4a0-a3a046203052",
+    "topic": "nhạc tắt giữa chừng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "hay nhưng dùng được một tí nhạc lại tắt:/"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-05-16 16:49:57",
+    "last_seen": "2026-05-16 16:49:57",
+    "status": "open"
+  },
+  {
+    "id": "6937384e-f9b2-435f-86d2-4c081f7e9138",
+    "topic": "nhạc rè",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "nhạc rè quá, mong nsx sửa lại"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-04-30 12:07:36",
+    "last_seen": "2026-04-30 12:07:36",
+    "status": "open"
+  },
+  {
+    "id": "2a78d4f9-52d7-4f55-81bb-ede21d788214",
+    "topic": "tắt nhạc trên TV",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "hay nhưng trên TV đang dùng thì tắt nhạc mong ad sửa lỗi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-03-30 20:59:06",
+    "last_seen": "2026-03-30 20:59:06",
+    "status": "open"
+  },
+  {
+    "id": "530b8718-7bec-4a5e-a66c-c35034860cc3",
+    "topic": "không có nhạc trên TV",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tôi muốn nhạc và soạn bài trên tivi nhưng khi lựa hoặc khi thoát thì nó ko có nhạc toi mong sẽ khắc phục lỗi nhanh chóng"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-03-15 15:13:05",
+    "last_seen": "2026-03-15 15:13:05",
+    "status": "open"
+  },
+  {
+    "id": "e3880d6e-1f2a-45de-a9b2-3d8057e79e32",
+    "topic": "không đăng nhập được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "không đăng nhập được"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-03-02 18:52:38",
+    "last_seen": "2026-03-02 18:52:38",
+    "status": "open"
+  },
+  {
+    "id": "5be1a2df-fc1b-45f1-ab77-3ddb705ab194",
+    "topic": "không vào được nhạc",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "có lúc bấm nhạc không vô được",
+      "sao tui vô nhạc đc vậy"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-02-26 19:25:22",
+    "last_seen": "2026-02-26 19:25:22",
+    "status": "open"
+  },
+  {
+    "id": "56ba71c0-0d9b-42cc-b7a3-395d838bfb1e",
+    "topic": "ứng dụng không mở được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "mở ra đang tải ko mởddc"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-02-12 13:20:45",
+    "last_seen": "2026-02-12 13:20:45",
+    "status": "open"
+  },
+  {
+    "id": "f0246b50-7c59-4f74-8c10-cc3617bb4120",
+    "topic": "không nghe được nhạc",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ko nghe được"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-02-11 16:21:55",
+    "last_seen": "2026-02-11 16:21:55",
+    "status": "open"
+  },
+  {
+    "id": "30e8ed3b-11b9-4894-b9bc-da2b03aa6ac3",
+    "topic": "mất nhạc khi chơi game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "chs game là mất nhạc>:("
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-02-01 11:24:22",
+    "last_seen": "2026-02-01 11:24:22",
+    "status": "open"
+  },
+  {
+    "id": "b5278ee2-ae4b-487f-b423-c37c9a5221ac",
+    "topic": "lỗi bàn phím trên TV",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "lúc trên TV nó còn bị lỗi bàn phím;bấm mãi nó ổn định đc"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-01-14 11:37:17",
+    "last_seen": "2026-01-14 11:37:17",
+    "status": "open"
+  },
+  {
+    "id": "e8c2bfec-e805-48a9-931c-dd044be929f2",
+    "topic": "nhạc tự dừng",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "đang nghe mà tự nhiên dừng nhạc",
+      "đang nghe mà tạm dừng hoặc ko cho nghe"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-11-01 17:10:28",
+    "last_seen": "2025-11-30 14:09:05",
+    "status": "open"
+  },
+  {
+    "id": "286542a3-9b6d-4eb2-bbf7-4d4cb2560762",
+    "topic": "nhạc tự tắt",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "rất hay nhưng nghe đc có 1 lúc thôi rồi tự tắt"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-11-29 10:52:08",
+    "last_seen": "2025-11-29 10:52:08",
+    "status": "open"
+  },
+  {
+    "id": "8607fde6-2884-4e04-b5d1-39f3119139ee",
+    "topic": "không nhấn được vào nhạc",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "nó sẽ rất tuyệt nếu. khi dùng lâu sẽ k ấn đc vô nhạc, phải xóa tải lại mới dùng đc tiếp..!!"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-11-22 22:45:14",
+    "last_seen": "2025-11-22 22:45:14",
+    "status": "open"
+  },
+  {
+    "id": "19477c51-9ffd-416b-af25-b7370142b5e3",
+    "topic": "tìm kiếm giọng nói không được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tìm kiếm bằng giọng nói không được rồi?"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-11-16 19:24:47",
+    "last_seen": "2025-11-16 19:24:47",
+    "status": "open"
+  },
+  {
+    "id": "51a7fb4e-e6ac-40f6-8e86-09810cb21650",
+    "topic": "không nhấn được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ko nhấn vào đc"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-11-04 16:54:48",
+    "last_seen": "2025-11-04 16:54:48",
+    "status": "open"
+  },
+  {
+    "id": "a6a7433a-689e-452c-b7cf-b02328a82832",
+    "topic": "ứng dụng tự tắt",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "k biết s chứ cứ bật đc một lúc thì tắt, lần nào dùng cũng bị v"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-10-13 16:32:00",
+    "last_seen": "2025-10-13 16:32:00",
+    "status": "open"
+  },
+  {
+    "id": "0c93463f-8f62-4080-9fbf-4e796976261e",
+    "topic": "loading lâu",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ứng dụng rất hay và tuyệt vời nhưng gần đây vô là loading rất lâu mong ad sữa lỗi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-10-03 20:52:33",
+    "last_seen": "2025-10-03 20:52:33",
+    "status": "open"
+  },
+  {
+    "id": "1a501ba0-2995-4cdf-b142-570399f5c89a",
+    "topic": "nhạc bị mất",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "toi cu dang nghe thi no cu bi mat"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-09-28 09:28:50",
+    "last_seen": "2025-09-28 09:28:50",
+    "status": "open"
+  },
+  {
+    "id": "09c4ce37-68ca-4055-b152-7d715d821c76",
+    "topic": "tắt nhạc khi vào game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tui vào game là nó tắt nhạc à -_-"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-09-13 12:12:56",
+    "last_seen": "2025-09-13 12:12:56",
+    "status": "open"
+  },
+  {
+    "id": "755ade3a-0efe-4c83-be6e-fa917190d0e8",
+    "topic": "không mở được nhạc",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "tôi không mở nhạc được tôi rất gét mong sữa trên TV",
+      "không mở nhạc được"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-19 11:24:25",
+    "last_seen": "2025-08-19 11:24:25",
+    "status": "open"
+  },
+  {
+    "id": "185bbfbb-74e2-4007-8c53-fba34a4d2e16",
+    "topic": "lag, không mở được nhạc",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "cũng cũng th, xài lâu có khi bị lag kh mở nhạc vs tìm kiếm đc"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-11 20:26:06",
+    "last_seen": "2025-08-11 20:26:06",
+    "status": "open"
+  },
+  {
+    "id": "1741d767-2f7b-430c-b5d5-e5fce11d7fa3",
+    "topic": "nhiều lỗi",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "MN muốn vừa chơi game vừa nghe nhạc thì xoá đi tải lại là ok , ứng dụng này vẫn có nhiều lỗi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-11 07:19:33",
+    "last_seen": "2025-08-11 07:19:33",
+    "status": "open"
+  },
+  {
+    "id": "aa8dc9e4-4929-45de-bbac-4b8973578dc2",
+    "topic": "lỗi tự động bật TV",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Zing mp3 Android TV đang nghiêm trọng bị lỗi, khi TV đang tắt thì TV tự động bật và mở sang ứng dụng Zing MP3. không rõ lý do, mong nhà phát triển xem xét và giải quyết khắc phục sự cố"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-05 16:45:32",
+    "last_seen": "2025-07-05 16:45:32",
+    "status": "open"
+  },
+  {
+    "id": "207824e6-d187-4326-941c-bbc710dd270f",
+    "topic": "không tải được nhạc",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Zing mp3 không tải được"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-26 06:55:24",
+    "last_seen": "2025-06-26 06:55:24",
+    "status": "open"
+  },
+  {
+    "id": "886d22e7-d270-47ee-ad3f-7e28c867fc4f",
+    "topic": "lỗi không nghe được nhạc khi chơi game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game hay nhưng tôi đang chơi game không nghe được nữa rồi tôi vào nó bị lỗi mong Zing mp3 sửa lỗi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-19 10:15:11",
+    "last_seen": "2025-06-19 10:15:11",
+    "status": "open"
+  },
+  {
+    "id": "76191373-6228-4660-936c-81076a3aaf10",
+    "topic": "lỗi không nghe nhạc trong phần cá nhân",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "không nghe nhạc trong phần cá nhân được"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-03 10:44:42",
+    "last_seen": "2025-06-03 10:44:42",
+    "status": "open"
+  },
+  {
+    "id": "4137bfdb-1df0-4400-b05c-cb802b0d8e45",
+    "topic": "lỗi đăng nhập bằng TV",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ko đăng nhập bằng TV đc"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-05-05 10:29:50",
+    "last_seen": "2025-05-05 10:29:50",
+    "status": "open"
+  },
+  {
+    "id": "0a0bcf24-81ea-40f8-a684-429219b9b48b",
+    "topic": "mất phần nhạc yêu thích",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tự nhiên mất phần thik nhc r ta"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-04-09 22:03:42",
+    "last_seen": "2025-04-09 22:03:42",
+    "status": "open"
+  },
+  {
+    "id": "44a6870c-81d9-4e36-b1de-6f19d8759ea7",
+    "topic": "dừng nhạc khi nghe",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "đang nghe thì nó dừng nhạc"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-03-17 10:00:51",
+    "last_seen": "2025-03-17 10:00:51",
+    "status": "open"
+  }
+]

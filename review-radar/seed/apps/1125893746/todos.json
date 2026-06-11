@@ -1,0 +1,261 @@
+[
+  {
+    "id": "19d3ed6e-d11c-4de6-afcd-655f8ea1756f",
+    "topic": "lag game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game lag vkl"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-19T20:28:42-07:00",
+    "last_seen": "2026-05-19T20:28:42-07:00",
+    "status": "open"
+  },
+  {
+    "id": "454d695d-7359-4544-a050-3cc74c3e2d87",
+    "topic": "mất kết nối",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "DÙ điện thoại mạng wifi mạnh mà dô game không được báo mất liên kết, sv mà số đẹp dịch vụ đông là quá tải hay sao ă, dô game cả ngày k được kể cả nửa đêm🙄 Chục năm rồi vẫn k fix được",
+      "Liên tục mất kết nối chơi game phát bực xoá"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-03-30T02:59:16-07:00",
+    "last_seen": "2026-05-15T09:58:04-07:00",
+    "status": "open"
+  },
+  {
+    "id": "505c1e7e-894d-4c06-8438-6d9a42eff4a6",
+    "topic": "lỗi đăng nhập iPhone",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "iPhone thì kh thể đăng nhập vô liền sau mõi lần cập Nhật như adr được! Và game thì quá mất dạy liên tục tạo saver mới để hút máu rồi dẹp game à?"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-13T20:21:28-07:00",
+    "last_seen": "2026-05-13T20:21:28-07:00",
+    "status": "open"
+  },
+  {
+    "id": "ba108563-f168-4a03-9fde-3afd59f5bcc4",
+    "topic": "không liên hệ được nph",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Không liên hệ được nph game"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-04-23T14:39:50-07:00",
+    "last_seen": "2026-04-23T14:39:50-07:00",
+    "status": "open"
+  },
+  {
+    "id": "57f81bf3-af14-4098-9767-d55defc755e4",
+    "topic": "lỗi kết nối",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game hiện nay rất tệ toàn là báo lỗi kết nối không vào được Game"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-04-18T22:16:12-07:00",
+    "last_seen": "2026-04-18T22:16:12-07:00",
+    "status": "open"
+  },
+  {
+    "id": "1b02648d-d99e-4a0a-8b9b-f934eb247d37",
+    "topic": "lỗi đăng nhập",
+    "severity": "medium",
+    "mention_count": 3,
+    "sample_reviews": [
+      "Game đăng nhập k được như cc",
+      "Sao mình xóa 3 lần tải lại rồi mà vẫn không vào được",
+      "game gì mà đăng nhập toàn báo lỗi thời gian k đăng nhập được không vậy"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-04-14T18:44:01-07:00",
+    "last_seen": "2026-04-14T18:44:01-07:00",
+    "status": "open"
+  },
+  {
+    "id": "a4e45fab-abcc-4241-83b5-504e891fd37c",
+    "topic": "mất kết nối khi đăng nhập",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Liên tục mất kết nối khi đăng nhập cũng như phải đợi tận 9s để đăng nhập lại. Sẽ lên 1* mỗi ngày cho tới khi game fix dc mấy cái rác lỗi này"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-04-06T05:22:09-07:00",
+    "last_seen": "2026-04-06T05:22:09-07:00",
+    "status": "open"
+  },
+  {
+    "id": "ee70a111-d703-49d2-a3bc-d68c8fadfefd",
+    "topic": "game bị văng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "iPhone X sao đang chơi cứ văng game hoài lúc đi hoạt động pk là hay bị ,danh tướng  có mấy con boos văng liên tục ra vào hết chơn"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-03-30T08:12:57-07:00",
+    "last_seen": "2026-03-30T08:12:57-07:00",
+    "status": "open"
+  },
+  {
+    "id": "750071e8-f6cd-4d7c-89a8-5d82dc8dde76",
+    "topic": "lỗi vào game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Như cái qq đéo vô đc game toàn bị lỗi"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-03-28T05:13:28-07:00",
+    "last_seen": "2026-03-28T05:13:28-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f3f21a98-52c5-41de-a5c9-f40ab4530e86",
+    "topic": "lỗi xóa tải lại",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Xoá đi tải lại ko được"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-03-04T22:59:32-07:00",
+    "last_seen": "2026-03-04T22:59:32-07:00",
+    "status": "open"
+  },
+  {
+    "id": "3361121e-f2d8-4945-9460-32cf13ff2205",
+    "topic": "lỗi tài khoản không vào được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "S1280 người chơi chân chính không chuyển vàng , không dv. Game quét khiến nhiều tài khoản bị lỗi , không thể vào được game."
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-01-18T04:00:18-07:00",
+    "last_seen": "2026-01-18T04:00:18-07:00",
+    "status": "open"
+  },
+  {
+    "id": "97ab2326-abca-4066-8b23-5e784df91b28",
+    "topic": "lỗi đăng nhập danh tướng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Cứ 10h tối đi danh tướng là không vô được lỗi cả năm không fix rồi kick nạp cái gì nữa"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-01-04T09:12:44-07:00",
+    "last_seen": "2026-01-04T09:12:44-07:00",
+    "status": "open"
+  },
+  {
+    "id": "8b3957f7-7480-487e-828f-f77bbcf43ad4",
+    "topic": "lỗi treo giải lập và crash",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Treo giải lập ko đc, có đào hoa là bị văng"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2025-11-03T08:29:22-07:00",
+    "last_seen": "2025-11-03T08:29:22-07:00",
+    "status": "open"
+  },
+  {
+    "id": "e2675310-3855-4501-a080-b303a21c7ed1",
+    "topic": "lỗi microphone",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "Sao lại dùng Mic ko được",
+      "mic nc hog được"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2025-10-30T07:07:11-07:00",
+    "last_seen": "2025-11-02T18:27:11-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f5969f92-3c2d-42ba-9e19-9fa152d443ca",
+    "topic": "lỗi voice chat",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Tại sao tôi ko thể voice chat được, tôi đã cấp quyền micro cho ứng dụng nhưng vẫn bị báo lỗi thời gian nhập tin nhắn voice quá ngắn"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2025-10-29T07:59:09-07:00",
+    "last_seen": "2025-10-29T07:59:09-07:00",
+    "status": "open"
+  },
+  {
+    "id": "6dbdb5e4-35be-4706-a973-d9edcc97c394",
+    "topic": "lỗi microphone sau cập nhật",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "cập nhật  phái mới xing mất luôn cái mic r ọ, trả muc đây"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2025-10-29T06:06:25-07:00",
+    "last_seen": "2025-10-29T06:06:25-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f2d65e3d-5027-4759-a7c6-7f8359ceb22f",
+    "topic": "lỗi đăng nhập server",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "S1245-CỬU CHÂU không đăng nhập được"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2025-10-24T06:44:55-07:00",
+    "last_seen": "2025-10-24T06:44:55-07:00",
+    "status": "open"
+  }
+]

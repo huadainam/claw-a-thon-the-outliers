@@ -1,0 +1,287 @@
+[
+  {
+    "id": "1af61b9b-99ce-4dfe-b0bf-23cad5543981",
+    "topic": "lỗi thủ môn và cầu thủ bị đen",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Sau khi choi tui thấy rất hay mà có nhiều lỗi chơi cái sự kiện gì mà có đức r bỉ na uy bồ đào nha lúc chơi bồ đào nha tự nhiên t ronaldo đen xì:)) chơi thêm trận nữa thì thủ môn đen xì mong nhà phát hành sữa lỗi"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T17:52:02-07:00",
+    "last_seen": "2026-06-08T17:52:02-07:00",
+    "status": "open"
+  },
+  {
+    "id": "be6ebc4b-d1eb-47d9-8714-b2ee6562ffa8",
+    "topic": "game tự động văng khi vào trận",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game cứ vào trận giả lập hay trận hạng cái là tự động văng rất ức chế"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T08:07:43-07:00",
+    "last_seen": "2026-06-08T08:07:43-07:00",
+    "status": "open"
+  },
+  {
+    "id": "3ed258c3-267f-47e9-a3cb-c559104edaef",
+    "topic": "lỗi đặt tên",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Đề nghị sửa lại lỗi đặt tên"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-05T04:18:53-07:00",
+    "last_seen": "2026-06-05T04:18:53-07:00",
+    "status": "open"
+  },
+  {
+    "id": "92b9eb62-439a-48a2-8f15-039aab88401b",
+    "topic": "lỗi đánh đầu của cầu thủ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "fix lại ngay cái đánh đầu \ncầu thủ có chỉ số cao hay thấp đều đánh đầu rất ngu"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-01T10:27:30-07:00",
+    "last_seen": "2026-06-01T10:27:30-07:00",
+    "status": "open"
+  },
+  {
+    "id": "467532d7-d84e-46ac-9106-d9e0d05605f0",
+    "topic": "game bị văng liên tục",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game như cái lồn đm đang chơi bị văng ra liên tục"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-31T03:45:49-07:00",
+    "last_seen": "2026-05-31T03:45:49-07:00",
+    "status": "open"
+  },
+  {
+    "id": "18d379d9-c99e-4731-a4b6-2671c4107fe2",
+    "topic": "lỗi ping cao lag không vào được game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game VNG :)) ping chơi wifi căng đét toàn 999ms, đang đá rank out ra màn hình khởi động, load lại trận lên đến 92 thì chạy tụt lùi xuống 80 không vào nổi. Đã phản hồi rất nhiều lần nhưng không fix nổi :)). Quá tệ"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-30T18:22:32-07:00",
+    "last_seen": "2026-05-30T18:22:32-07:00",
+    "status": "open"
+  },
+  {
+    "id": "427ad69e-0cb1-48dd-8b76-5b239cf1695c",
+    "topic": "lỗi gem bị văng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Gem hay nhưng lỗi văng gem rất nhiều"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-30T01:17:03-07:00",
+    "last_seen": "2026-05-30T01:17:03-07:00",
+    "status": "open"
+  },
+  {
+    "id": "71e457fe-7dec-46cf-84b2-9f3f55e9a471",
+    "topic": "lỗi bị out ra không vào được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Toàn bị out ra xong k vào được\nPhương thức thanh toán phức tạp"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-27T09:30:07-07:00",
+    "last_seen": "2026-05-27T09:30:07-07:00",
+    "status": "open"
+  },
+  {
+    "id": "67c2306a-08ff-4fa1-8520-e349035ea805",
+    "topic": "lỗi tùm lum",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game lỗi tùm lum càng sửa càng lỗi. Bh sửa lại ok thì đánh giá lại 🤓🤓"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-26T16:57:55-07:00",
+    "last_seen": "2026-05-26T16:57:55-07:00",
+    "status": "open"
+  },
+  {
+    "id": "a0e6e03f-4f9f-4e52-aa28-3206bb96c5d4",
+    "topic": "cập nhật bị văng game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game gì mà sao cập nhật xong đá nó cứ văng game ra vậy trời"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-26T10:32:27-07:00",
+    "last_seen": "2026-05-26T10:32:27-07:00",
+    "status": "open"
+  },
+  {
+    "id": "5d157006-2d6d-47c3-9c7d-c0ffae7970b5",
+    "topic": "bị crash không load được quà",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Thưa VNG, tui thấy vui đó nhưng mà cảm giác nó seo seo ớ, hay bị crash, và ở cái đá giải, khi nhận quà sau khi đá  thường bị dừng ko load dc, mong game sửa😊😊😊"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-26T04:55:58-07:00",
+    "last_seen": "2026-05-26T04:55:58-07:00",
+    "status": "open"
+  },
+  {
+    "id": "6aeada05-b812-4c78-95dc-70c6f097a6f2",
+    "topic": "cập nhật bị lag đứng máy",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "cứ mỗi lần cập nhật là y như rằng là vào game ko đc giật lag thậm chí còn đứng máy mặc dù máy mình là máy chuyên để chs game và dung lượng còn rất nhiều"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-25T22:51:52-07:00",
+    "last_seen": "2026-05-25T22:51:52-07:00",
+    "status": "open"
+  },
+  {
+    "id": "799341e8-a386-46d1-adde-a2ff42cadf08",
+    "topic": "đối thủ thoát ra không nhận được Xu thi đấu",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Đấu Hạng gần xong rồi mà đối thủ thoát ra nên không nhận được “Xu thi đấu” rất là bực minh!!!!, đề nghị khi đấu hơn 60% thời lượng vẫn nhận được “Xu thi đấu” dù đối thủ có thoát ra không"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-24T04:53:47-07:00",
+    "last_seen": "2026-05-24T04:53:47-07:00",
+    "status": "open"
+  },
+  {
+    "id": "63fa62cc-9a22-4365-9551-53b1f16ff65c",
+    "topic": "không tải được game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Không tải được"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-21T09:14:21-07:00",
+    "last_seen": "2026-05-21T09:14:21-07:00",
+    "status": "open"
+  },
+  {
+    "id": "18263f3c-7916-489b-8659-57d9cc54ba85",
+    "topic": "mất kết nối vào trận, tự phán thua",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Mất kết nối vào trận xong tự phán ngta thua lun chán chưa"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-20T16:51:02-07:00",
+    "last_seen": "2026-05-20T16:51:02-07:00",
+    "status": "open"
+  },
+  {
+    "id": "8aca57b7-2f1a-4649-8d8e-55d87d240982",
+    "topic": "bị khóa acc oan",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game lỗi lại đi khoá acc của người chơi. K hiểu kiểu gì"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-20T01:08:09-07:00",
+    "last_seen": "2026-05-20T01:08:09-07:00",
+    "status": "open"
+  },
+  {
+    "id": "9113fd6e-6299-49c3-8318-d3d258f70616",
+    "topic": "lỗi game, bị khóa acc, không nhận nhiệm vụ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game suốt ngày lỗi, kĩ năng thì cài vào ko xài dc, nhiệm vụ hằng ngày thì làm mãi ko dc công nhận hoàn thành. Gửi hỗ trợ thì ko giải quyết dc gì, ko sửa được lỗi thì dẹp game đi\nNay còn bị khoá acc vì cái lỗi dữ liệu trong game ??? Alo làm dc ko ???"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-19T23:30:49-07:00",
+    "last_seen": "2026-05-19T23:30:49-07:00",
+    "status": "open"
+  },
+  {
+    "id": "de429828-ef53-459a-95d7-c5fc794b8662",
+    "topic": "lag game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game thuần lag đá kiểu đ nào cũng lag"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-18T00:18:03-07:00",
+    "last_seen": "2026-05-18T00:18:03-07:00",
+    "status": "open"
+  },
+  {
+    "id": "b408b85e-447e-4880-ab54-c60cff7648a4",
+    "topic": "lag không đá được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Lag vcl cứ đá người là méo đá được tý nào"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-15T23:55:47-07:00",
+    "last_seen": "2026-05-15T23:55:47-07:00",
+    "status": "open"
+  }
+]

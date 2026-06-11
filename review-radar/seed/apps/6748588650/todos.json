@@ -1,0 +1,167 @@
+[
+  {
+    "id": "b5b85e27-0f77-41f1-924d-d8932e3d93eb",
+    "topic": "lỗi game và hack",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game lỗi quá nhiều k xử lý được vấn đề hack trong game"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T10:02:30-07:00",
+    "last_seen": "2026-06-09T10:02:30-07:00",
+    "status": "open"
+  },
+  {
+    "id": "58412ea8-ce11-4f1e-94ac-d00f8592dc46",
+    "topic": "văng ra không vào được game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "sao vào lại bị văng ra liên tục không vào được game"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T02:25:51-07:00",
+    "last_seen": "2026-06-09T02:25:51-07:00",
+    "status": "open"
+  },
+  {
+    "id": "dd07a7c6-4a38-49e8-ab42-6eb67a6428a2",
+    "topic": "lỗi nhiều, mất cân bằng nhân vật, lỗi mic",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Lỗi nhiều không chịu sửa , game mất cân bằng nhân vật súng xịn lợi thế cao , Lỗi Loa mic gần hết mùa vẫn lỗi tệ không tả được"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T18:39:21-07:00",
+    "last_seen": "2026-06-08T18:39:21-07:00",
+    "status": "open"
+  },
+  {
+    "id": "ba02ac37-341a-4ee3-b1ee-1b064973fe32",
+    "topic": "game có hack",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game có hack"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T10:38:19-07:00",
+    "last_seen": "2026-06-08T10:38:19-07:00",
+    "status": "open"
+  },
+  {
+    "id": "261a8724-7a20-4a78-8353-9b69382d9e93",
+    "topic": "văng game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "11 prm còn văng game đc chịu nph"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T11:46:21-07:00",
+    "last_seen": "2026-06-07T11:46:21-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f60f6e1d-db0f-4e3e-9350-f0422cdd3b77",
+    "topic": "súng yếu khi chơi rank",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game loll chơi thường thì ko sao, chơi rank thì fix dame súng yếu vkllll"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T07:43:15-07:00",
+    "last_seen": "2026-06-07T07:43:15-07:00",
+    "status": "open"
+  },
+  {
+    "id": "32974c15-a39e-4783-92de-fd0ef0443000",
+    "topic": "lỗi ghép trận, mất điểm",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Rank 3k3 đang thắng 2 thua 2 ghép trận lỗi tìm kh ra trận, thế mà mất luôn game cuối thế là bị trừ điểm chơi lại từ đầu, game quá nát"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-06T10:49:44-07:00",
+    "last_seen": "2026-06-06T10:49:44-07:00",
+    "status": "open"
+  },
+  {
+    "id": "63123be0-8794-46ed-8fe0-52c8b99a9951",
+    "topic": "hack và lỗi game không khắc phục",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Hack lỗi Game suốt nhưng không khắc phục chỉ ra sự kiện súng lấy tiền nhưng vẫn không khắc phục lỗi Game + hack"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-05T19:51:10-07:00",
+    "last_seen": "2026-06-05T19:51:10-07:00",
+    "status": "open"
+  },
+  {
+    "id": "6ee5510c-40ff-4c71-b57a-94a49f3cda25",
+    "topic": "bug đạn tán, nạp tiền",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Trong trận đấu thì bắn lia đạn bây tứ tán vẫn trết người\nCác trương trình của game đưa ra các móc nạp tiền của game thủ bị thiếu dẫn tới trải nghiệm ko tốt mong nph sữa lại"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-05T07:12:39-07:00",
+    "last_seen": "2026-06-05T07:12:39-07:00",
+    "status": "open"
+  },
+  {
+    "id": "4fce2e78-adde-4973-aeca-bb84c0df81f0",
+    "topic": "lỗi phím chuột, mic, hack",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Nhiều lỗi không sửa, hack, phím chuột, lỗi loa míc khi chơi game......"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-05T06:07:03-07:00",
+    "last_seen": "2026-06-05T06:07:03-07:00",
+    "status": "open"
+  },
+  {
+    "id": "7093c7b3-438f-499c-94c9-7f4375162c26",
+    "topic": "khoá acc tự nhiên",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Đang chơi tự nhiên khoá 2 ngày  bó tay"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-03T09:21:05-07:00",
+    "last_seen": "2026-06-03T09:21:05-07:00",
+    "status": "open"
+  }
+]

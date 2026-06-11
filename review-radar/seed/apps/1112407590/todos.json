@@ -1,0 +1,332 @@
+[
+  {
+    "id": "39229e62-1b13-4921-a727-a888f9a9eebd",
+    "topic": "lỗi nạp tiền không hiển thị",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Nạp 3 lần 1 lần 20k 2 lần 10k nhưng chỉ có một lần nạp 20 và 1 lần nạp 10 về email còn một lần nữa không biết đi đâu"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T05:47:48-07:00",
+    "last_seen": "2026-06-09T05:47:48-07:00",
+    "status": "open"
+  },
+  {
+    "id": "75daef37-88c4-47b4-92bd-6d40976513ad",
+    "topic": "lỗi thông báo không xóa",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Có cái lỗi thông báo mãi không sửa đã đọc hết thông báo trong app rồi mà ngoài màn hình vẫn báo thông báo rất khó chịu lúc nào cũng hiện còn 1 thông báo ai chuyển tiền hay gì cũng chỉ hiện 1 . Biết thế dùng momo cho nhanh."
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T04:18:00-07:00",
+    "last_seen": "2026-06-09T04:18:00-07:00",
+    "status": "open"
+  },
+  {
+    "id": "4b547c91-edbf-4d5e-ab3d-2340bc234373",
+    "topic": "lỗi hiển thị số dư",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Lịch sử giao dịch không hiển thị số dư còn lại khi sử dụng nguồn tiền số dư sinh lời, không đảm bảo tính tin cậy và minh bạch cho khách hàng.\nMong ứng dụng có thể khắc phục vấn đề này"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T20:54:46-07:00",
+    "last_seen": "2026-06-08T20:54:46-07:00",
+    "status": "open"
+  },
+  {
+    "id": "aedf2913-751c-443e-8648-e92ba2882a22",
+    "topic": "lỗi nhập số điện thoại",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Nhập mãi số điện thoại ko vào"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T04:25:12-07:00",
+    "last_seen": "2026-06-08T04:25:12-07:00",
+    "status": "open"
+  },
+  {
+    "id": "fcd5230a-db19-470b-8d44-8638f6d1b663",
+    "topic": "giao dịch treo mất tiền",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "giao dịch treo xử lý 4 ngày hơn tiền vẫn trừ ko hoàn lại của chủ tài khoản tự nhiên bị mất tiền oan"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T01:02:05-07:00",
+    "last_seen": "2026-06-08T01:02:05-07:00",
+    "status": "open"
+  },
+  {
+    "id": "1db98416-677e-45f1-8d59-f7633fe7f09c",
+    "topic": "lỗi liên tục không xử lý được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Bị lỗi liên tục,bạn mình nhiều lúc cũng bị xong giờ cần tiền mình cũng bị không giải quyết được giao dịch ,rất là ảnh hưởng tới công việc và siêu mất thời gian,hệ thống khắc phục hộ chứ không chắc xoá app khỏi dùng quá"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T23:14:18-07:00",
+    "last_seen": "2026-06-07T23:14:18-07:00",
+    "status": "open"
+  },
+  {
+    "id": "4722fcec-2490-4538-8abb-597ca897e2aa",
+    "topic": "lỗi xác thực",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "xác thực đéo gì lắm vậy, có tài khoản mà không chuyển được"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T22:39:16-07:00",
+    "last_seen": "2026-06-07T22:39:16-07:00",
+    "status": "open"
+  },
+  {
+    "id": "4f49e382-3f3f-4443-9522-7de51f114496",
+    "topic": "lỗi tài khoản bị đổi số điện thoại",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "trước bị liên kết thì còn giữ sđt của mình nhưng sau khi bỏ liên kết và dùng bình thường thì tài khoản của mình lại bị thay đổi thành sđt của người khác lúc nào không hay😭😭 mong zalo pay giải quyết giúp mình."
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T19:32:09-07:00",
+    "last_seen": "2026-06-04T19:32:09-07:00",
+    "status": "open"
+  },
+  {
+    "id": "4707c395-505d-493b-9798-515deaf9c350",
+    "topic": "lỗi data không hoạt động",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "mua data 4g/5g xong không sử dụng được?"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T10:26:21-07:00",
+    "last_seen": "2026-06-04T10:26:21-07:00",
+    "status": "open"
+  },
+  {
+    "id": "e732c000-afab-4291-af15-1c8042836b6c",
+    "topic": "lỗi chuyển tiền thất bại nhưng trừ tiền",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Sử dụng quá tệ lúc cần gấp lại ko chuyển đc nhưng vẫn trừ tiền bên mình phải đợi một lúc lâu để phản hồi lẽ ra tôi ko nên dùng app này quá tệ"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T04:05:57-07:00",
+    "last_seen": "2026-06-04T04:05:57-07:00",
+    "status": "open"
+  },
+  {
+    "id": "853e57b1-bfa3-4698-9224-e0e67edc8033",
+    "topic": "chuyển tiền không nhận được mất tiền",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Chuyển cho ngta k nhận đc mà mất tiền trong tài khoản . Làm ăn như l"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T03:53:19-07:00",
+    "last_seen": "2026-06-04T03:53:19-07:00",
+    "status": "open"
+  },
+  {
+    "id": "1f366f3a-daca-4382-9a63-0f68efd90706",
+    "topic": "lỗi xác thực số điện thoại cũ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Số điện thoại của t chủ cũ tạo tài khoản giờ không xác thực để sài được yêu cầu hỗ trợ thì ko dc gì quá bực"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T03:24:27-07:00",
+    "last_seen": "2026-06-04T03:24:27-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f1576c1d-5baa-4241-b43f-db22d4a139e8",
+    "topic": "lỗi liên kết tài khoản",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "liên kết nãi chả được, hãy mau mở lại cho tôi tôi đang cần chuyển tiền mà không được, chưa thấy trường hợp này bao giờ???????"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T03:24:25-07:00",
+    "last_seen": "2026-06-04T03:24:25-07:00",
+    "status": "open"
+  },
+  {
+    "id": "8f188c4e-c1cb-4808-aaab-f6eaa1d31aa4",
+    "topic": "lỗi không xác định",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Làm đúng thực hiện nhưng bị lỗi?"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T02:55:41-07:00",
+    "last_seen": "2026-06-04T02:55:41-07:00",
+    "status": "open"
+  },
+  {
+    "id": "20eb57f3-f603-410e-a105-e8728da3727c",
+    "topic": "không cho chuyển tiền, gọi điện đòi nợ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Tôi đã sử dụng khoảng 1 tháng,và hiện tại không cho chuyển tiền nếu không có liên kết tài khoản ngân hàng khác,tôi đã thanh lí số dư,và bây giờ zalopay gọi điện liên tục cho tôi để đòi \"nợ\" mặc dù tài khoản vay trước trả sau còn chưa được kích hoạt lấy gì tôi vay?App lừa đảo,đừng tải,khuyên thật lòng"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-03T22:20:22-07:00",
+    "last_seen": "2026-06-03T22:20:22-07:00",
+    "status": "open"
+  },
+  {
+    "id": "88641cbe-1db4-4020-ad62-6edea5feaf5e",
+    "topic": "quên mật khẩu thanh toán, không đăng nhập được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "zalopay bắt liên kết ngân hàng khi mình liên kết rồi thì zalopay bắt nhập mật khẩu thanh toán mà mình quên vì bình thường toàn dùng faceid ít dùng mật khẩu nên thành ra quên,mình ấn vào quên mật khẩu thì lỗi có lúc dc thì nó vẫn bắt mình nhập mật khẩu mà mình quên"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-03T21:21:48-07:00",
+    "last_seen": "2026-06-03T21:21:48-07:00",
+    "status": "open"
+  },
+  {
+    "id": "2e42f9af-882f-4ddb-90b9-8064d7f5b4a0",
+    "topic": "không thể truy cập app sau khi tải lại",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "zalopay ơi sao mình xoá dí tải lại mãi mà nó không cho vô app vậy^^"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-03T20:54:30-07:00",
+    "last_seen": "2026-06-03T20:54:30-07:00",
+    "status": "open"
+  },
+  {
+    "id": "fd7ef20f-0a8f-4cbf-b0ff-43508ffdfc97",
+    "topic": "thanh toán không được, xác minh không thông báo",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Thanh toán Ko được bắt phải xác minh mà ko thông báo trước"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-03T03:25:25-07:00",
+    "last_seen": "2026-06-03T03:25:25-07:00",
+    "status": "open"
+  },
+  {
+    "id": "b1edaf9f-c5d7-4f80-98c7-55e652d9d273",
+    "topic": "xác thực khuôn mặt không nhận dạng được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "xác thực 3 lần k dc mặt vẫn là mặt mình"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-02T21:46:06-07:00",
+    "last_seen": "2026-06-02T21:46:06-07:00",
+    "status": "open"
+  },
+  {
+    "id": "93309d4b-de8f-4c4a-a335-972bfb386907",
+    "topic": "không rút được tiền do mất sim",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "M bị mất sim cũ mà trong tk zalopay vẫn còn tiền giờ không cho rút tiền bắt phải lk ngân hàng mà phải là nk đăng kí bằng sdt cũ thì lấy đâu ra"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-02T08:32:33-07:00",
+    "last_seen": "2026-06-02T08:32:33-07:00",
+    "status": "open"
+  },
+  {
+    "id": "7530c87a-e300-44da-9acf-1fecd8469388",
+    "topic": "nạp tiền bị thanh lý, mất tiền",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Nạp xong nó bắt thanh lý mất hiền tiền nha"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-02T08:27:57-07:00",
+    "last_seen": "2026-06-02T08:27:57-07:00",
+    "status": "open"
+  },
+  {
+    "id": "c7809ef5-a68f-4685-9b88-5d4ca77aa525",
+    "topic": "bắt liên kết ngân hàng mới cho rút tiền, không thông báo",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Bắt liên kết ngân hàng mới cho rút tiền mà không thông báo trước, giữ tiền ng dùng"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-02T08:21:41-07:00",
+    "last_seen": "2026-06-02T08:21:41-07:00",
+    "status": "open"
+  }
+]

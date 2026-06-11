@@ -1,0 +1,149 @@
+{
+  "active_app_id": null,
+  "apps": [
+    {
+      "title": "Zalo",
+      "developer": "Zalo Group",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/dd/2f/c9/dd2fc944-23ce-52cc-533d-f9abf18c2c69/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/100x100bb.jpg",
+      "gp_id": null,
+      "as_id": "579523206",
+      "stores": [
+        "app_store"
+      ],
+      "app_id": "579523206"
+    },
+    {
+      "title": "Zalopay-Thanh toán & Tài chính",
+      "developer": "ZION JOINT STOCK COMPANY",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/27/8a/1e/278a1eb6-e8a3-c9df-a737-f93b68d92daa/AppIcon-0-0-1x_U007emarketing-0-6-0-85-220.png/100x100bb.jpg",
+      "gp_id": null,
+      "as_id": "1112407590",
+      "stores": [
+        "app_store"
+      ],
+      "app_id": "1112407590"
+    },
+    {
+      "title": "Zing MP3 - Android TV",
+      "developer": "Zalo Group",
+      "icon": "https://play-lh.googleusercontent.com/O0078sRCWcSj48e2PThnW_2PCMMU_3VsG4VwUQY_7zoTJHZYQ43qJc0hYExDw5eFMzJE",
+      "gp_id": "vng.zing.mp3",
+      "as_id": null,
+      "stores": [
+        "google_play"
+      ],
+      "app_id": "vng.zing.mp3"
+    },
+    {
+      "title": "Laban Key: Gõ tiếng Việt",
+      "developer": "Zalo Group",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/46/ec/70/46ec702b-cda1-3d90-6717-7716d9b7dedf/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/100x100bb.jpg",
+      "gp_id": null,
+      "as_id": "929865547",
+      "stores": [
+        "app_store"
+      ],
+      "app_id": "929865547"
+    },
+    {
+      "title": "ZingPlay HD Cổng game giải trí",
+      "developer": "ZINGPLAY VIETNAM",
+      "icon": "https://play-lh.googleusercontent.com/YB1h4DpRYgiPb1OmdvtEecfOaUtRTvUAk2bvqjq_v3IqF698O25vm2eKr_pgFeGYpA",
+      "gp_id": "com.gsn.zps.full",
+      "as_id": null,
+      "stores": [
+        "google_play"
+      ],
+      "app_id": "com.gsn.zps.full"
+    },
+    {
+      "title": "Võ Lâm Truyền Kỳ Mobile - VNG",
+      "developer": "VNG CORPORATION",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b3/3c/a5/b33ca546-bc54-c26a-e278-2dd6d16f0d68/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/100x100bb.jpg",
+      "gp_id": null,
+      "as_id": "1125893746",
+      "stores": [
+        "app_store"
+      ],
+      "app_id": "1125893746"
+    },
+    {
+      "title": "Top Eleven: Quản Lý Bóng Đá",
+      "developer": "VNG CORPORATION",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/18/41/f3/1841f32a-a78b-ec92-2984-5ee54231e7d3/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/100x100bb.jpg",
+      "gp_id": null,
+      "as_id": "1643854223",
+      "stores": [
+        "app_store"
+      ],
+      "app_id": "1643854223"
+    },
+    {
+      "title": "Crossfire: Legends",
+      "developer": "VNG CORPORATION",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/78/32/86/78328661-0f4d-77cf-613a-9248c6b8e72f/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/100x100bb.jpg",
+      "gp_id": null,
+      "as_id": "6748588650",
+      "stores": [
+        "app_store"
+      ],
+      "app_id": "6748588650"
+    },
+    {
+      "title": "Nghịch Thủy Hàn",
+      "developer": "VNG CORPORATION",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/81/63/a9/8163a990-a79d-9019-7769-107ded38b463/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/100x100bb.jpg",
+      "gp_id": null,
+      "as_id": "6743144418",
+      "stores": [
+        "app_store"
+      ],
+      "app_id": "6743144418"
+    },
+    {
+      "title": "Total Football VNG",
+      "developer": "VNGGames Co., Ltd",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/17/f6/0e/17f60e8a-7116-c2e2-aead-eb9c6f27a088/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/100x100bb.jpg",
+      "gp_id": null,
+      "as_id": "6754236292",
+      "stores": [
+        "app_store"
+      ],
+      "app_id": "6754236292"
+    },
+    {
+      "title": "CookieRun: Bánh Quy Đại Chiến",
+      "developer": "VNG CORPORATION",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/f7/33/e6/f733e6e2-9c5b-7097-42c0-77d2e994a675/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/100x100bb.jpg",
+      "gp_id": null,
+      "as_id": "6739695237",
+      "stores": [
+        "app_store"
+      ],
+      "app_id": "6739695237"
+    },
+    {
+      "title": "Phong Thần VNG",
+      "developer": "VNG GROUP JSC",
+      "icon": "https://play-lh.googleusercontent.com/LUOJcHoXjgub6rXMnz0DeTQJsAxlLbFTzaPDl2707Y6FU2L8Ng89yXlFs9HgPwANYbQ",
+      "gp_id": "vng.games.gs1.phongthan.mobile.com",
+      "as_id": "6504267531",
+      "stores": [
+        "google_play",
+        "app_store"
+      ],
+      "app_id": "vng.games.gs1.phongthan.mobile.com"
+    },
+    {
+      "title": "Ballistic Hero VNG",
+      "developer": "VNGGames Co., Ltd",
+      "icon": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/5f/3d/15/5f3d1513-bac9-5247-62ae-9a6a37944a59/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/100x100bb.jpg",
+      "gp_id": null,
+      "as_id": "6754264117",
+      "stores": [
+        "app_store"
+      ],
+      "app_id": "6754264117"
+    }
+  ]
+}

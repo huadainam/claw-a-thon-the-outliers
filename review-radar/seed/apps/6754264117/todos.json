@@ -1,0 +1,137 @@
+[
+  {
+    "id": "73b54e8c-4ac6-4afe-b807-1610e8cab158",
+    "topic": "mất lượt",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "toàn bị mất lượt"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-02T09:09:45-07:00",
+    "last_seen": "2026-06-02T09:09:45-07:00",
+    "status": "open"
+  },
+  {
+    "id": "6607c9b8-1a53-42d7-80a8-b66849fa1623",
+    "topic": "lag mạng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Dạo này ghép trận điểm chiến lực chênh lệch tới 5k 6k ai chơi lại, ức chế lắm biết không. Với lại là mạng giật lag hơi bị nhiều rồi đó. Có khi đứng hình mất 3 4 giây, trọng 1 trận đấu bị 3 4 lần rồi sao chơi. Iphone 11 chỉnh cấu hình thấp mà còn bị vậy Android nghỉ chơi luôn"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-02T04:56:44-07:00",
+    "last_seen": "2026-06-02T04:56:44-07:00",
+    "status": "open"
+  },
+  {
+    "id": "0512f5af-ad58-46c2-b50e-e3150507c731",
+    "topic": "crash đăng nhập",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game này tệ vãi\nĐang đăng nhập chơi bình thường cái tự dưng văng ra bắt đăng nhập tạo nhân vật chơi lại từ đầu\nMá cay vl"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-02T04:28:59-07:00",
+    "last_seen": "2026-06-02T04:28:59-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f70899dc-cba1-4652-a725-407b632816fb",
+    "topic": "lỗi đăng nhập",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Đang nhập bằng face giờ vô cái phải tạo lại nhân vật chơi bao lâu k lẽ về số không . Hướng dẫn báo cáo thì vô trang chỉ dẫn lung tung k biết làm sao . Đề nghị hỗ trợ trực tiếp"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-26T08:02:03-07:00",
+    "last_seen": "2026-05-26T08:02:03-07:00",
+    "status": "open"
+  },
+  {
+    "id": "2186ce0c-7465-4322-a6ea-c328910755ed",
+    "topic": "lỗi mất nhân vật",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Lỗi mất nhân vật iphone k chơi đk"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-25T08:49:16-07:00",
+    "last_seen": "2026-05-25T08:49:16-07:00",
+    "status": "open"
+  },
+  {
+    "id": "ec1df26c-a528-42f8-ac7d-a186bcddf318",
+    "topic": "lỗi không vào được game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game đeo gì mà chơi được thôi gian gian lên được cấp 50 rồi xoá ních luôn là sao tui nạp bao nhiêu tiền vào đó rồi giờ xoá ních không vào được nữa phải chơi lại mất tiền mất thời gian"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-25T02:23:12-07:00",
+    "last_seen": "2026-05-25T02:23:12-07:00",
+    "status": "open"
+  },
+  {
+    "id": "e64dffa2-b9c5-40c4-bddc-cef5f786e8f4",
+    "topic": "lỗi nhỏ chưa xác định",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Mong game khắc phục lỗi nhỏ này"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-24T07:29:40-07:00",
+    "last_seen": "2026-05-24T07:29:40-07:00",
+    "status": "open"
+  },
+  {
+    "id": "815307b4-f31d-4cdc-b531-4f17edfd8206",
+    "topic": "lỗi không vào được tài khoản",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Tôi chơi bình thường, sao tài khoản của tôi lại không vào được nữa"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-24T02:35:08-07:00",
+    "last_seen": "2026-05-24T02:35:08-07:00",
+    "status": "open"
+  },
+  {
+    "id": "739f96cf-2cbf-4351-9c25-96c7ffeee30e",
+    "topic": "lỗi xếp lượt không đúng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game xếp lượt bắn kiểu đ j mà qua 2 lượt vẫn đ đến mình. Bực vkl"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-21T13:10:20-07:00",
+    "last_seen": "2026-05-21T13:10:20-07:00",
+    "status": "open"
+  }
+]

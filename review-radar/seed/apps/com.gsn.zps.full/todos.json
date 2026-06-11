@@ -1,0 +1,407 @@
+[
+  {
+    "id": "5489dadc-b6c4-4063-8237-c05b8ca22aee",
+    "topic": "lỗi cá không chết",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game icá kiểu chó gì dùng Buff100% vàng bắn súng 5k bắn không chết không nào kể cả cá Nemo xong hết sạch vàng"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-05-29 02:46:16",
+    "last_seen": "2026-05-29 02:46:16",
+    "status": "open"
+  },
+  {
+    "id": "604720ea-b618-40bf-9bf1-040e35a69682",
+    "topic": "lỗi đứng hình",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "chơi luôn đứng hình, không bán dan bay có 20 giay?"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-04-27 22:13:52",
+    "last_seen": "2026-04-27 22:13:52",
+    "status": "open"
+  },
+  {
+    "id": "39c6b71b-9496-4f34-830f-0ac4908748ee",
+    "topic": "lỗi cấp độ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "hình như khu vườn trên mây của zingplay bị lỗi cấp độ hay sao á lên rùi mà vẫn cho ở cấp độ cũ 😥 vãi lòng"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-04-21 11:02:14",
+    "last_seen": "2026-04-21 11:02:14",
+    "status": "open"
+  },
+  {
+    "id": "9b152ec8-c46d-47f3-b334-28e7ec55d481",
+    "topic": "lỗi lag giật",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "bản cập nhập mới bị lag vs giật"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-02-08 00:09:21",
+    "last_seen": "2026-02-08 00:09:21",
+    "status": "open"
+  },
+  {
+    "id": "7f07a82c-b394-4ef7-8b00-4b0a21ede6d7",
+    "topic": "khóa thiết bị",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "gây hại khóa lại thiết bị đi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-12-07 23:16:40",
+    "last_seen": "2025-12-07 23:16:40",
+    "status": "open"
+  },
+  {
+    "id": "6df2a6b1-6a8f-4976-addf-ddfc96b98b87",
+    "topic": "lỗi tải game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "lỗi nặng luôn chơi xong cá thì tải về máy lại chán"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-11-09 06:41:09",
+    "last_seen": "2025-11-09 06:41:09",
+    "status": "open"
+  },
+  {
+    "id": "7d12312d-0d0a-4523-b730-2c7b4cc852f3",
+    "topic": "không vào được game tiến lên phom",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Mau binh tiến lên phom minh vao chối quanh hút mau không duoc vay"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-10-26 01:00:08",
+    "last_seen": "2025-10-26 01:00:08",
+    "status": "open"
+  },
+  {
+    "id": "8a52a6ba-2d73-4f9a-af3a-a3796d98dcad",
+    "topic": "lỗi vào phần sửa nhà bị đứng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game thời loạn bị lổi , vào phần sữa nhà bị đứng không khác phục"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-09-22 19:16:45",
+    "last_seen": "2025-09-22 19:16:45",
+    "status": "open"
+  },
+  {
+    "id": "6831dac8-3a75-4f7b-baf5-7f71fa63e560",
+    "topic": "khóa tạo bàn cờ tỷ phú",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game cờ tỷ phú khóa tạo bàn người chơi nản bỏ game hết. 1 sao vẫn không xứng đáng"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-08 10:40:49",
+    "last_seen": "2025-08-08 10:40:49",
+    "status": "open"
+  },
+  {
+    "id": "417c1704-f72f-44f4-9722-dd0a59a09b1c",
+    "topic": "không đăng nhập được bằng facebook",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tôi ko đăng nhập bằng fb được"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-04 23:02:35",
+    "last_seen": "2025-08-04 23:02:35",
+    "status": "open"
+  },
+  {
+    "id": "b6bb9b2a-ff85-4eea-9144-7ed925bc5f1b",
+    "topic": "game giải đố không chơi được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tro choi giai do ko choi dc"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-18 19:45:58",
+    "last_seen": "2025-07-18 19:45:58",
+    "status": "open"
+  },
+  {
+    "id": "7f5c2e61-a47d-4b9a-bdab-8155bf3fa5e8",
+    "topic": "game bài biến mất",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game bài đâu hết rồi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-16 09:37:43",
+    "last_seen": "2025-07-16 09:37:43",
+    "status": "open"
+  },
+  {
+    "id": "8674b764-6a1f-47b1-8964-a02d0d9b5e33",
+    "topic": "không thấy game bài",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ko thấy game bài hazzz muốn chơi game bài"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-13 19:30:18",
+    "last_seen": "2025-07-13 19:30:18",
+    "status": "open"
+  },
+  {
+    "id": "0cd7622a-73c4-4962-a1df-a4317ac4f39f",
+    "topic": "không thấy trò tiến lên",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "sao tôi ko thấy trò tiến lên"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-12 18:56:59",
+    "last_seen": "2025-07-12 18:56:59",
+    "status": "open"
+  },
+  {
+    "id": "be58d37e-7cfa-4da8-96c5-0b820d70616d",
+    "topic": "không thấy game tiến lên miền nam",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "sao ko thấy game đánh bài tiến lên miền nam"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-09 11:24:03",
+    "last_seen": "2025-07-09 11:24:03",
+    "status": "open"
+  },
+  {
+    "id": "ad89efaf-d415-4e15-a0b8-29f0adf5da4c",
+    "topic": "không còn game bài",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "không còn game bài sao"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-30 02:28:07",
+    "last_seen": "2025-06-30 02:28:07",
+    "status": "open"
+  },
+  {
+    "id": "ab52533f-fd4a-4e82-b075-dd49a7ec6c86",
+    "topic": "game tiến lên và sòng bạc mất hết",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "sao tiến lên miền nam với mấy game liên quan đến sòng bạc lại mất hết rồi vậy ad"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-26 21:07:25",
+    "last_seen": "2025-06-26 21:07:25",
+    "status": "open"
+  },
+  {
+    "id": "220c73ab-2e6e-4d1f-90d5-4d61d5d5d333",
+    "topic": "không thấy game đánh bài",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Sao không thấy game đánh bài nữa"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-25 21:28:22",
+    "last_seen": "2025-06-25 21:28:22",
+    "status": "open"
+  },
+  {
+    "id": "804e7ffd-f049-4fa3-8c97-b10c5710b23e",
+    "topic": "không có tiến lên, mậu binh",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Sao k có tiến lên, mậu binh vậy?"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-16 23:50:03",
+    "last_seen": "2025-06-16 23:50:03",
+    "status": "open"
+  },
+  {
+    "id": "65de59ba-ca01-4817-8d76-cf4fdbc4a6ac",
+    "topic": "lỗi hiển thị id trên android",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tại sao chơi cờ tỷ phú android thì có lúc hiện có lúc ko hiện id tạo bn còn ios ko bị sao z mông ad khác phục lỗi cho android"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-13 10:33:06",
+    "last_seen": "2025-06-13 10:33:06",
+    "status": "open"
+  },
+  {
+    "id": "cf39abf3-7907-47a0-983e-3188b414df4b",
+    "topic": "lỗi không vào được game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game bi a kiểu gì ko chơi được vô game rồi lại bị đá ra đề nghị khắc phục lại lỗi game"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-05-26 13:23:57",
+    "last_seen": "2025-05-26 13:23:57",
+    "status": "open"
+  },
+  {
+    "id": "d3eb4be6-a17e-45cc-b6e0-3b376bcffa47",
+    "topic": "lỗi đăng nhập Facebook",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tui thấy rất tệ vì tui cứ đăng nhập Facebook là ko đc"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-05-20 21:26:39",
+    "last_seen": "2025-05-20 21:26:39",
+    "status": "open"
+  },
+  {
+    "id": "df6e2d51-8566-44d4-9003-41ee3fdb8bb3",
+    "topic": "ứng dụng lỗi",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ứng dụng lỗi đề nghị phát triển thêm"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-05-20 09:29:13",
+    "last_seen": "2025-05-20 09:29:13",
+    "status": "open"
+  },
+  {
+    "id": "cde319e9-59dd-45db-a5de-09d9a23c76c2",
+    "topic": "lỗi màu game đánh bài",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game đánh bài bị đánh bay màu rồi à..😊"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-05-13 19:34:44",
+    "last_seen": "2025-05-13 19:34:44",
+    "status": "open"
+  },
+  {
+    "id": "30f4bdd3-1187-4d40-bf40-ce2548414c9b",
+    "topic": "lỗi kết nối máy chủ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game thời loạn lỗi kết nối máy chủ"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-05-12 11:58:34",
+    "last_seen": "2025-05-12 11:58:34",
+    "status": "open"
+  },
+  {
+    "id": "5639ffe8-b1de-42e4-bc39-a398a261f469",
+    "topic": "không chơi được trên Android",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "máy android sao không chơi được đánh bài vậy,ad oi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-04-22 01:39:16",
+    "last_seen": "2025-04-22 01:39:16",
+    "status": "open"
+  },
+  {
+    "id": "525d6f09-cd64-48f5-91ab-f7be4835e619",
+    "topic": "lỗi không vào được app",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Lúc vô ko đc bi loi rồi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-04-17 18:42:23",
+    "last_seen": "2025-04-17 18:42:23",
+    "status": "open"
+  }
+]

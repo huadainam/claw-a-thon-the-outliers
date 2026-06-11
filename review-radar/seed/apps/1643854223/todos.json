@@ -1,0 +1,47 @@
+[
+  {
+    "id": "ed199e7c-4ab4-41d0-b629-f3cc1cf24c02",
+    "topic": "Mất kết nối",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Hay bị mất kết nối"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-04-28T06:46:04-07:00",
+    "last_seen": "2026-04-28T06:46:04-07:00",
+    "status": "open"
+  },
+  {
+    "id": "86fbb51f-b801-4b0d-9c76-6242d19481df",
+    "topic": "bị out khi tập luyện",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Cần fix lỗi đang tập luyện thì bị out"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-03-01T01:45:51-07:00",
+    "last_seen": "2026-03-01T01:45:51-07:00",
+    "status": "open"
+  },
+  {
+    "id": "3c47b853-a856-48c0-a3b8-c0ab977b142b",
+    "topic": "lỗi đăng nhập iOS",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Bị lỗi IOS không đăng nhập được"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-02-20T05:56:41-07:00",
+    "last_seen": "2026-02-20T05:56:41-07:00",
+    "status": "open"
+  }
+]

@@ -1,0 +1,366 @@
+[
+  {
+    "id": "3badf27f-b188-4a01-af7e-4460c24b7d59",
+    "topic": "báo mạng yếu sai",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Quá trình game hay bị báo mạng yếu liên tục dù 5g hay wifi tốc độ cao vẫn báo mạng yếu"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T06:52:23-07:00",
+    "last_seen": "2026-06-09T06:52:23-07:00",
+    "status": "open"
+  },
+  {
+    "id": "7e274234-1945-4e9d-8c5f-eaae1ee52247",
+    "topic": "báo mạng sai",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Mạng rất căng như vẫn báo mạng"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T06:28:08-07:00",
+    "last_seen": "2026-06-09T06:28:08-07:00",
+    "status": "open"
+  },
+  {
+    "id": "1dbc5850-1da5-4a58-8972-16278b0365c1",
+    "topic": "fps giảm khi giao tranh",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game không tối ưu cho vùng của tôi, cứ vào giao tranh là fps giảm xuống đáy"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T05:57:21-07:00",
+    "last_seen": "2026-06-09T05:57:21-07:00",
+    "status": "open"
+  },
+  {
+    "id": "a8e7eb38-ca5e-4169-a0af-e2d8f564de59",
+    "topic": "game bị văng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game cực kỳ hay nhưng chơi cứ văng hoài mong khắc phục sớm, tối ưu đồ hoạ để có thể chơi mượt"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T19:49:12-07:00",
+    "last_seen": "2026-06-07T19:49:12-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f26900f4-837c-4166-be68-727c4cb503a9",
+    "topic": "mạng yếu và không dùng được kỹ năng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "đít con mẹ nó cứ chơi mà xài 4G mà cứ mạng yếu rồi còn rật rật mà còn bị dịch chuyện rồi còn không sự dụng ký năng được😔😔😔😔😡😡😡😡😡🤬🤬🤬🤬"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T09:26:31-07:00",
+    "last_seen": "2026-06-07T09:26:31-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f67c0d14-3270-4ec8-88d6-836cf00833b3",
+    "topic": "lag giật",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "1 từ thôi , Lag Lag hơn cả Lag chơi mà cứ giật , mất hứng"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-06T23:18:06-07:00",
+    "last_seen": "2026-06-06T23:18:06-07:00",
+    "status": "open"
+  },
+  {
+    "id": "eebcce40-336b-4d7e-898c-8d94978a3bea",
+    "topic": "không vào được game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "kh vô được game đã xoá đi tải lại r mà vẫn kh vô được mong khắc phục lỗi này"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-06T05:26:23-07:00",
+    "last_seen": "2026-06-06T05:26:23-07:00",
+    "status": "open"
+  },
+  {
+    "id": "bcb1f694-a6f7-4a4a-ad2c-05d38d6f5180",
+    "topic": "lag",
+    "severity": "medium",
+    "mention_count": 5,
+    "sample_reviews": [
+      "mạng khoẻ mà game quá lag",
+      "má ơi wifi đầy cục kêu lag là s tr",
+      "game lag như quỷ"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-28T07:37:07-07:00",
+    "last_seen": "2026-06-05T22:33:54-07:00",
+    "status": "open"
+  },
+  {
+    "id": "2fda34f3-0215-4d52-bdbf-1ce64a81c25c",
+    "topic": "báo mạng sai liên tục",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Đang chơi nó cứ báo mạng là phải thoát ra vào lại không biết bao nhiêu lần nhưng mạng nhà tôi có bị lỗi gì đâu ?? . Mong khắc phục sớm ạ xD"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-05T20:01:06-07:00",
+    "last_seen": "2026-06-05T20:01:06-07:00",
+    "status": "open"
+  },
+  {
+    "id": "34938867-28b2-40a2-9272-4051a6b22197",
+    "topic": "không chơi được",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "Mong nhà phát hành sữa lỗi ạ!! Game hay nhưng mãi không chơi được nản muốn xoá luôn ạ!!!",
+      "Wifi bth mà zo trận chơi ko dc"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-02T23:42:18-07:00",
+    "last_seen": "2026-06-05T08:13:30-07:00",
+    "status": "open"
+  },
+  {
+    "id": "bee27269-8ea8-4ea9-b622-0293ea62bc0c",
+    "topic": "báo mạng yếu và không đăng nhập được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game rất hay nhưng vào trận nó cứ báo mạng yếu chs mất vui và còn cập nhật xong game T đăng nhập vào ko đc"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T07:30:19-07:00",
+    "last_seen": "2026-06-04T07:30:19-07:00",
+    "status": "open"
+  },
+  {
+    "id": "29580f8e-50fd-4698-82b3-742f69abc6c5",
+    "topic": "văng game",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "Đt tôi dùng là iphone 15pr max nhưng vẫn bị văng game :)?",
+      "chơi được vài trận thì bị văng game, thỉnh thoảng mới vô game thì bị văng ra mà điện thoại vẫn hoạt động bình thường mong bên nhà sản xuất khắc phục lỗi này"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-01T09:26:53-07:00",
+    "last_seen": "2026-06-01T09:26:53-07:00",
+    "status": "open"
+  },
+  {
+    "id": "ea4571f4-29b2-44b1-b5c8-d6ca1f7249cc",
+    "topic": "ghép team kém và bị out",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Ghép team toàn ghép lũ súc vật chs rank đ win được trận nào đang chơi còn bị out ra"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-31T05:18:50-07:00",
+    "last_seen": "2026-05-31T05:18:50-07:00",
+    "status": "open"
+  },
+  {
+    "id": "e94465a8-5afb-402b-b4e9-ecf12958869c",
+    "topic": "hiện không có mạng sai",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Máy xịn mạng khoẻ nhưng cứ hiện ko có mạng là sao ;D?"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-30T07:18:20-07:00",
+    "last_seen": "2026-05-30T07:18:20-07:00",
+    "status": "open"
+  },
+  {
+    "id": "b756cb07-fad3-4376-9ede-fa5a3cda0ebe",
+    "topic": "lag và mất mạng liên tục",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "chơi không nổi quá giật lag mất mạng liêc tục"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-29T01:23:02-07:00",
+    "last_seen": "2026-05-29T01:23:02-07:00",
+    "status": "open"
+  },
+  {
+    "id": "5a9e8a5c-554f-47e0-9ab5-316653d5bf44",
+    "topic": "lỗi văng game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Chỉnh văng game đi, phiền kinh"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-23T06:02:58-07:00",
+    "last_seen": "2026-05-23T06:02:58-07:00",
+    "status": "open"
+  },
+  {
+    "id": "5d9a70f8-d085-4a02-9d40-d83fb5bc2da4",
+    "topic": "lỗi mạng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game cứ bị lỗi mạng, mong nhà phát hành điều chỉnh lại"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-23T05:38:46-07:00",
+    "last_seen": "2026-05-23T05:38:46-07:00",
+    "status": "open"
+  },
+  {
+    "id": "c065a8bd-3521-4fb3-84ef-ad729840bc5d",
+    "topic": "lag game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Sửa lag đi add"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-23T02:49:04-07:00",
+    "last_seen": "2026-05-23T02:49:04-07:00",
+    "status": "open"
+  },
+  {
+    "id": "fce02c3e-8f4e-49ab-8666-82d894782bca",
+    "topic": "văng liên tục",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "văng liên tục"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-22T21:35:35-07:00",
+    "last_seen": "2026-05-22T21:35:35-07:00",
+    "status": "open"
+  },
+  {
+    "id": "d69a879e-cfca-40a3-b1b3-7ebb09b835b6",
+    "topic": "không cho vé sau khi cày",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Cày sk xong k cho vé??? Game chó đẻ"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-22T12:07:24-07:00",
+    "last_seen": "2026-05-22T12:07:24-07:00",
+    "status": "open"
+  },
+  {
+    "id": "b09a0f52-0c76-4d61-b48a-88c3fc514648",
+    "topic": "văng khi vào trận",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "cứ mỗi lần trước khi vào trận lại bị văng, rất phiền"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-19T10:10:28-07:00",
+    "last_seen": "2026-05-19T10:10:28-07:00",
+    "status": "open"
+  },
+  {
+    "id": "50e04291-7993-46e8-8e7d-daa985fd4806",
+    "topic": "mất kết nối khi chơi",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game dung lượng nặng chơi không mượt bằng . Đã vậy đang chơi cứ bị lỗi mất kết nối trong khi wifi vẫn bình thường . Game dở tệ ."
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-18T21:26:29-07:00",
+    "last_seen": "2026-05-18T21:26:29-07:00",
+    "status": "open"
+  },
+  {
+    "id": "50fe7035-a4cb-4113-bc84-053581091a38",
+    "topic": "lỗi mất mạng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Wifi căng, mạng 5G tăng nhưng luôn hiện mất mạng. Chơi bao lâu rồi không khắc phục được lỗi ý. Ảnh hưởng trải nghiệm người chơi"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-18T05:32:49-07:00",
+    "last_seen": "2026-05-18T05:32:49-07:00",
+    "status": "open"
+  },
+  {
+    "id": "2367b8b0-84f3-48b9-9c42-93817cc2b1aa",
+    "topic": "crash thường xuyên",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game rất thường xuyên crash. Và cân bằng tướng không tốt"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-05-15T21:51:07-07:00",
+    "last_seen": "2026-05-15T21:51:07-07:00",
+    "status": "open"
+  }
+]

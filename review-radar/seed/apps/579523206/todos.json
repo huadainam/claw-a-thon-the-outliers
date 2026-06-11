@@ -1,0 +1,441 @@
+[
+  {
+    "id": "6920d32a-4269-4be8-a270-36ade4d60381",
+    "topic": "chất lượng âm thanh khi gọi, lag, vấn đề bảo mật dữ liệu",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Quá tệ, gọi mà chất lượng âm thanh thua con nokia cục gạch trắng đen, ồn đau hết cả tai, ip14pro mà còn lag chịu không nổi. Bắt người dùng đồng ý thoả thuận vô lý khi mất dữ liệu cá nhân không được truy cứu, vậy trách nhiệm của các người ở đâu?"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T08:00:08-07:00",
+    "last_seen": "2026-06-09T08:00:08-07:00",
+    "status": "open"
+  },
+  {
+    "id": "b13e8916-1358-420d-b2a0-76dacc41959b",
+    "topic": "trừ tiền không gửi mã xác nhận",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "quá phiền,trừ tiền mà k gửi mã là cái vấn đề gì hả ?"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T07:35:02-07:00",
+    "last_seen": "2026-06-09T07:35:02-07:00",
+    "status": "open"
+  },
+  {
+    "id": "34cfa4f9-0f6c-4fc3-ad34-87e9d0cfea7a",
+    "topic": "không nhận được mã xác nhận",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Mé nó, mình gửi tin nhắn nhưng méo nhận dc mã , sau phải gọi số hotline, mất toi 10k"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T07:22:26-07:00",
+    "last_seen": "2026-06-09T07:22:26-07:00",
+    "status": "open"
+  },
+  {
+    "id": "41c168f8-3126-4ae8-ba47-58d00ec4c2b9",
+    "topic": "đăng ký không gửi mã, phải trả phí nhận mã",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Dang ky thi ko gui ma, phai ton 5000 de nhan ma kich hoat. Ung dung thi cui bap"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T06:04:06-07:00",
+    "last_seen": "2026-06-09T06:04:06-07:00",
+    "status": "open"
+  },
+  {
+    "id": "27dc74a6-d023-4a9b-af83-35132cb10f6f",
+    "topic": "không sao lưu được tin nhắn, tốn dung lượng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "xoá app hay quên mật khẩu là không sao lưu được tin nhắn rồi mất hết tất tần tật tin nhắn là cái thứ nhất. Cái thứ 2 là sài ngốn dung lượng vãi c, đèo mẹ ăn đ gì lắm dung lượng thế"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T05:22:57-07:00",
+    "last_seen": "2026-06-09T05:22:57-07:00",
+    "status": "open"
+  },
+  {
+    "id": "784a2b71-0856-4ad0-b931-9916adc1902e",
+    "topic": "lấy mã tạo tài khoản",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Dell cho bố m lấy mã thì tạo tk kiểu gì"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-09T00:50:55-07:00",
+    "last_seen": "2026-06-09T00:50:55-07:00",
+    "status": "open"
+  },
+  {
+    "id": "9ded2d6e-c9b8-43de-b0ed-44ec88d4f6ae",
+    "topic": "mic lúc có lúc không khi gọi",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Cái gì mà gọi điện lúc thì có mic, lúc thì mất Mic là như thế nào. Mang tiếng App của Ng Việt mà làm ăn rất chán😡😡😡"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T22:58:46-07:00",
+    "last_seen": "2026-06-08T22:58:46-07:00",
+    "status": "open"
+  },
+  {
+    "id": "31b95354-616d-4b7e-83a6-4d3f4370fc8c",
+    "topic": "gửi tin nhắn xác nhận không phản hồi",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ứng dụng như lol bắt gửi tin nhắn xác nhận gửi xong đéo thấy phản hồi dm"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T19:17:14-07:00",
+    "last_seen": "2026-06-08T19:17:14-07:00",
+    "status": "open"
+  },
+  {
+    "id": "499ce3ff-2a47-4cf4-ab35-953956c7b589",
+    "topic": "đăng ký không gửi mã, không có phản hồi",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Đăng ký tài khoản mà ko gửi mã về, tưởng có mỗi mình bị, hoá ra là ai cũng bị, biết chiêu trò để người dùng phải chi tiền quá ha? Rồi soạn tin nhắn gửi để đăng ký cũng không có phản hồi là sao trời 😃"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T10:19:50-07:00",
+    "last_seen": "2026-06-08T10:19:50-07:00",
+    "status": "open"
+  },
+  {
+    "id": "8aa4b620-70be-447f-8cf3-b24f6a60b7c3",
+    "topic": "app không gửi mã xác nhận",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "App ko gửi mã khốn lạn"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-08T06:12:00-07:00",
+    "last_seen": "2026-06-08T06:12:00-07:00",
+    "status": "open"
+  },
+  {
+    "id": "6eaf317e-32e4-4f46-b8d8-56ab7a86614d",
+    "topic": "xoá tin nhắn không sao lưu được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Đéo hiểu app cc j xoá đi là mất hết tn ko sao lưu cái là mất ngay h ko lấy lại đc bao nhiêu thứ của ng ta ở trong đây giờ mất hết địt cụ app súc vât"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T22:39:09-07:00",
+    "last_seen": "2026-06-07T22:39:09-07:00",
+    "status": "open"
+  },
+  {
+    "id": "fb007807-f420-4a8d-b402-7cff9548420b",
+    "topic": "gọi điện không hiện",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Đụ mẹ khách điện tới deo hiện làm mất khách"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T21:35:23-07:00",
+    "last_seen": "2026-06-07T21:35:23-07:00",
+    "status": "open"
+  },
+  {
+    "id": "835cb493-2e58-4a55-8809-29b1744154a6",
+    "topic": "quên mật khẩu không khôi phục được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Cần zalo fix lỗi quên mật khẩu sao lưu. Đã quên rồi mà bấm khôi phục không xử lý mà cứ vo help zalo làm qq gì miết cũng chả giải quyết được gì. Khôi phục cũng chả khôi phục được mà cứ đòi mật khẩu"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T12:39:10-07:00",
+    "last_seen": "2026-06-07T12:39:10-07:00",
+    "status": "open"
+  },
+  {
+    "id": "3cda44ba-6b7b-4e68-84af-fe2eac551fa5",
+    "topic": "mất tính năng tìm kiếm quanh đây",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Zalo mất tính năng tìm kiếm quanh đây rồi ak"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T03:32:32-07:00",
+    "last_seen": "2026-06-07T03:32:32-07:00",
+    "status": "open"
+  },
+  {
+    "id": "e712c2df-7453-4a53-a8a5-964b1008b9ff",
+    "topic": "không gọi được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Không gọi đc chỉ nhắn tin đc"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T03:22:35-07:00",
+    "last_seen": "2026-06-07T03:22:35-07:00",
+    "status": "open"
+  },
+  {
+    "id": "4c31ff54-e4a7-4bc5-9882-82265e46e41e",
+    "topic": "lỗi thông báo tin nhắn sau cập nhật",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Cập nhật bản mới xong lỗi k thông báo tin nhắn."
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-07T02:09:45-07:00",
+    "last_seen": "2026-06-07T02:09:45-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f9206c0e-552f-4986-b256-885bbf58b07b",
+    "topic": "tự động trừ tiền",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Trừ tiền vô lý tự động trừ tiền của tôi 50k lý do đâu mà tự ý v"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-06T19:24:17-07:00",
+    "last_seen": "2026-06-06T19:24:17-07:00",
+    "status": "open"
+  },
+  {
+    "id": "4f9bfbb7-75b4-4be1-a902-2d707f767ea3",
+    "topic": "không gửi được mã xác thực",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Tạo tài khoản k gửi mã gọi tổng nói nói 10 giây tắt k chịu đọc mã"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-06T06:22:09-07:00",
+    "last_seen": "2026-06-06T06:22:09-07:00",
+    "status": "open"
+  },
+  {
+    "id": "3b249da1-990e-4217-8e4b-41a9cdca8b04",
+    "topic": "không gửi mã xác thực",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "T đăng kí mãi không được, zalo không gửi mã xác thực"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-06T06:02:26-07:00",
+    "last_seen": "2026-06-06T06:02:26-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f01ce024-f6d1-4443-add2-7599a244334d",
+    "topic": "tạo tài khoản",
+    "severity": "medium",
+    "mention_count": 3,
+    "sample_reviews": [
+      "Ko thể tạo tk mới bình thường, bắt ng tạo phải trả tiền nhận code. Chất lượng quá tệ.",
+      "Tạo tk ko gửi mã về",
+      "Tạo tài khoản để lấy cái mã mà mãi ko được đòi phải gửi tin nhắn mất phí"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T03:47:26-07:00",
+    "last_seen": "2026-06-05T03:07:39-07:00",
+    "status": "open"
+  },
+  {
+    "id": "44bae0a6-165c-43f3-a2a3-ab2fc0bd3460",
+    "topic": "cuộc gọi",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "Ai gọi điện đến cũng không gọi được chỉ có đang kết nối, sau đó cuộc gọi sẽ bị nhỡ rồi mới có thông báo nhỡ, báo hỗ trợ thì không hỗ trợ, ứng dụng cho người việt mà tôi cảm thấy chán cực kỳ :)))",
+      "Không hiện cuộc gọi khi đang dùng ứng dụng khác, sau đó thông báo cuộc gọi nhỡ."
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T23:27:51-07:00",
+    "last_seen": "2026-06-05T00:31:11-07:00",
+    "status": "open"
+  },
+  {
+    "id": "8cd9c78a-b8d1-47e1-ad14-6201db3bc325",
+    "topic": "call video",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Ứng dụng call video giật lag, ngốn nhiều data"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T21:55:24-07:00",
+    "last_seen": "2026-06-04T21:55:24-07:00",
+    "status": "open"
+  },
+  {
+    "id": "55c1097e-2f38-4b33-bdef-17e106708da5",
+    "topic": "dịch vụ khách hàng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "1. Gặp vấn đề khi dùng zcloud bị mất dữ liệu gọi tổng đài thì kêu nhắn tin zalo ( phí mất 4k) \nTrong khi đó có thể nhắn luôn nếu không gấp. Khách gấp chấp nhận tốn tiền gọi hotline không giải quyết vấn đề ngay kêu quay về nhắn tin zalo???? \n2. Nhắn zalo trả lời tin nhắn rất chậm, tư duy rất cũ theo kiểu “xin” “cho” \n3. Trải nghiệm khách hàng quá tệ."
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-04T05:34:13-07:00",
+    "last_seen": "2026-06-04T05:34:13-07:00",
+    "status": "open"
+  },
+  {
+    "id": "f04b813e-a8b8-4b41-a606-12f7ca789bfc",
+    "topic": "tin nhắn",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "app thì mất tin nhắn cũ, ảnh video thì hết hạn mà data cả chục, trăm gb",
+      "Zalo bị lỗi khi nhắn tin\nGửi tin nhắn người ta xem r mà để đã nhận ko"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-03T06:51:56-07:00",
+    "last_seen": "2026-06-04T00:14:22-07:00",
+    "status": "open"
+  },
+  {
+    "id": "0bb75aff-d6d1-4913-8e86-76c2db7959ac",
+    "topic": "lưu trữ dữ liệu",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Nguy cơ dò dỉ dữ liệu .file hình ảnh ko lưu trữ đc sau một thời gian là mất"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-03T07:02:54-07:00",
+    "last_seen": "2026-06-03T07:02:54-07:00",
+    "status": "open"
+  },
+  {
+    "id": "9d1cca54-f541-4e5b-8d57-92c8dae1975d",
+    "topic": "lỗi cuộc gọi",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Zalo làm sao í ta.tui bấm gọi cho bb mà k dc ngừi khác gọi đến khi tắt tui mới nhận đc.có ai giống tui k😭"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-03T02:46:51-07:00",
+    "last_seen": "2026-06-03T02:46:51-07:00",
+    "status": "open"
+  },
+  {
+    "id": "28d7afe7-2cb7-4742-91cd-a801b634321a",
+    "topic": "mất tài khoản và tin nhắn",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "lâu ngày ko truy cập mất tài khoản, ko tìm lại dc tin nhắn để xem. gđ có ng thân mất ko xem lại dc tin nhắn vì tài khoản tạm ngưng hoạt động"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-03T02:43:27-07:00",
+    "last_seen": "2026-06-03T02:43:27-07:00",
+    "status": "open"
+  },
+  {
+    "id": "946a5fb2-205d-4778-ad2e-4dcc23a4f100",
+    "topic": "lỗi tải ảnh",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Như cl, thoát ra xong người khác gửi ảnh đ xem dc, lại phải thoát hẳn zalo ra mới load dc ảnh"
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-03T00:01:56-07:00",
+    "last_seen": "2026-06-03T00:01:56-07:00",
+    "status": "open"
+  },
+  {
+    "id": "b833352e-832e-47ed-9dba-200cdb1290fb",
+    "topic": "mất dữ liệu tài khoản cũ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Tk cũ xoá hết r ."
+    ],
+    "sources": [
+      "app_store"
+    ],
+    "first_seen": "2026-06-02T23:59:14-07:00",
+    "last_seen": "2026-06-02T23:59:14-07:00",
+    "status": "open"
+  }
+]

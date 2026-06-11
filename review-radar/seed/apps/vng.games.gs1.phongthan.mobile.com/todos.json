@@ -1,0 +1,702 @@
+[
+  {
+    "id": "2fff708a-9d93-4ea8-8347-d8bcba916441",
+    "topic": "không tải được game",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "tại sao k tải geam đc nữa vậy",
+      "con me nhìn game hay mà sao điện thoại tui ko tải đc"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2026-01-14 20:15:22",
+    "last_seen": "2026-01-14 20:15:22",
+    "status": "open"
+  },
+  {
+    "id": "41d6c410-abbb-4f56-8626-3547ba1507e8",
+    "topic": "game bị văng ra",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tải mà vào văng ra chơi đc méo đâu"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-10-24 10:25:57",
+    "last_seen": "2025-10-24 10:25:57",
+    "status": "open"
+  },
+  {
+    "id": "47f5af23-4e09-41c3-84ef-c75ed521c214",
+    "topic": "game bị văng liên tục",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game bị lỗi văng ra liên tục"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-10-14 22:47:51",
+    "last_seen": "2025-10-14 22:47:51",
+    "status": "open"
+  },
+  {
+    "id": "28145413-9726-4227-a8f6-39fcdc5e22e4",
+    "topic": "game lỗi và lag",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game lỗi . lag. quá phèn"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-10-11 11:57:15",
+    "last_seen": "2025-10-11 11:57:15",
+    "status": "open"
+  },
+  {
+    "id": "690bed31-ddc3-40f7-9886-f83922f3852e",
+    "topic": "không vào được game",
+    "severity": "medium",
+    "mention_count": 4,
+    "sample_reviews": [
+      "không vào game được còn chơi kiểu gì",
+      "ko vao game duoc.mat thoi gian",
+      "vào game không được, thử mãi vẫn không quảng cáo rầm rộ mà như kẹt đây lần tôi đánh giá 1s cho một con game Vng mấy lần trước đều có trải nghiệm tốt riêng con game này thất vọng 🤦"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-09-09 05:38:49",
+    "last_seen": "2025-09-20 00:09:04",
+    "status": "open"
+  },
+  {
+    "id": "0b27f093-7db8-4ac2-bde2-df0c2aa949f8",
+    "topic": "game bị văng khi vào",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game tải về xong không vào chơi đk toàn bị văng ra"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-09-16 09:00:21",
+    "last_seen": "2025-09-16 09:00:21",
+    "status": "open"
+  },
+  {
+    "id": "be8b68b0-7b94-4d6d-a8f7-709814854814",
+    "topic": "lag game",
+    "severity": "medium",
+    "mention_count": 4,
+    "sample_reviews": [
+      "đt chơi thiện nữ đc mà chơi game này lag ko tưởng luôn",
+      "thế dell nào mà game lại lag mặc dù máy tạo là 256gb",
+      "con game lag trời ơi đất hởi với lại ko phải điện thoại tui yếu điện thoại tui còn chơi đk genshin đến game này hết nói 2 sao hoi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-13 06:36:59",
+    "last_seen": "2025-09-08 14:07:10",
+    "status": "open"
+  },
+  {
+    "id": "c83688d9-b5d4-44e7-b99c-89da24a932d3",
+    "topic": "lag, không vào được game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game rất lag, không vào được đừng tải game này chơi nha mn"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-09-05 23:04:30",
+    "last_seen": "2025-09-05 23:04:30",
+    "status": "open"
+  },
+  {
+    "id": "33f94890-cdfb-4150-b53c-a28451532680",
+    "topic": "crash game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Crash game liên tục"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-23 09:59:23",
+    "last_seen": "2025-08-23 09:59:23",
+    "status": "open"
+  },
+  {
+    "id": "d61e7436-6f40-43d0-b49f-75b337f4120c",
+    "topic": "lỗi game",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "tải game xong, thoát ra vào lại mấy lần, vẫn bị lỗi vậy add, tải tốn tgian mà chả làm được gì hết?",
+      "game lỗi vcl"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-22 23:17:21",
+    "last_seen": "2025-08-22 23:17:21",
+    "status": "open"
+  },
+  {
+    "id": "a7ec0fcb-cdd8-4d41-bccb-4296f7959766",
+    "topic": "lag, chức năng tự động lỗi",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game lag không cải thiện. chơi rất tốn thời gian. chức năng tự động phế"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-21 13:38:57",
+    "last_seen": "2025-08-21 13:38:57",
+    "status": "open"
+  },
+  {
+    "id": "db87f011-1f6f-40cc-b852-e11c9642d25c",
+    "topic": "đăng nhập chậm",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tải về thì nhanh..đăng nhập vô chơi thì ôi thôi..chậm khỏi phải bàn.. xóa luôn rồi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-18 08:38:55",
+    "last_seen": "2025-08-18 08:38:55",
+    "status": "open"
+  },
+  {
+    "id": "d8d3c77b-f428-4336-b666-add34972eb4a",
+    "topic": "văng, giật lag",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game chơi mà văng liên tục,giật lag không ngừng dung lượng tải không bằng genshin mà chơi bthg còn đây thì không"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-08-14 19:25:19",
+    "last_seen": "2025-08-14 19:25:19",
+    "status": "open"
+  },
+  {
+    "id": "87547967-0a71-4540-921c-c6baa8a43a7e",
+    "topic": "lắc, đứng hình, máy nóng, đăng nhập lâu",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game j đang ăn boss bị lắc, đứng hình.. phải tự thoát, vào lại game thì xog bà boss... ktra lại game... Top 1 SV ăn boss ko đc j... zui ghê... Máy rất nóng sạc nhanh 120w cũng ko đủ để sạc chơi game này... ngốn Pin... game thì lỗi... chưa kể đăng nhập lâu vcl... lâu hơn VLTK nữa... có cùng 1 nhà sản xuất ko?"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-25 22:05:43",
+    "last_seen": "2025-07-25 22:05:43",
+    "status": "open"
+  },
+  {
+    "id": "2a6b6a52-a6ef-4a83-ba83-da9e8ffb5447",
+    "topic": "bị văng ra",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "sao a56 vào lại bị văng ra mà máy a36 lại chơi bình thường ???"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-23 20:48:25",
+    "last_seen": "2025-07-23 20:48:25",
+    "status": "open"
+  },
+  {
+    "id": "e4b4ca99-1e52-46e0-8345-77add3be6f15",
+    "topic": "cập nhật không vào được game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "cập nhật xong ko vào game được,cứ vào game là văn"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-22 21:37:49",
+    "last_seen": "2025-07-22 21:37:49",
+    "status": "open"
+  },
+  {
+    "id": "68dcde75-3674-4ea0-ba5e-216836d9145b",
+    "topic": "đăng nhập bị văng ra",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Mới tải về chơi thử mà đăng nhập lúc nào cũng bị văng ra. Game gì chán thế"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-12 22:01:43",
+    "last_seen": "2025-07-12 22:01:43",
+    "status": "open"
+  },
+  {
+    "id": "ee7649f4-8c45-40a3-9756-ebdf09ac07c8",
+    "topic": "không đăng nhập được",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "Không đăng nhập vào game đc",
+      "S24 còn không vào được. Phải chăng Phong Thần còn nặng hơn cả Lineage2M, tôi đã xóa và tải lại lần 2 nhưng cứ hễ nhấn đăng nhập sever là văng về màn hình chính. Quá thất vọng luôn"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-12 12:33:08",
+    "last_seen": "2025-07-12 12:33:08",
+    "status": "open"
+  },
+  {
+    "id": "70f97101-d44c-41ac-beac-32bc3572fed4",
+    "topic": "lỗi, không vào được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "lỗi rồi..k vào đc rồi hen"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-11 22:48:11",
+    "last_seen": "2025-07-11 22:48:11",
+    "status": "open"
+  },
+  {
+    "id": "5ec2262a-4b2d-4115-8e55-ce83eef90702",
+    "topic": "lag, máy nóng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "bằng 1 cách loll nào đấy mà con game loll này lag hơn cả genshin, máy t k mạnh nhưng chơi genshin cx đc khoảng 30 fps, còn game loll này chỉnh đồ họa thấp nhất cx k nổi 20fps, t thề là game này rất hot, đr nóng ấy, nghĩa đen ấy, chơi 30p mà như cầm hòn than"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-10 22:00:15",
+    "last_seen": "2025-07-10 22:00:15",
+    "status": "open"
+  },
+  {
+    "id": "fdd20c2a-e6ec-4a4a-abfe-4d26f6a7424b",
+    "topic": "lag giật, hút máu, lỗi nạp thẻ",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Chưa bao h tao chơi 1 cái game khó chịu ntn, game lag giật điên đảo, hút máu, admin không phản hồi lỗi nạp thẻ"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-06 15:54:15",
+    "last_seen": "2025-07-06 15:54:15",
+    "status": "open"
+  },
+  {
+    "id": "6aefa2e6-08a4-4a9d-9ae1-1094b45a99ca",
+    "topic": "thiết bị không tương thích",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "sao lại ghi thiết bị không tương thích nhỉ?"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-07-03 17:37:21",
+    "last_seen": "2025-07-03 17:37:21",
+    "status": "open"
+  },
+  {
+    "id": "d75c4db2-3afa-4ee8-836d-b33759100835",
+    "topic": "văng game khi đăng nhập",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game ncc vô đăng bị văng game lol"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-27 19:26:16",
+    "last_seen": "2025-06-27 19:26:16",
+    "status": "open"
+  },
+  {
+    "id": "cd0b6533-5edb-4e4d-a0b4-6a35f2052a21",
+    "topic": "không đăng nhập được, bị văng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "văng ra không đăng nhập được"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-26 05:06:48",
+    "last_seen": "2025-06-26 05:06:48",
+    "status": "open"
+  },
+  {
+    "id": "941a0498-48e7-4058-9a92-db39fddf3739",
+    "topic": "lỗi dung lượng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game bao nhiêu gb mà trống 10gb kêu ko đủ dung lượng"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-24 23:05:55",
+    "last_seen": "2025-06-24 23:05:55",
+    "status": "open"
+  },
+  {
+    "id": "1f1fdf65-90d8-4b43-8692-7c253b69d136",
+    "topic": "thiết bị Oppo F9 không tương thích",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "gem gì mà đt Oppo f9 ko dùng đc vậy ad! chơi đc VLTK mà ko chơi đc gem này!"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-22 14:31:13",
+    "last_seen": "2025-06-22 14:31:13",
+    "status": "open"
+  },
+  {
+    "id": "323a3bbc-4087-4212-8a61-352efe015602",
+    "topic": "Samsung S24+ bị văng khi đăng nhập",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ss s24+ vào đăng nhập là văng game, trải nghiệm tệ"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-20 20:15:40",
+    "last_seen": "2025-06-20 20:15:40",
+    "status": "open"
+  },
+  {
+    "id": "8afd99eb-3699-45e9-812a-08cf32d672f5",
+    "topic": "server quá tải",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Xin chào Admin, Hiện tại server S9 - Văn Khúc Cung thường xuyên quá tải, tôi đã đầu tư thời gian và nạp tiền nên không muốn chuyển server khác. Nhờ Admin hỗ trợ: 1️⃣ Tăng giới hạn online server S9 để người chơi dễ đăng nhập hơn. 2️⃣ Hoặc hỗ trợ vé chuyển server miễn phí nếu cần thiết. Rất mong nhận được hỗ trợ để trải nghiệm game không bị gián đoạn. Xin cảm ơn!"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-18 10:04:51",
+    "last_seen": "2025-06-18 10:04:51",
+    "status": "open"
+  },
+  {
+    "id": "9989cb4c-faf8-4fd5-a1fa-1d30c5fb1927",
+    "topic": "không vào được sau cập nhật",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "cập nhật rồi cái vào không được"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-18 05:45:45",
+    "last_seen": "2025-06-18 05:45:45",
+    "status": "open"
+  },
+  {
+    "id": "3d03b227-d3a1-4d9d-8828-41b6faf61aa3",
+    "topic": "không vào được app",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tai ko vao dc cứ bat cap nhan ma co bản cap nhật nao đâu tệ"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-18 05:28:29",
+    "last_seen": "2025-06-18 05:28:29",
+    "status": "open"
+  },
+  {
+    "id": "e0d65c8d-7580-49cc-99fa-37de7c1fbe53",
+    "topic": "bị văng ra khi đăng nhập",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "vào đăng nhập là cứ bị văng ra không àk chơi kiểu gì"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-15 07:16:55",
+    "last_seen": "2025-06-15 07:16:55",
+    "status": "open"
+  },
+  {
+    "id": "57de6a2e-3b6b-4022-ae4a-09f55ccfb398",
+    "topic": "không nhận được phần thưởng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Game liên kết phúc lợi với xworld, nhưng khi chơi thì lại không phát phần thưởng. ứng dụng xworld phản hồi là do nhà phân phối game không xác nhận hoàn thành nhiệm vụ. trong đó chơi game vượt cấp. rất lâu cũng không xác nhận hoàn thành nhiệm vụ. nạp tiền thì thành công. nhiệm vụ không xác nhận phúc lợi cho người chơi. quá tệ..."
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-11 21:45:55",
+    "last_seen": "2025-06-11 21:45:55",
+    "status": "open"
+  },
+  {
+    "id": "e535dcda-5fd7-4d99-91eb-eb94ebc44401",
+    "topic": "lag giật",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "toàn game giật lag không bố ai mà chơi được 1,6G 2G máy nào chịu nổi",
+      "Quá lag chơi mà cứ giật giật giảm bớt hiệu ứng nhân vật lại cho máy yêu với máy tầm trung còn chơi nữa chứ"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-08 21:41:18",
+    "last_seen": "2025-06-10 19:23:59",
+    "status": "open"
+  },
+  {
+    "id": "1f6eced9-2c2c-4fc3-b7a8-f4e9e2959901",
+    "topic": "đăng nhập bị văng",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "Không đăng nhập được game, mặc dù đã đăng kí trước và tải về trước 10h ngày 04/06. Đến tận hôm nay vẫn không đăng nhập được, cứ đăng nhập là văng ra. Đã thử xóa app tải lại vẫn không được, thất vọng vô cùng"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-10 12:12:20",
+    "last_seen": "2025-06-10 12:12:20",
+    "status": "open"
+  },
+  {
+    "id": "bb0cf254-0989-424b-80ee-e028c466b951",
+    "topic": "lag",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "Lag lòi ra, điện thoại phải thật khoẻ mới chơi được. Game này không fix thì sớm sập thôi",
+      "lag"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-07 16:39:55",
+    "last_seen": "2025-06-07 16:39:55",
+    "status": "open"
+  },
+  {
+    "id": "a4cd427d-60e2-41a5-9c87-e095875f9ebb",
+    "topic": "lỗi đăng nhập",
+    "severity": "low",
+    "mention_count": 2,
+    "sample_reviews": [
+      "tạo ac chơi xong thoát ra vô lại cứ đăng nhập mãi không được cứ hiện tài khoản chưa có nhân vật bắt đăng nhập lại hoài luôn 🤬",
+      "đăng nhập bị văng liên tục mong VNG lưu ý và khắc phục sớm, nhìu người muốn trãi nghiệm mà không được..."
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-06 16:51:21",
+    "last_seen": "2025-06-07 05:49:06",
+    "status": "open"
+  },
+  {
+    "id": "68ee85aa-894f-4ff2-979f-3cf6a292d8fc",
+    "topic": "lag/giật",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "bật 60fps rồi mà game vẫn giật tối ưu hoá quá kém"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-07 02:43:27",
+    "last_seen": "2025-06-07 02:43:27",
+    "status": "open"
+  },
+  {
+    "id": "92438047-e181-42b1-9b2c-e429fe203665",
+    "topic": "lỗi vào game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "là rốt cuộc game có chơi đc k qc quá tr tải về có vô đc đâu cứ dis ra :))))"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-06 14:08:41",
+    "last_seen": "2025-06-06 14:08:41",
+    "status": "open"
+  },
+  {
+    "id": "8bedbb16-c5a9-4046-834d-50dd5a11a827",
+    "topic": "lỗi không vào được game",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "S24 fe ko chơi đc, bấm vào sv là out ra mh chủ luôn"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-06 12:17:25",
+    "last_seen": "2025-06-06 12:17:25",
+    "status": "open"
+  },
+  {
+    "id": "5b60831e-329f-4921-93c1-c159d37438df",
+    "topic": "không chơi được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ko chơi đc"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-06 11:41:56",
+    "last_seen": "2025-06-06 11:41:56",
+    "status": "open"
+  },
+  {
+    "id": "483aefc4-7597-4124-a961-cf498f4f800c",
+    "topic": "không tương thích với Oppo a58",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "vải cc không tương thích với điện thoại Oppo a58"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-06 10:44:25",
+    "last_seen": "2025-06-06 10:44:25",
+    "status": "open"
+  },
+  {
+    "id": "ed934b70-6ca8-4653-b157-60f46bce3038",
+    "topic": "thiết bị không tương thích, lag",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "ơ h muốn tải lại thì bảo thiết bị không tương thích là sao?,hôm qua hôm kia chơi bình thường ấy mà?,trời ơi game lag rồi mà còn như này nữa,đọc cái này rồi sữa lại đi ạ,please^^!,game thì thấy hay thật nhìn ưng mắt nhưng mà cái kiểu này thì có đi xuống chứ ngóc đầu không nổi đâu,thiệt."
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-06 08:29:33",
+    "last_seen": "2025-06-06 08:29:33",
+    "status": "open"
+  },
+  {
+    "id": "ed5d1482-d77b-446f-b752-c28d0d5d9a46",
+    "topic": "không cho tải phiên bản",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "phiên bản không cho tải 1 sao"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-06 06:41:01",
+    "last_seen": "2025-06-06 06:41:01",
+    "status": "open"
+  },
+  {
+    "id": "8d32ed83-4abd-4ba9-a845-eb9899734885",
+    "topic": "đăng nhập không được",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "tải về đăng nhập éo đc... quảng cáo cho lắm vào 1* còn ít"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-05 23:03:11",
+    "last_seen": "2025-06-05 23:03:11",
+    "status": "open"
+  },
+  {
+    "id": "cd4ce300-678e-4f7b-bc36-4ce2d917f73b",
+    "topic": "game lag, không chơi nổi",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game lắc quá máy íu íu là hk chơi nổi"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-05 22:35:36",
+    "last_seen": "2025-06-05 22:35:36",
+    "status": "open"
+  },
+  {
+    "id": "91339ed2-4684-4519-916e-6c5931bc9bae",
+    "topic": "game giật lag",
+    "severity": "low",
+    "mention_count": 1,
+    "sample_reviews": [
+      "game rất giật và lag mặc dù cấu hình máy cao"
+    ],
+    "sources": [
+      "google_play"
+    ],
+    "first_seen": "2025-06-05 21:54:10",
+    "last_seen": "2025-06-05 21:54:10",
+    "status": "open"
+  }
+]

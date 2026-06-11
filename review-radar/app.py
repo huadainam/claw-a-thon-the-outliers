@@ -135,6 +135,11 @@ def _start_scheduler():
 
 if __name__ == "__main__":
     import sys
+    from storage import get_registry, get_store
+    from bootstrap import bootstrap_from_seed
+    n = bootstrap_from_seed(get_registry(), get_store)
+    if n:
+        print(f"Bootstrapped {n} apps from seed/")
     application = create_app()
     if "--serve" in sys.argv:
         threading.Thread(target=_start_scheduler, daemon=True).start()

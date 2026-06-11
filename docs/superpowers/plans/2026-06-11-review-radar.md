@@ -54,13 +54,16 @@ All source lives under `review-radar/`.
 ```
 flask==3.0.3
 google-play-scraper==1.2.7
-app-store-scraper==0.3.5
 openai==1.51.0
 python-dotenv==1.0.1
 schedule==1.2.2
 requests==2.32.3
 pytest==8.3.3
 ```
+
+> Note: App Store reviews are fetched via the public iTunes RSS/search JSON APIs (using
+> `requests`), NOT `app-store-scraper` — that package hard-pins `requests==2.23.0` and
+> breaks a clean `pip install`. See Task 7.
 
 - [ ] **Step 2: Create `.env.example`**
 
@@ -926,11 +929,14 @@ def scrape_app_store(app_id, count=1000, fetch=None):
     return out
 ```
 
-Create `scraper_live.py` (network code; smoke-tested manually in Task 13):
+Create `scraper_live.py` (network code; smoke-tested manually in Task 13). App Store
+uses the public iTunes search + RSS customer-reviews JSON APIs via `requests` — no
+`app-store-scraper` dependency (it hard-pins `requests==2.23.0`, which breaks the Docker
+build). iTunes RSS returns up to ~500 most-recent reviews (50/page × 10 pages):
 ```python
 # review-radar/scraper_live.py
+import requests
 from google_play_scraper import search as gp_search_fn, reviews, Sort
-from app_store_scraper import AppStore
 
 def gp_search_live(name):
     results = gp_search_fn(name, lang="vi", country="vn", n_hits=5)
@@ -944,8 +950,6 @@ def gp_reviews_live(app_id, count):
     return result
 
 def as_search_live(name):
-    # app_store_scraper has no search; use iTunes search API
-    import requests
     resp = requests.get("https://itunes.apple.com/search",
                         params={"term": name, "country": "vn",
                                 "entity": "software", "limit": 5}, timeout=20)
@@ -955,9 +959,24 @@ def as_search_live(name):
              "store": "app_store"} for it in items]
 
 def as_reviews_live(app_id, count):
-    app = AppStore(country="vn", app_name="app", app_id=int(app_id))
-    app.review(how_many=count)
-    return app.reviews
+    out = []
+    for page in range(1, 11):  # up to 10 pages × 50 reviews
+        url = (f"https://itunes.apple.com/vn/rss/customerreviews/"
+               f"page={page}/id={app_id}/sortby=mostrecent/json")
+        resp = requests.get(url, timeout=20)
+        entries = resp.json().get("feed", {}).get("entry", [])
+        review_entries = [e for e in entries if "im:rating" in e]
+        for e in review_entries:
+            out.append({
+                "review_id": e["id"]["label"],
+                "user_name": e.get("author", {}).get("name", {}).get("label", ""),
+                "review": e.get("content", {}).get("label", ""),
+                "rating": int(e["im:rating"]["label"]),
+                "date": e.get("updated", {}).get("label", ""),
+            })
+        if not review_entries or len(out) >= count:
+            break
+    return out[:count]
 ```
 
 - [ ] **Step 4: Run test to verify it passes**

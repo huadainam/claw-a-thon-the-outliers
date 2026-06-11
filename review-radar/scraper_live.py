@@ -44,13 +44,15 @@ def as_search_live(name):
              "icon": it.get("artworkUrl100", ""), "app_id": str(it["trackId"]),
              "store": "app_store"} for it in items]
 
-def as_reviews_live(app_id, count):
+def _as_fetch_pages(app_id, count):
     out = []
     for page in range(1, 11):  # up to 10 pages × 50 reviews
         url = (f"https://itunes.apple.com/vn/rss/customerreviews/"
                f"page={page}/id={app_id}/sortby=mostrecent/json")
         resp = requests.get(url, timeout=20)
         entries = resp.json().get("feed", {}).get("entry", [])
+        if isinstance(entries, dict):  # iTunes returns a dict when there's one entry
+            entries = [entries]
         review_entries = [e for e in entries if "im:rating" in e]
         for e in review_entries:
             out.append({
@@ -63,3 +65,19 @@ def as_reviews_live(app_id, count):
         if not review_entries or len(out) >= count:
             break
     return out[:count]
+
+def as_reviews_live(app_id, count, attempts=3):
+    # Apple's RSS throttles under rapid requests (returns empty/errors). Retry with
+    # backoff so a transient throttle doesn't look like "no reviews".
+    last_exc = None
+    for i in range(attempts):
+        try:
+            out = _as_fetch_pages(app_id, count)
+            if out:
+                return out
+        except Exception as e:
+            last_exc = e
+        time.sleep(2 * (i + 1))
+    if last_exc:
+        raise last_exc
+    return []

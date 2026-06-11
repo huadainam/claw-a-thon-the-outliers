@@ -1,0 +1,31 @@
+# Apps to pre-seed (one per line). Lines starting with # are ignored.
+Zalo
+Zalopay
+ZaloPay Merchant
+Zing MP3
+Laban Key
+UpRace
+myVNG
+PRISM Workplace
+ZingPlay
+PUBG Mobile VN
+Play Together VNG
+Roblox VN
+Gunny Mobi
+Gunny Origin
+Võ Lâm Truyền Kỳ Mobile
+Võ Lâm Truyền Kỳ 1 Mobile
+Top Eleven
+Crossfire: Legends
+Nghịch Thủy Hàn
+OMG 3Q
+Total Football VNG
+Ngọa Long VNG
+Bánh Quy Đại Chiến
+Tam Quốc Huyễn Tướng VNG
+Phong Thần VNG
+MU Lục Địa VNG
+Lineage W
+Lineage2M
+Tam Quốc Giấy VNG
+Ballistic Hero VNG

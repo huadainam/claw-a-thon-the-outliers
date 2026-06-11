@@ -1,0 +1,26 @@
+# Secrets & credentials — NEVER commit
+.env
+.env.*
+.greennode.json
+*.pem
+*.key
+
+# Agent state / scraped data
+data/
+*.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

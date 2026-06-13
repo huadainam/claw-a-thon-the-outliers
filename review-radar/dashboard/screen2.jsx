@@ -5,13 +5,11 @@ function Crawling({ t, app, onDone, onBack }) {
   const [progress, setProgress] = useState(0);
   const [counts, setCounts] = useState({ done: 0, total: 0 });  // reviews classified / total
   const [notified, setNotified] = useState(false);
-  const [canSkip, setCanSkip] = useState(false);   // allow bypassing the wait after a bit
   const a = window.DATA.APPS[app] || { name: app };
 
   useEffect(() => {
     let cancelled = false;
     let seenAnalyzing = false;
-    setCanSkip(false);
 
     const poll = async () => {
       if (cancelled) return;
@@ -31,8 +29,10 @@ function Crawling({ t, app, onDone, onBack }) {
             setActive(2);                                // classifying reviews
             setProgress(total > 0 ? Math.round(done / total * 100) : 0);
           }
-        } else if (meta.status === "idle" && seenAnalyzing) {
-          setCounts(c => ({ done: c.total || c.done, total: c.total }));
+        } else if (meta.status === "idle") {
+          setActive(3);
+          setProgress(100);
+          if (seenAnalyzing) setCounts(c => ({ done: c.total || c.done, total: c.total }));
           if (!cancelled) onDone();
           return;
         } else if (!seenAnalyzing) {
@@ -49,13 +49,17 @@ function Crawling({ t, app, onDone, onBack }) {
     setActive(0); setProgress(0);
     const t1 = setTimeout(() => { setActive(0); setProgress(100); }, 600);
     const t2 = setTimeout(poll, 1400);
-    // After a short wait, let the user bypass the rest and open the dashboard now.
-    const tSkip = setTimeout(() => setCanSkip(true), 8000);
 
-    return () => { cancelled = true; clearTimeout(t1); clearTimeout(t2); clearTimeout(tSkip); };
+    return () => { cancelled = true; clearTimeout(t1); clearTimeout(t2); };
   }, [app]);
 
   const totalProgress = ((active + progress / 100) / STEPS.length) * 100;
+  const canOpenDashboard = active >= 2;
+  const openDashboardNow = () => {
+    setActive(3);
+    setProgress(100);
+    onDone();
+  };
 
   return (
     <div style={{ maxWidth:720, margin:"0 auto", padding:"72px 48px 80px", minHeight:"100%", display:"flex", flexDirection:"column", justifyContent:"center" }}>
@@ -118,15 +122,14 @@ function Crawling({ t, app, onDone, onBack }) {
 
         <div style={{ display:"flex", gap:10, justifyContent:"center" }}>
           <button className="btn btn-secondary" onClick={onBack}><Icon name="arrowLeft" size={16}/>{t("back_apps")}</button>
-          {canSkip ? (
-            <button className="btn btn-primary" onClick={onDone}>
+          <button className={`btn ${notified ? "btn-secondary" : "btn-primary"}`} onClick={() => setNotified(true)}>
+            <Icon name="bell" size={16}/>{notified ? "✓ " : ""}{t("notify")}</button>
+          {canOpenDashboard && (
+            <button className="btn btn-primary fade-in" onClick={openDashboardNow}>
               {t("skip_now")}<Icon name="chevron" size={16} stroke={2.2}/></button>
-          ) : (
-            <button className={`btn ${notified ? "btn-secondary" : "btn-primary"}`} onClick={() => setNotified(true)}>
-              <Icon name="bell" size={16}/>{notified ? "✓ " : ""}{t("notify")}</button>
           )}
         </div>
-        {canSkip && (
+        {canOpenDashboard && (
           <p className="fade-in" style={{ fontSize:12.5, color:"var(--text-3)", textAlign:"center", marginTop:12 }}>{t("skip_hint")}</p>
         )}
       </div>

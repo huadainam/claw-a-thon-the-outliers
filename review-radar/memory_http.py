@@ -120,8 +120,12 @@ class MemoryHTTP:
         last_exc = None
         for i in range(attempts):
             try:
-                resp = self.session.request(method, url, headers=self._headers(),
-                                            timeout=30, **kwargs)
+                if hasattr(self.session, "request"):
+                    resp = self.session.request(method, url, headers=self._headers(),
+                                                timeout=30, **kwargs)
+                else:
+                    send = getattr(self.session, method.lower())
+                    resp = send(url, headers=self._headers(), timeout=30, **kwargs)
                 if resp.status_code >= 500:
                     last_exc = requests.HTTPError(f"{resp.status_code} from Memory")
                     time.sleep(0.4 * (i + 1))
@@ -136,7 +140,7 @@ class MemoryHTTP:
     def post_event(self, memory_id, actor_id, session_id, content):
         url = self._events_url(memory_id, actor_id, session_id)
         body = {"payload": {"type": "conversational", "role": "assistant",
-                            "message": content}}
+                            "message": content, "content": content}}
         self._send("POST", url, json=body)
         _doc_cache[(memory_id, actor_id, session_id)] = content
 

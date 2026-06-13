@@ -84,6 +84,21 @@ def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
                          "last_updated": _now()})
 
         return {"new_reviews": total, "todos": len(todos), "used_fallback": used_fallback}
+    except Exception as exc:
+        # A failed LLM/API call used to leave meta.status="analyzing", which made
+        # the UI polling screen look stuck forever. Keep any partial reviews that
+        # were already appended, but release the app back to idle with an error.
+        try:
+            current = store.load_meta() or {}
+            store.save_meta({
+                "status": "idle",
+                "progress": current.get("progress", {"done": 0, "total": 0}),
+                "last_updated": _now(),
+                "error": str(exc),
+            })
+        except Exception:
+            pass
+        return {"error": str(exc), "used_fallback": False}
     finally:
         _run_lock.release()
 

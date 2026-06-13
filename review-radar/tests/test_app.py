@@ -1,5 +1,6 @@
 from storage import LocalStore, LocalRegistry
 from app import create_app
+from datetime import datetime, timezone, timedelta
 
 def make_client(tmp_path, **overrides):
     registry = LocalRegistry(data_dir=str(tmp_path))
@@ -132,3 +133,34 @@ def test_stats_empty_when_no_active_app(tmp_path):
     assert body["app"] == {}
     assert body["total"] == 0
     assert body["meta"]["status"] == "idle"
+
+def test_apps_recovers_stale_analyzing_meta(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Momo", "as_id": "918751511"})
+    old = (datetime.now(timezone.utc) - timedelta(minutes=30)).isoformat()
+    factory("918751511").save_meta({
+        "status": "analyzing",
+        "progress": {"done": 330, "total": 500},
+        "last_updated": old,
+    })
+
+    body = client.get("/api/apps").get_json()
+    app = body["apps"][0]
+
+    assert app["status"] == "idle"
+    assert app["progress"] == {"done": 330, "total": 500}
+    assert factory("918751511").load_meta()["status"] == "idle"
+
+def test_stats_keeps_recent_analyzing_meta(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Momo", "as_id": "918751511"})
+    factory("918751511").save_meta({
+        "status": "analyzing",
+        "progress": {"done": 30, "total": 500},
+        "last_updated": datetime.now(timezone.utc).isoformat(),
+    })
+
+    body = client.get("/api/stats?app_id=918751511").get_json()
+
+    assert body["meta"]["status"] == "analyzing"
+    assert body["meta"]["progress"] == {"done": 30, "total": 500}

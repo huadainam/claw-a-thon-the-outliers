@@ -3,9 +3,11 @@ import glob
 import unicodedata
 import threading
 from collections import Counter
+from datetime import datetime, timezone, timedelta
 from flask import Flask, jsonify, request, send_from_directory
 
 DASHBOARD_DIR = os.path.join(os.path.dirname(__file__), "dashboard")
+ANALYZING_STALE_AFTER = timedelta(minutes=10)
 
 
 def _asset_build_stamp():
@@ -60,6 +62,27 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
         ascii_title = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii")
         return (0 if is_zalopay else 1, ascii_title)
 
+    def normalize_meta(store):
+        meta = store.load_meta()
+        if meta.get("status") != "analyzing":
+            return meta
+        raw = meta.get("last_updated")
+        try:
+            last = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+            if last.tzinfo is None:
+                last = last.replace(tzinfo=timezone.utc)
+        except (TypeError, ValueError):
+            last = None
+        if last and datetime.now(timezone.utc) - last <= ANALYZING_STALE_AFTER:
+            return meta
+
+        recovered = dict(meta)
+        recovered["status"] = "idle"
+        recovered["last_updated"] = datetime.now(timezone.utc).isoformat()
+        recovered["error"] = "Crawl worker stopped before finishing classification."
+        store.save_meta(recovered)
+        return recovered
+
     @app.get("/health")
     def health():
         return jsonify({"status": "ok"}), 200
@@ -106,7 +129,7 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
         out = []
         for a in registry.list_apps():
             store = store_factory(a["app_id"])
-            meta = store.load_meta()
+            meta = normalize_meta(store)
             entry = dict(a)
             entry["status"] = meta.get("status", "idle")
             entry["progress"] = meta.get("progress", {"done": 0, "total": 0})
@@ -144,13 +167,14 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
                             "meta": {"status": "idle", "progress": {"done": 0, "total": 0},
                                      "last_updated": None}}))
         reviews = store.load_reviews()
+        meta = normalize_meta(store)
         by_label = dict(Counter(r.get("label") for r in reviews))
         by_day = dict(Counter(
             (r.get("at") or "")[:10] for r in reviews if r.get("label") == "BUG_REPORT"
         ))
         return _no_cache(jsonify({"app": store.load_config(), "total": len(reviews),
                         "by_label": by_label, "bug_by_day": by_day,
-                        "meta": store.load_meta()}))
+                        "meta": meta}))
 
     @app.get("/api/todos")
     def get_todos():

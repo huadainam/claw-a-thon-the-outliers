@@ -72,3 +72,21 @@ def test_pipeline_falls_back_to_cache_when_scrape_empty(tmp_path):
     assert result["new_reviews"] == 0
     assert result["used_fallback"] is True
     assert len(store.load_todos()) == 1
+
+def test_pipeline_resets_meta_to_idle_when_classification_fails(tmp_path):
+    store = LocalStore(data_dir=str(tmp_path))
+    store.save_config({"title": "Zalo", "gp_id": "g", "as_id": "a"})
+    gp = [{"id": "g1", "content": "lỗi", "score": 1, "source": "google_play", "at": "d"}]
+    deps = make_deps(gp, [])
+
+    def classify(_reviews):
+        raise RuntimeError("classifier unavailable")
+
+    deps["classify"] = classify
+    result = run_pipeline(store=store, **deps)
+
+    assert "classifier unavailable" in result["error"]
+    meta = store.load_meta()
+    assert meta["status"] == "idle"
+    assert meta["progress"] == {"done": 0, "total": 1}
+    assert "classifier unavailable" in meta["error"]

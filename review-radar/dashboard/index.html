@@ -1,291 +1,32 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Review Radar</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-  :root { --green:#22c55e; --bg:#0f1216; --card:#1a1f26; --text:#e5e7eb; --muted:#9ca3af; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:Inter,system-ui,Arial,sans-serif; background:var(--bg); color:var(--text); }
-  header { display:flex; align-items:center; gap:12px; padding:16px 24px; border-bottom:1px solid #222; }
-  header h1 { font-size:18px; margin:0; color:var(--green); }
-  .muted { color:var(--muted); font-size:13px; }
-  button { background:var(--green); color:#06240f; border:0; border-radius:8px; padding:8px 14px; font-weight:600; cursor:pointer; }
-  button.ghost { background:#222; color:var(--text); }
-  .wrap { padding:24px; max-width:1280px; margin:0 auto; }
-  .appbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
-  .chip { background:#222; color:var(--text); border:1px solid #2a2f37; border-radius:999px; padding:6px 14px; font-size:13px; }
-  .chip.active { background:var(--green); color:#06240f; border-color:var(--green); }
-  .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
-  .card { background:var(--card); border-radius:12px; padding:18px; }
-  .card .num { font-size:28px; font-weight:700; }
-  .charts { display:grid; grid-template-columns:1fr 2fr; gap:16px; margin-bottom:24px; }
-  table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; }
-  th,td { text-align:left; padding:10px 12px; border-bottom:1px solid #222; font-size:14px; }
-  .badge { padding:3px 8px; border-radius:999px; font-size:12px; font-weight:600; }
-  .crit { background:#7f1d1d; color:#fecaca; } .med { background:#78350f; color:#fde68a; } .low { background:#064e3b; color:#bbf7d0; }
-  .open { background:#7f1d1d; color:#fecaca; } .done { background:#064e3b; color:#bbf7d0; }
-  .filters { display:flex; gap:8px; margin:16px 0; flex-wrap:wrap; }
-  .filters select, input[type=text] { background:#11151a; color:var(--text); border:1px solid #2a2f37; border-radius:8px; padding:8px; }
-  .suggest { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
-  .suggest .item { background:var(--card); border-radius:12px; padding:14px; cursor:pointer; border:1px solid #2a2f37; }
-  .suggest .item:hover { border-color:var(--green); }
-  .banner { background:#7f1d1d; color:#fecaca; padding:12px 16px; border-radius:10px; margin-bottom:16px; }
-  .progress { background:#11151a; border:1px solid #2a2f37; border-radius:10px; padding:12px 16px; margin-bottom:16px; }
-  .bar { height:8px; background:#2a2f37; border-radius:999px; overflow:hidden; margin-top:8px; }
-  .bar > div { height:100%; background:var(--green); width:0%; transition:width .3s; }
-  .hidden { display:none; }
-  .row-detail { background:#11151a; font-size:13px; color:var(--muted); }
-  img.icon { width:40px; height:40px; border-radius:8px; vertical-align:middle; }
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>App Review Monitor</title>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-<header>
-  <h1>📡 Review Radar</h1>
-  <span id="appName" class="muted"></span>
-  <span id="lastUpdated" class="muted"></span>
-  <span style="flex:1"></span>
-  <button id="btnRefresh" class="hidden" onclick="refresh()">Refresh</button>
-  <button id="btnChange" class="ghost hidden" onclick="showFind()">+ Theo dõi app mới</button>
-</header>
+  <div id="root"></div>
 
-<div class="wrap">
-  <!-- FIND APP SCREEN -->
-  <section id="findScreen">
-    <h2>Theo dõi một app</h2>
-    <div class="filters">
-      <input type="text" id="appInput" placeholder="Nhập tên app (vd: zalo)" style="min-width:320px"
-             onkeydown="if(event.key==='Enter'){event.preventDefault();doResolve();}">
-      <button onclick="doResolve()">Tìm app</button>
-    </div>
-    <div id="resolveResult"></div>
-    <div id="availableWrap" class="hidden" style="margin-top:28px">
-      <h3 style="font-weight:600">App đã có sẵn — chọn để xem ngay</h3>
-      <div class="suggest" id="availableApps"></div>
-    </div>
-  </section>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-  <!-- DASHBOARD SCREEN -->
-  <section id="dashScreen" class="hidden">
-    <div class="appbar" id="appBar"></div>
-    <div class="progress hidden" id="progress"></div>
-    <div class="cards">
-      <div class="card"><div class="muted">Tổng review</div><div class="num" id="cTotal">0</div></div>
-      <div class="card"><div class="muted">Bug open</div><div class="num" id="cOpen">0</div></div>
-      <div class="card"><div class="muted">Bug critical</div><div class="num" id="cCrit">0</div></div>
-      <div class="card"><div class="muted">Bug done</div><div class="num" id="cDone">0</div></div>
-    </div>
-    <div class="charts">
-      <div class="card"><canvas id="donut"></canvas></div>
-      <div class="card"><canvas id="bars"></canvas></div>
-    </div>
-
-    <h2>Bug To-Do</h2>
-    <div class="filters">
-      <select id="fSeverity" onchange="renderTodos()">
-        <option value="all">Tất cả severity</option><option value="critical">Critical</option>
-        <option value="medium">Medium</option><option value="low">Low</option>
-      </select>
-      <select id="fStatus" onchange="renderTodos()">
-        <option value="all">Tất cả trạng thái</option><option value="open">Open</option><option value="done">Done</option>
-      </select>
-    </div>
-    <table id="todoTable"><thead><tr>
-      <th>Severity</th><th>Chủ đề</th><th>Mention</th><th>Nguồn</th><th>Lần cuối</th><th>Trạng thái</th><th></th>
-    </tr></thead><tbody></tbody></table>
-
-    <h2 style="margin-top:32px">Review Explorer</h2>
-    <div class="filters">
-      <select id="rLabel" onchange="renderReviews()"><option value="all">Tất cả label</option>
-        <option>BUG_REPORT</option><option>FEATURE_REQUEST</option><option>COMPLAINT</option>
-        <option>POSITIVE</option><option>SPAM</option></select>
-      <select id="rSource" onchange="renderReviews()"><option value="all">Tất cả nguồn</option>
-        <option value="google_play">Google Play</option><option value="app_store">App Store</option></select>
-    </div>
-    <table id="reviewTable"><thead><tr>
-      <th>Nguồn</th><th>Rating</th><th>Label</th><th>Nội dung</th><th>Ngày</th>
-    </tr></thead><tbody></tbody></table>
-  </section>
-</div>
-
-<script>
-let TODOS=[], REVIEWS=[], donutChart=null, barChart=null, pollGen=0;
-const CONN_ERR='<div class="banner">Không kết nối được tới server. Hãy chạy <b>python app.py</b> rồi mở <b>http://localhost:8080</b> — đừng mở file HTML trực tiếp.</div>';
-
-async function api(path, opts){ const r=await fetch(path,opts); return r.json(); }
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-
-function showFind(){ pollGen++; document.getElementById('findScreen').classList.remove('hidden');
-  document.getElementById('dashScreen').classList.add('hidden');
-  document.getElementById('btnRefresh').classList.add('hidden');
-  document.getElementById('btnChange').classList.add('hidden');
-  document.getElementById('appInput').focus(); loadAvailable(); }
-
-async function loadAvailable(){
-  const wrap=document.getElementById('availableWrap'), box=document.getElementById('availableApps');
-  const data=await api('/api/apps').catch(()=>null);
-  if(!data || !data.apps.length){ wrap.classList.add('hidden'); return; }
-  box.innerHTML=data.apps.map(a=>`<div class="item" onclick="switchApp('${a.app_id}')">
-    <img class="icon" src="${a.icon||''}"> <b>${a.title}</b>
-    <div class="muted">${a.developer||''}</div>
-    <div class="muted">${(a.stores||[]).join(', ')}</div></div>`).join('');
-  wrap.classList.remove('hidden');
-}
-
-function showDash(){ document.getElementById('findScreen').classList.add('hidden');
-  document.getElementById('dashScreen').classList.remove('hidden');
-  document.getElementById('btnRefresh').classList.remove('hidden');
-  document.getElementById('btnChange').classList.remove('hidden'); }
-
-// ---- find + track ----
-async function doResolve(){
-  const name=document.getElementById('appInput').value.trim();
-  if(!name) return;
-  const box=document.getElementById('resolveResult');
-  box.innerHTML='<div class="muted">Đang tìm...</div>';
-  let res;
-  try { res=await api('/api/resolve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})}); }
-  catch(e){ box.innerHTML=CONN_ERR; return; }
-  if(res.status==='matched'){
-    box.innerHTML=`<div class="suggest"><div class="item" onclick='track(${JSON.stringify(res.app)})'>
-      <img class="icon" src="${res.app.icon||''}"> <b>${res.app.title}</b><div class="muted">${res.app.developer||''}</div>
-      <div style="margin-top:8px"><button>Xác nhận theo dõi</button></div></div></div>`;
-  } else if(res.status==='ambiguous'){
-    box.innerHTML=`<div class="banner">${res.message}</div><div class="suggest">`+
-      res.suggestions.map(s=>`<div class="item" onclick='track(${JSON.stringify(s)})'>
-        <img class="icon" src="${s.icon||''}"> <b>${s.title}</b><div class="muted">${s.developer||''}</div>
-        <div class="muted">${(s.stores||[]).join(', ')}</div></div>`).join('')+`</div>`;
-  } else {
-    box.innerHTML=`<div class="banner">${res.message}</div>`+
-      (res.suggestions?`<div class="suggest">`+res.suggestions.map(s=>`<div class="item" onclick='track(${JSON.stringify(s)})'>
-        <b>${s.title}</b><div class="muted">${s.developer||''}</div></div>`).join('')+`</div>`:'');
-  }
-}
-
-async function track(app){
-  try { await api('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(app)}); }
-  catch(e){ document.getElementById('resolveResult').innerHTML=CONN_ERR; return; }
-  showDash(); startPolling();
-}
-
-async function switchApp(id){
-  await api('/api/active',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({app_id:id})});
-  showDash(); startPolling();
-}
-
-async function refresh(){ await api('/run',{method:'POST'}); startPolling(); }
-
-// ---- polling loop: render now, keep polling while analyzing ----
-async function startPolling(){
-  const gen=++pollGen;
-  while(gen===pollGen){
-    const analyzing=await tick();
-    if(!analyzing || gen!==pollGen) break;
-    await sleep(2500);
-  }
-}
-
-async function tick(){
-  let stats;
-  try { stats=await api('/api/stats'); } catch(e){ showFind(); document.getElementById('resolveResult').innerHTML=CONN_ERR; return false; }
-  if(!stats.app || !stats.app.title){ showFind(); return false; }
-  document.getElementById('appName').textContent='· '+stats.app.title;
-  const m=stats.meta||{}; const lu=(m.last_updated||'').slice(0,19).replace('T',' ');
-  document.getElementById('lastUpdated').textContent=lu?('· cập nhật '+lu):'';
-  renderProgress(m);
-  TODOS=await api('/api/todos'); REVIEWS=await api('/api/reviews');
-  document.getElementById('cTotal').textContent=stats.total;
-  document.getElementById('cOpen').textContent=TODOS.filter(t=>t.status==='open').length;
-  document.getElementById('cCrit').textContent=TODOS.filter(t=>t.severity==='critical').length;
-  document.getElementById('cDone').textContent=TODOS.filter(t=>t.status==='done').length;
-  drawCharts(stats); renderTodos(); renderReviews();
-  await loadApps();
-  return m.status==='analyzing';
-}
-
-function renderProgress(m){
-  const p=document.getElementById('progress');
-  if(m.status==='analyzing'){
-    const d=(m.progress&&m.progress.done)||0, t=(m.progress&&m.progress.total)||0;
-    const pct=t?Math.round(d/t*100):0;
-    p.classList.remove('hidden');
-    p.innerHTML=`Đang phân tích review... <b>${d}/${t}</b><div class="bar"><div style="width:${pct}%"></div></div>`;
-  } else { p.classList.add('hidden'); }
-}
-
-async function loadApps(){
-  const data=await api('/api/apps').catch(()=>null);
-  if(!data) return;
-  const bar=document.getElementById('appBar');
-  bar.innerHTML=data.apps.map(a=>`<button class="chip ${a.app_id===data.active_app_id?'active':''}" onclick="switchApp('${a.app_id}')">${a.title}</button>`).join('')
-    +`<button class="chip" onclick="showFind()">+ Thêm app</button>`;
-}
-
-// ---- renderers ----
-function drawCharts(stats){
-  const bl=stats.by_label||{};
-  const labels=Object.keys(bl), vals=Object.values(bl);
-  if(donutChart) donutChart.destroy();
-  donutChart=new Chart(document.getElementById('donut'),{type:'doughnut',
-    data:{labels,datasets:[{data:vals,backgroundColor:['#ef4444','#3b82f6','#f59e0b','#22c55e','#6b7280']}]},
-    options:{plugins:{legend:{labels:{color:'#e5e7eb'}}}}});
-  const bd=stats.bug_by_day||{}; const days=Object.keys(bd).sort().slice(-7);
-  if(barChart) barChart.destroy();
-  barChart=new Chart(document.getElementById('bars'),{type:'bar',
-    data:{labels:days,datasets:[{label:'Bug/ngày',data:days.map(d=>bd[d]),backgroundColor:'#22c55e'}]},
-    options:{plugins:{legend:{labels:{color:'#e5e7eb'}}},scales:{x:{ticks:{color:'#9ca3af'}},y:{ticks:{color:'#9ca3af'}}}}});
-}
-
-const sevClass={critical:'crit',medium:'med',low:'low'};
-function renderTodos(){
-  const fs=document.getElementById('fSeverity').value, fst=document.getElementById('fStatus').value;
-  const tb=document.querySelector('#todoTable tbody'); tb.innerHTML='';
-  TODOS.filter(t=>(fs==='all'||t.severity===fs)&&(fst==='all'||t.status===fst)).forEach(t=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><span class="badge ${sevClass[t.severity]}">${t.severity}</span></td>
-      <td>${t.topic}</td><td>${t.mention_count}</td><td>${(t.sources||[]).join(', ')}</td>
-      <td>${(t.last_seen||'').slice(0,10)}</td>
-      <td><span class="badge ${t.status}">${t.status}</span></td>
-      <td><button class="ghost" onclick="toggle('${t.id}','${t.status}')">${t.status==='open'?'Mark Done':'Reopen'}</button></td>`;
-    tr.onclick=(e)=>{ if(e.target.tagName==='BUTTON')return; expand(tr,t); };
-    tb.appendChild(tr);
-  });
-}
-function expand(tr,t){
-  if(tr.nextElementSibling && tr.nextElementSibling.classList.contains('row-detail')){
-    tr.nextElementSibling.remove(); return; }
-  const d=document.createElement('tr'); d.className='row-detail';
-  d.innerHTML=`<td colspan="7">${(t.sample_reviews||[]).map(s=>'• '+s).join('<br>')||'(không có sample)'}</td>`;
-  tr.after(d);
-}
-async function toggle(id,status){
-  const next=status==='open'?'done':'open';
-  await api('/api/todos/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:next})});
-  TODOS=await api('/api/todos'); renderTodos();
-  document.getElementById('cOpen').textContent=TODOS.filter(t=>t.status==='open').length;
-  document.getElementById('cDone').textContent=TODOS.filter(t=>t.status==='done').length;
-}
-function renderReviews(){
-  const fl=document.getElementById('rLabel').value, fsrc=document.getElementById('rSource').value;
-  const tb=document.querySelector('#reviewTable tbody'); tb.innerHTML='';
-  REVIEWS.filter(r=>(fl==='all'||r.label===fl)&&(fsrc==='all'||r.source===fsrc)).slice(0,20).forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r.source||''}</td><td>${r.score||''}</td><td>${r.label||''}</td>
-      <td>${(r.content||'').slice(0,140)}</td><td>${(r.at||'').slice(0,10)}</td>`;
-    tb.appendChild(tr);
-  });
-}
-
-// ---- init ----
-async function init(){
-  let data;
-  try { data=await api('/api/apps'); } catch(e){ showFind(); document.getElementById('resolveResult').innerHTML=CONN_ERR; return; }
-  if(data.active_app_id){ showDash(); startPolling(); }
-  else { showFind(); }
-}
-init();
-</script>
+  <script src="data.js"></script>
+  <script src="api-bridge.js"></script>
+  <script type="text/babel" src="components.jsx"></script>
+  <script type="text/babel" src="charts.jsx"></script>
+  <script type="text/babel" src="filters.jsx"></script>
+  <script type="text/babel" src="screen1.jsx"></script>
+  <script type="text/babel" src="screen2.jsx"></script>
+  <script type="text/babel" src="table.jsx"></script>
+  <script type="text/babel" src="subviews.jsx"></script>
+  <script type="text/babel" src="dashboard.jsx"></script>
+  <script type="text/babel" src="reports.jsx"></script>
+  <script type="text/babel" src="compare.jsx"></script>
+  <script type="text/babel" src="team.jsx"></script>
+  <script type="text/babel" src="settings.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
 </body>
 </html>

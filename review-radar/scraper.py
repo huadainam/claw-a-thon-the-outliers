@@ -62,11 +62,15 @@ def resolve_app(name, gp_search=None, as_search=None):
         return {"status": "not_found",
                 "message": f"Không tìm thấy app '{name}'. Thử nhập tên khác."}
 
+    # Always surface the top candidates so the user can pick the right app even
+    # when one scores high — many names (e.g. "MoMo") map to several apps.
+    top_candidates = [app for _, app in scored[:6]]
+
     top_score, top_app = scored[0]
     if top_score >= MATCH_THRESHOLD:
-        return {"status": "matched", "app": top_app}
+        return {"status": "matched", "app": top_app, "suggestions": top_candidates}
 
-    suggestions = [app for score, app in scored if score >= AMBIGUOUS_THRESHOLD][:5]
+    suggestions = [app for score, app in scored if score >= AMBIGUOUS_THRESHOLD][:6]
     if suggestions:
         return {"status": "ambiguous",
                 "message": f"Không tìm thấy chính xác '{name}'. Có phải ý bạn là...",
@@ -74,7 +78,7 @@ def resolve_app(name, gp_search=None, as_search=None):
 
     return {"status": "not_found",
             "message": f"Không tìm thấy app '{name}'.",
-            "suggestions": [app for _, app in scored[:5]]}
+            "suggestions": top_candidates}
 
 def scrape_google_play(app_id, count=1000, fetch=None):
     if not app_id:

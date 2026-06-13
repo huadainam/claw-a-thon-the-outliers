@@ -40,18 +40,22 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
     setPhase("searching");
     setSuggestions([]);
     window.ARM_Bridge.resolve(q.trim()).then(res => {
-      if (res.status === "matched" && res.app) {
-        const id = ensureAppSpec(res.app);
-        setSuggestions([{ app: id, score: 99, raw: res.app }]);
-      } else if ((res.status === "ambiguous" || res.status === "not_found") && res.suggestions && res.suggestions.length) {
-        const sugs = res.suggestions.slice(0, 4).map((s, i) => {
-          const id = ensureAppSpec(s);
-          return { app: id, score: Math.max(50, 95 - i * 15), raw: s };
-        });
-        setSuggestions(sugs);
-      } else {
-        setSuggestions([]);
-      }
+      // Build a candidate list: the confident match (if any) first, then the
+      // other suggestions. Many queries (e.g. "MoMo") map to several distinct
+      // apps, so always offer alternatives instead of a single auto-pick.
+      const matched = res.status === "matched" && res.app ? res.app : null;
+      const key = a => (a.gp_id || "") + "|" + (a.as_id || "") + "|" + (a.title || "");
+      const list = [];
+      const seen = new Set();
+      [matched, ...(res.suggestions || [])].forEach(a => {
+        if (a && !seen.has(key(a))) { seen.add(key(a)); list.push(a); }
+      });
+      const sugs = list.slice(0, 6).map((s, i) => {
+        const id = ensureAppSpec(s);
+        const score = (matched && i === 0) ? 99 : Math.max(50, 95 - i * 10);
+        return { app: id, score, raw: s };
+      });
+      setSuggestions(sugs);
       setPhase("results");
     }).catch(() => {
       setSuggestions([]);
@@ -91,7 +95,7 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
           <button className="btn btn-primary" style={{ padding:"0 24px", fontSize:15.5 }} onClick={runSearch} disabled={!query.trim()}>{t("s1_find")}</button>
         </div>
         <div style={{ marginTop:14, display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap" }}>
-          {["ZaloPay","Shopee","MoMo"].map(s => (
+          {["Zalopay","Shopee","MoMo"].map(s => (
             <button key={s} onClick={() => { setQuery(s); doSearch(s); }}
               style={{ fontSize:13, fontWeight:600, color:"var(--text-2)", background:"rgba(0,0,0,0.04)", padding:"5px 12px", borderRadius:980 }}>{s}</button>
           ))}

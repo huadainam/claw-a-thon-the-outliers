@@ -119,7 +119,9 @@ function Sidebar({ screen, lang, setLang, t, go, activeApp, dashSection, onDashN
     { id:"compare", icon:"chart", label:t("nav_compare"), screen:"compare" },
     { id:"reports", icon:"report", label:t("nav_reports"), screen:"reports" },
   ];
-  const wsActive = screen === "compare" ? "compare" : screen === "reports" ? "reports" : screen === "selection" ? "apps" : "monitor";
+  // The "selection" screen is the monitoring setup hero. Other screens
+  // (settings, team, dashboard, initializing) highlight no workspace item.
+  const wsActive = screen === "compare" ? "compare" : screen === "reports" ? "reports" : screen === "selection" ? "monitor" : null;
 
   const appItems = [
     { id:"overview", icon:"chart",   label:t("nav_overview") },

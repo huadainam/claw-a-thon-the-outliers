@@ -121,8 +121,11 @@
     var byLabel  = stats.by_label || {};
     var todosArr = todos || [];
     var bugs     = byLabel.BUG_REPORT || 0;
-    var fixed    = todosArr.filter(function(t){ return t.status === 'done'; }).length;
-    var pending  = todosArr.filter(function(t){ return t.status === 'open'; }).length;
+    var fixed    = todosArr.filter(function(t){ return todoStatusToActionStatus(t.status) === 'fixed'; }).length;
+    var pending  = todosArr.filter(function(t){
+      var status = todoStatusToActionStatus(t.status);
+      return status === 'open' || status === 'in_progress';
+    }).length;
     var todayKey = new Date().toLocaleDateString('en-CA');
     var today    = countReviewsOn(reviews, todayKey);
     var totalCats = Object.values(byLabel).reduce(function(a, b){ return a + b; }, 0) || 1;
@@ -138,6 +141,13 @@
       { id:"pending",  value: formatDashboardCount(pending), raw: pending, icon:"flag", trend: null, sub:"action_items", tone:"warning",  invert: true },
       { id:"health",   value: String(healthScore),     raw: healthScore, icon:"heart", trend: null, sub:"out_of_100",   tone:"positive", suffix:"/100" },
     ];
+  }
+
+  function todoStatusToActionStatus(status) {
+    if (status === 'done' || status === 'fixed') return 'fixed';
+    if (status === 'in_progress') return 'in_progress';
+    if (status === 'ignored') return 'ignored';
+    return 'open';
   }
 
   function makeCategories(byLabel) {
@@ -198,7 +208,7 @@
         id:       todo.id,
         priority: SEV_TO_PRI[todo.severity] || 'medium',
         flag:     'need_fix',
-        status:   todo.status === 'done' ? 'fixed' : 'open',
+        status:   todoStatusToActionStatus(todo.status),
         cat:      'bug',
         title_en: todo.topic || '(unknown)',
         title_vi: todo.topic || '(unknown)',

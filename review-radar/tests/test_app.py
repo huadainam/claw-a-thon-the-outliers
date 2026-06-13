@@ -100,6 +100,20 @@ def test_patch_todo_status(tmp_path):
     assert resp.status_code == 200
     assert factory("com.zing.zalo").load_todos()[0]["status"] == "done"
 
+def test_patch_todo_supports_editable_workflow_statuses(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo"})
+    factory("com.zing.zalo").save_todos([{"id": "t1", "topic": "login", "status": "open"}])
+
+    client.patch("/api/todos/t1", json={"status": "in_progress"})
+    assert factory("com.zing.zalo").load_todos()[0]["status"] == "in_progress"
+
+    client.patch("/api/todos/t1", json={"status": "ignored"})
+    assert factory("com.zing.zalo").load_todos()[0]["status"] == "ignored"
+
+    client.patch("/api/todos/t1", json={"status": "open"})
+    assert factory("com.zing.zalo").load_todos()[0]["status"] == "open"
+
 def test_patch_todo_status_uses_explicit_app_id(tmp_path):
     client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
     client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo"})

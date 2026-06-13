@@ -128,10 +128,10 @@
       leaderboard:"Overall ranking", best:"Best", metric:"Metric", sentiment_split:"Sentiment split", rating_dist:"Rating distribution", health_trend:"Health trend (14d)", cat_compare:"Category mix", at_a_glance:"At a glance",
       team_title:"The Outliers", team_sub:"The people behind Review Radar.", nav_team:"Team",
       role_pic:"Project Lead · PIC", role_collab:"Collaborator", built_by:"Designed & built by", contributions:"Contributions",
-      pic_name:"The Outliers", pic_desc:"Owns the product end to end — research, UX, visual design, prototyping and the full build of every screen in this tool.",
-      collab_name:"Support Contributor", collab_desc:"Assists with supporting tasks, mock data, QA and review feedback throughout the project.",
+      pic_name:"Nam. Hứa Đại", pic_desc:"Owns the product end to end — research, UX, visual design, prototyping and the full build of every screen in this tool.",
+      collab_name:"Thư. Lê Cẩm Minh", collab_desc:"Assists with supporting tasks, mock data, QA and review feedback throughout the project.",
       contrib_pic:"Product direction · UX & visual design · Full prototype build · i18n", contrib_collab:"Supporting tasks · Test data · QA & feedback",
-      feedback_title:"Leave feedback", feedback_sub:"Tell us what works and what could be better.", feedback_name:"Your name", feedback_name_ph:"Optional", feedback_type:"Type", fb_idea:"Idea", fb_bug:"Bug", fb_praise:"Praise", feedback_msg:"Message", feedback_msg_ph:"Share your thoughts about the product…", feedback_rating:"How would you rate it?", feedback_send:"Send feedback", feedback_thanks:"Thanks for your feedback!", feedback_recent:"Recent feedback",
+      feedback_title:"Leave feedback", feedback_sub:"Tell us what works and what could be better.", feedback_contact:"You can also contact namhd@vng.com.vn directly.", feedback_name:"Your name", feedback_name_ph:"Optional", feedback_type:"Type", fb_idea:"Idea", fb_bug:"Bug", fb_praise:"Praise", feedback_msg:"Message", feedback_msg_ph:"Share your thoughts about the product…", feedback_rating:"How would you rate it?", feedback_send:"Send feedback", feedback_thanks:"Thanks for your feedback!", feedback_recent:"Recent feedback",
     },
     vi: {
       brand_sub:"Phân tích đánh giá",
@@ -213,10 +213,10 @@
       leaderboard:"Xếp hạng tổng thể", best:"Tốt nhất", metric:"Chỉ số", sentiment_split:"Tỉ lệ cảm xúc", rating_dist:"Phân bố sao", health_trend:"Xu hướng sức khỏe (14n)", cat_compare:"Cơ cấu danh mục", at_a_glance:"Tổng quan nhanh",
       team_title:"The Outliers", team_sub:"Những người đứng sau Review Radar.", nav_team:"Đội ngũ",
       role_pic:"Trưởng dự án · PIC", role_collab:"Cộng tác viên", built_by:"Thiết kế & phát triển bởi", contributions:"Đóng góp",
-      pic_name:"The Outliers", pic_desc:"Phụ trách sản phẩm từ đầu đến cuối — nghiên cứu, UX, thiết kế giao diện, dựng prototype và build toàn bộ màn hình trong công cụ này.",
-      collab_name:"Cộng tác viên hỗ trợ", collab_desc:"Hỗ trợ các công việc phụ, dữ liệu mẫu, kiểm thử và góp ý trong suốt dự án.",
+      pic_name:"Nam. Hứa Đại", pic_desc:"Phụ trách sản phẩm từ đầu đến cuối — nghiên cứu, UX, thiết kế giao diện, dựng prototype và build toàn bộ màn hình trong công cụ này.",
+      collab_name:"Thư. Lê Cẩm Minh", collab_desc:"Hỗ trợ các công việc phụ, dữ liệu mẫu, kiểm thử và góp ý trong suốt dự án.",
       contrib_pic:"Định hướng sản phẩm · UX & thiết kế · Build toàn bộ prototype · Đa ngôn ngữ", contrib_collab:"Công việc hỗ trợ · Dữ liệu test · Kiểm thử & góp ý",
-      feedback_title:"Để lại góp ý", feedback_sub:"Cho chúng tôi biết điều gì tốt và điều gì cần cải thiện.", feedback_name:"Tên của bạn", feedback_name_ph:"Không bắt buộc", feedback_type:"Loại", fb_idea:"Ý tưởng", fb_bug:"Lỗi", fb_praise:"Khen ngợi", feedback_msg:"Nội dung", feedback_msg_ph:"Chia sẻ cảm nhận của bạn về sản phẩm…", feedback_rating:"Bạn đánh giá thế nào?", feedback_send:"Gửi góp ý", feedback_thanks:"Cảm ơn góp ý của bạn!", feedback_recent:"Góp ý gần đây",
+      feedback_title:"Để lại góp ý", feedback_sub:"Cho chúng tôi biết điều gì tốt và điều gì cần cải thiện.", feedback_contact:"Bạn cũng có thể liên hệ trực tiếp qua namhd@vng.com.vn.", feedback_name:"Tên của bạn", feedback_name_ph:"Không bắt buộc", feedback_type:"Loại", fb_idea:"Ý tưởng", fb_bug:"Lỗi", fb_praise:"Khen ngợi", feedback_msg:"Nội dung", feedback_msg_ph:"Chia sẻ cảm nhận của bạn về sản phẩm…", feedback_rating:"Bạn đánh giá thế nào?", feedback_send:"Gửi góp ý", feedback_thanks:"Cảm ơn góp ý của bạn!", feedback_recent:"Góp ý gần đây",
     },
   };
 

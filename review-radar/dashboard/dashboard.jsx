@@ -367,22 +367,73 @@ function KpiCard({ k, t, i }) {
 }
 
 /* ---------- Action row (fixed grid so columns align across rows) ---------- */
+const ACTION_STATUSES = ["open", "in_progress", "fixed", "ignored"];
+const TODO_STATUS_FOR_ACTION = {
+  open: "open",
+  in_progress: "in_progress",
+  fixed: "done",
+  ignored: "ignored",
+};
+
+function ActionStatusMenu({ status, saving, t, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position:"relative", display:"inline-flex" }}>
+      <button type="button" disabled={saving} onClick={() => setOpen(o => !o)}
+        aria-label={t("filter_status")}
+        style={{ display:"inline-flex", alignItems:"center", gap:6, minWidth:116, justifyContent:"space-between",
+          padding:"4px 8px 4px 0", borderRadius:980, border:"1px solid transparent",
+          background:saving ? "rgba(0,0,0,0.04)" : "transparent", color:"var(--text)",
+          opacity:saving ? 0.65 : 1, cursor:saving ? "default" : "pointer" }}>
+        <StatusBadge status={status} t={t}/>
+        <Icon name="chevronDown" size={13} style={{ color:"var(--text-3)", transition:"transform .15s", transform:open ? "rotate(180deg)" : "none" }}/>
+      </button>
+      {open && (
+        <div className="scale-in" style={{ position:"absolute", right:0, top:"calc(100% + 6px)", minWidth:168, zIndex:50,
+          background:"#fff", border:"1px solid var(--hairline)", borderRadius:13, boxShadow:"var(--shadow-pop)", padding:6,
+          transformOrigin:"top right" }}>
+          {ACTION_STATUSES.map(s => {
+            const selected = s === status;
+            return (
+              <button key={s} type="button" onClick={() => { setOpen(false); onChange(s); }}
+                style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%",
+                  padding:"7px 8px", borderRadius:9, background:selected ? "var(--accent-soft)" : "transparent",
+                  color:selected ? "var(--accent)" : "var(--text)", fontSize:13, fontWeight:600 }}>
+                <StatusBadge status={s} t={t}/>
+                {selected && <Icon name="check" size={13} stroke={2.4}/>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ActionRow({ app, it, t, onViewReviews, onDataChanged }) {
   const L = t._lang;
   const [status, setStatus] = useState(it.status);
   const [saving, setSaving] = useState(false);
   useEffect(() => setStatus(it.status), [it.status]);
-  const markFixed = () => {
-    if (saving) return;
+  const updateStatus = (nextStatus) => {
+    if (saving || nextStatus === status) return;
     const prev = status;
-    setStatus("fixed");
+    setStatus(nextStatus);
     setSaving(true);
     const existing = window.DATA.ACTIONS.find(a => a.id === it.id);
-    if (existing) existing.status = "fixed";
-    window.ARM_Bridge.patchTodo(app, it.id, { status: "done" })
+    if (existing) existing.status = nextStatus;
+    window.ARM_Bridge.patchTodo(app, it.id, { status: TODO_STATUS_FOR_ACTION[nextStatus] || "open" })
       .then(() => (onDataChanged ? onDataChanged() : null))
       .catch(err => {
-        console.warn("[ActionRow] failed to mark fixed:", err);
+        console.warn("[ActionRow] failed to update status:", err);
         if (existing) existing.status = prev;
         setStatus(prev);
       })
@@ -390,7 +441,7 @@ function ActionRow({ app, it, t, onViewReviews, onDataChanged }) {
   };
   return (
     <div className="action-row" style={{ display:"grid",
-      gridTemplateColumns:"132px minmax(0,1fr) 128px 104px 232px", alignItems:"center", gap:14,
+      gridTemplateColumns:"132px minmax(0,1fr) 128px 138px 124px", alignItems:"center", gap:14,
       padding:"13px 16px", borderRadius:12, border:"1px solid var(--hairline)", background:"#fff",
       transition:"border-color .15s, box-shadow .15s" }}
       onMouseEnter={e => { e.currentTarget.style.borderColor="var(--hairline-strong)"; e.currentTarget.style.boxShadow="var(--shadow-sm)"; }}
@@ -405,12 +456,8 @@ function ActionRow({ app, it, t, onViewReviews, onDataChanged }) {
         </div>
       </div>
       <div><FlagBadge flag={it.flag} t={t}/></div>
-      <div><StatusBadge status={status} t={t}/></div>
+      <div><ActionStatusMenu status={status} saving={saving} t={t} onChange={updateStatus}/></div>
       <div style={{ display:"flex", gap:6, justifyContent:"flex-end", alignItems:"center" }}>
-        {status !== "fixed" && status !== "ignored" && (
-          <button className="btn btn-secondary btn-xs" disabled={saving} onClick={markFixed} style={{ color:"var(--positive)", whiteSpace:"nowrap" }}>
-            <Icon name="check" size={13} stroke={2.6}/>{t("mark_fixed")}</button>
-        )}
         <button className="btn btn-ghost btn-xs" onClick={() => onViewReviews && onViewReviews(it)} style={{ whiteSpace:"nowrap" }}>{t("view_reviews")}</button>
       </div>
     </div>

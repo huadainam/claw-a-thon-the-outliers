@@ -268,7 +268,7 @@ function makeRealCompareStats(id, stats, reviews, todos) {
   const scores = numericScores(reviews);
   const rating = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
   const health = healthFromLabels(byLabel, total);
-  const openTodos = todos.filter(todo => todo.status !== "done");
+  const openTodos = todos.filter(todo => !["done", "fixed", "ignored"].includes(todo.status));
   const criticalTodos = openTodos.filter(todo => todo.severity === "critical").length;
 
   return {

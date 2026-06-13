@@ -1,10 +1,11 @@
 /* ============ Team & Feedback page ============ */
 function TeamPage({ t }) {
+  const memberByEmail = Object.fromEntries((window.DATA.TEAM || []).map(m => [m.email, m]));
   const members = [
     { key:"pic", role:"role_pic", name:"pic_name", desc:"pic_desc", contrib:"contrib_pic",
-      logo:"assets/the-outliers-logo.png", lead:true },
+      person:memberByEmail["namhd@vng.com.vn"], lead:true },
     { key:"collab", role:"role_collab", name:"collab_name", desc:"collab_desc", contrib:"contrib_collab",
-      initials:"CV", grad:["#7bd3ff","#0a84ff"] },
+      person:memberByEmail["thulcm@vng.com.vn"] },
   ];
 
   return (
@@ -25,14 +26,20 @@ function TeamPage({ t }) {
           <div key={m.key} className="card fade-up" style={{ padding:"20px 22px", display:"flex", gap:18, animationDelay:`${0.05+i*0.06}s`,
             borderColor: m.lead ? "var(--accent)" : "var(--hairline)",
             boxShadow: m.lead ? "0 0 0 3px var(--accent-soft), var(--shadow-sm)" : "var(--shadow-sm)" }}>
-            {m.logo
-              ? <img src={m.logo} alt="" style={{ width:56, height:56, borderRadius:14, flexShrink:0, boxShadow:"var(--shadow-sm)" }}/>
-              : <div className="set-avatar" style={{ width:56, height:56, fontSize:19, borderRadius:14, background:`linear-gradient(145deg, ${m.grad[0]}, ${m.grad[1]})` }}>{m.initials}</div>}
+            {m.person && m.person.avatar
+              ? <img src={m.person.avatar} alt={m.person.name} style={{ width:56, height:56, borderRadius:14, flexShrink:0, objectFit:"cover", boxShadow:"var(--shadow-sm)" }}/>
+              : <div className="set-avatar" style={{ width:56, height:56, fontSize:19, borderRadius:14,
+                  background:`linear-gradient(145deg, ${(m.person && m.person.color && m.person.color[0]) || "#7bd3ff"}, ${(m.person && m.person.color && m.person.color[1]) || "#0a84ff"})` }}>
+                  {(m.person && m.person.initials) || "?"}
+                </div>}
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ display:"flex", alignItems:"center", gap:9, flexWrap:"wrap" }}>
-                <span style={{ fontSize:17, fontWeight:700, letterSpacing:"-0.02em" }}>{t(m.name)}</span>
+                <span style={{ fontSize:17, fontWeight:700, letterSpacing:"-0.02em" }}>{(m.person && m.person.name) || t(m.name)}</span>
                 <span className={"badge " + (m.lead ? "badge-neutral" : "badge-muted")}>{t(m.role)}</span>
               </div>
+              {m.person && m.person.email && (
+                <div style={{ fontSize:12.5, color:"var(--text-3)", marginTop:2 }}>{m.person.email}</div>
+              )}
               <p style={{ fontSize:14, color:"var(--text-2)", marginTop:6, lineHeight:1.5, textWrap:"pretty" }}>{t(m.desc)}</p>
               <div style={{ display:"flex", alignItems:"flex-start", gap:7, marginTop:12, paddingTop:12, borderTop:"1px solid var(--hairline)" }}>
                 <Icon name="sparkle" size={15} style={{ color:"var(--accent)", marginTop:1, flexShrink:0 }}/>
@@ -85,6 +92,11 @@ function FeedbackBlock({ t }) {
     <div className="fade-up" style={{ animationDelay:".2s" }}>
       <div className="card" style={{ padding:"22px 24px", marginBottom:18 }}>
         <CardHead title={t("feedback_title")} sub={t("feedback_sub")}/>
+        <div style={{ display:"inline-flex", alignItems:"center", gap:7, marginTop:10, padding:"7px 10px",
+          borderRadius:10, background:"var(--accent-soft)", color:"var(--accent)", fontSize:12.5, fontWeight:600 }}>
+          <Icon name="mail" size={14}/>
+          <span>{t("feedback_contact")}</span>
+        </div>
 
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginTop:18 }}>
           {/* Type */}

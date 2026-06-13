@@ -31,7 +31,9 @@ def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
     if scrape_gp is None or scrape_as is None:
         from scraper import scrape_google_play, scrape_app_store
         from config import get_config
-        limit = get_config().review_limit
+        # Per-app review_limit (chosen by the user when tracking) wins; otherwise
+        # fall back to the global REVIEW_LIMIT. Applies to recurring crawls too.
+        limit = (store.load_config() or {}).get("review_limit") or get_config().review_limit
         scrape_gp = scrape_gp or (lambda app_id: scrape_google_play(app_id, count=limit))
         scrape_as = scrape_as or (lambda app_id: scrape_app_store(app_id, count=limit))
     if classify is None:

@@ -45,24 +45,40 @@ def as_search_live(name):
              "store": "app_store"} for it in items]
 
 def _as_fetch_pages(app_id, count):
+    # Apple's customer-reviews RSS caps at 10 pages × 50 reviews. Crucially, the
+    # feed is sparse and non-contiguous: page 1 is frequently empty while later
+    # pages (2, 3, 7, …) carry the reviews, with empty pages interleaved. So we
+    # must NOT stop at the first empty page — we walk all 10 pages, skip the empty
+    # / non-JSON ones, and dedup by review id (pages can repeat under throttling).
     out = []
-    for page in range(1, 11):  # up to 10 pages × 50 reviews
+    seen = set()
+    for page in range(1, 11):
         url = (f"https://itunes.apple.com/vn/rss/customerreviews/"
                f"page={page}/id={app_id}/sortby=mostrecent/json")
-        resp = requests.get(url, timeout=20)
-        entries = resp.json().get("feed", {}).get("entry", [])
+        try:
+            resp = requests.get(url, timeout=20)
+            entries = resp.json().get("feed", {}).get("entry", [])
+        except (ValueError, requests.RequestException):
+            # Empty body / non-JSON (Apple returns these for some pages even when
+            # other pages have data) — skip this page, keep going.
+            continue
         if isinstance(entries, dict):  # iTunes returns a dict when there's one entry
             entries = [entries]
-        review_entries = [e for e in entries if "im:rating" in e]
-        for e in review_entries:
+        for e in entries:
+            if "im:rating" not in e:
+                continue
+            rid = e["id"]["label"]
+            if rid in seen:
+                continue
+            seen.add(rid)
             out.append({
-                "review_id": e["id"]["label"],
+                "review_id": rid,
                 "user_name": e.get("author", {}).get("name", {}).get("label", ""),
                 "review": e.get("content", {}).get("label", ""),
                 "rating": int(e["im:rating"]["label"]),
                 "date": e.get("updated", {}).get("label", ""),
             })
-        if not review_entries or len(out) >= count:
+        if len(out) >= count:
             break
     return out[:count]
 

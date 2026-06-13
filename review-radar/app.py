@@ -30,6 +30,13 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
         aid = registry.get_active()
         return store_factory(aid) if aid else None
 
+    def request_store():
+        # Read endpoints accept an explicit ?app_id= so each app has its own URL
+        # (no HTTP-cache collisions, no reliance on the single active-app state).
+        # Falls back to the active app when no app_id is given.
+        aid = request.args.get("app_id") or registry.get_active()
+        return store_factory(aid) if aid else None
+
     @app.get("/health")
     def health():
         return jsonify({"status": "ok"}), 200
@@ -51,6 +58,13 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
         app_obj = {"title": data.get("title", ""), "gp_id": data.get("gp_id"),
                    "as_id": data.get("as_id"), "icon": data.get("icon", ""),
                    "developer": data.get("developer", ""), "stores": data.get("stores", [])}
+        # Optional user-chosen number of reviews to scrape (persisted per app so
+        # recurring crawls reuse it). Clamp to a sane range.
+        try:
+            rl = int(data.get("review_limit"))
+            app_obj["review_limit"] = max(10, min(rl, 2000))
+        except (TypeError, ValueError):
+            pass
         app_id = registry.upsert_app(app_obj)  # adds + makes active
         store = store_factory(app_id)
         store.save_config(registry.get_app(app_id))
@@ -60,7 +74,18 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
 
     @app.get("/api/apps")
     def apps():
-        return jsonify({"active_app_id": registry.get_active(), "apps": registry.list_apps()})
+        # Include each app's crawl status so the gallery can show "currently
+        # scraping" apps and the client can detect when a scrape finishes.
+        # Reads only the small meta doc per app (cheap on either backend).
+        out = []
+        for a in registry.list_apps():
+            meta = store_factory(a["app_id"]).load_meta()
+            entry = dict(a)
+            entry["status"] = meta.get("status", "idle")
+            entry["progress"] = meta.get("progress", {"done": 0, "total": 0})
+            entry["last_updated"] = meta.get("last_updated")
+            out.append(entry)
+        return _no_cache(jsonify({"active_app_id": registry.get_active(), "apps": out}))
 
     @app.post("/api/active")
     def set_active():
@@ -76,26 +101,32 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
         run_fn(store)
         return jsonify({"ok": True, "started": True}), 200
 
+    def _no_cache(resp):
+        # Same-URL JSON endpoints must never be served from the browser cache,
+        # or switching apps would show a stale (previously loaded) app's data.
+        resp.headers["Cache-Control"] = "no-store, max-age=0"
+        return resp
+
     @app.get("/api/stats")
     def stats():
-        store = active_store()
+        store = request_store()
         if store is None:
-            return jsonify({"app": {}, "total": 0, "by_label": {}, "bug_by_day": {},
+            return _no_cache(jsonify({"app": {}, "total": 0, "by_label": {}, "bug_by_day": {},
                             "meta": {"status": "idle", "progress": {"done": 0, "total": 0},
-                                     "last_updated": None}})
+                                     "last_updated": None}}))
         reviews = store.load_reviews()
         by_label = dict(Counter(r.get("label") for r in reviews))
         by_day = dict(Counter(
             (r.get("at") or "")[:10] for r in reviews if r.get("label") == "BUG_REPORT"
         ))
-        return jsonify({"app": store.load_config(), "total": len(reviews),
+        return _no_cache(jsonify({"app": store.load_config(), "total": len(reviews),
                         "by_label": by_label, "bug_by_day": by_day,
-                        "meta": store.load_meta()})
+                        "meta": store.load_meta()}))
 
     @app.get("/api/todos")
     def get_todos():
-        store = active_store()
-        return jsonify(store.load_todos() if store else [])
+        store = request_store()
+        return _no_cache(jsonify(store.load_todos() if store else []))
 
     @app.patch("/api/todos/<todo_id>")
     def patch_todo(todo_id):
@@ -112,8 +143,8 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
 
     @app.get("/api/reviews")
     def get_reviews():
-        store = active_store()
-        return jsonify(store.load_reviews() if store else [])
+        store = request_store()
+        return _no_cache(jsonify(store.load_reviews() if store else []))
 
     return app
 

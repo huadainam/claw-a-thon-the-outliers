@@ -113,12 +113,31 @@ class MemoryHTTP:
             f"/actors/{actor_id}/sessions/{session_id}/events"
         )
 
+    def _send(self, method, url, attempts=3, **kwargs):
+        """Issue a request, retrying transient failures (network errors and 5xx)
+        with short backoff. The Memory service can return a 5xx on a cold read,
+        which otherwise surfaced as a 500 on the first dashboard load."""
+        last_exc = None
+        for i in range(attempts):
+            try:
+                resp = self.session.request(method, url, headers=self._headers(),
+                                            timeout=30, **kwargs)
+                if resp.status_code >= 500:
+                    last_exc = requests.HTTPError(f"{resp.status_code} from Memory")
+                    time.sleep(0.4 * (i + 1))
+                    continue
+                resp.raise_for_status()
+                return resp
+            except requests.RequestException as e:
+                last_exc = e
+                time.sleep(0.4 * (i + 1))
+        raise last_exc
+
     def post_event(self, memory_id, actor_id, session_id, content):
         url = self._events_url(memory_id, actor_id, session_id)
         body = {"payload": {"type": "conversational", "role": "assistant",
                             "message": content}}
-        resp = self.session.post(url, json=body, headers=self._headers(), timeout=30)
-        resp.raise_for_status()
+        self._send("POST", url, json=body)
         _doc_cache[(memory_id, actor_id, session_id)] = content
 
     def list_events(self, memory_id, actor_id, session_id):
@@ -129,11 +148,7 @@ class MemoryHTTP:
         if cached is not None:
             return [{"content": cached, "eventTimestamp": "~cache"}]
         url = self._events_url(memory_id, actor_id, session_id)
-        resp = self.session.get(
-            url, params={"page": 1, "size": self.PAGE_SIZE},
-            headers=self._headers(), timeout=30,
-        )
-        resp.raise_for_status()
+        resp = self._send("GET", url, params={"page": 1, "size": self.PAGE_SIZE})
         items = resp.json().get("listData", []) or []
         events = [
             {"content": (e.get("payload") or {}).get("message"),

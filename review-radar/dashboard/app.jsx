@@ -119,15 +119,25 @@ function App() {
   };
 
   // Called from Screen 1 when user opens an already-tracked app
+  // Load an app's data, retrying on a failed fetch (the Memory backend can
+  // return a transient error on the first cold read). Bumps dataVersion to
+  // remount the dashboard once data is in. Without this, a failed first load
+  // left the dashboard empty until the user manually backed out and re-entered.
+  const loadDashboardWithRetry = (appId, tries = 4) =>
+    window.ARM_Bridge.loadDashboard(appId).then(res => {
+      if (res) { setDataVersion(v => v + 1); return res; }
+      if (tries > 1) {
+        return new Promise(r => setTimeout(r, 700)).then(() => loadDashboardWithRetry(appId, tries - 1));
+      }
+      return null;
+    });
+
   const handleOpenDashboard = (appId) => {
     setActiveApp(appId);
     setDashView("overview");
-    go("dashboard"); // show dashboard immediately (may show stale/mock data briefly)
-    window.ARM_Bridge.setActive(appId).then(() =>
-      window.ARM_Bridge.loadDashboard(appId)
-    ).then(() => {
-      setDataVersion(v => v + 1);
-    }).catch(console.warn);
+    go("dashboard"); // show dashboard immediately; data fills in once loaded
+    window.ARM_Bridge.setActive(appId).catch(() => {});
+    loadDashboardWithRetry(appId).catch(console.warn);
   };
 
   // Called from Screen 1 when user clicks an app that is currently scraping
@@ -140,9 +150,7 @@ function App() {
   const onDashNav = (viewId) => { setDashView(viewId); requestAnimationFrame(scrollTop); };
   const refreshActiveDashboard = () => {
     if (!activeApp) return Promise.resolve();
-    return window.ARM_Bridge.loadDashboard(activeApp).then(() => {
-      setDataVersion(v => v + 1);
-    });
+    return loadDashboardWithRetry(activeApp);
   };
 
   // Loading splash
@@ -177,10 +185,7 @@ function App() {
         {screen === "crawling" && (
           <Crawling key={"crawl"+(activeApp||"app")} t={t} app={activeApp || "zalopay"}
             onDone={() => {
-              window.ARM_Bridge.loadDashboard(activeApp).then(() => {
-                setDataVersion(v => v + 1);
-                go("dashboard");
-              }).catch(() => go("dashboard"));
+              loadDashboardWithRetry(activeApp).finally(() => go("dashboard"));
             }}
             onBack={() => go("selection")}/>
         )}

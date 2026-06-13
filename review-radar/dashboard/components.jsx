@@ -119,9 +119,14 @@ function Sidebar({ screen, lang, setLang, t, go, activeApp, dashSection, onDashN
     { id:"compare", icon:"chart", label:t("nav_compare"), screen:"compare" },
     { id:"reports", icon:"report", label:t("nav_reports"), screen:"reports" },
   ];
-  // The "selection" screen is the monitoring setup hero. Other screens
-  // (settings, team, dashboard, initializing) highlight no workspace item.
-  const wsActive = screen === "compare" ? "compare" : screen === "reports" ? "reports" : screen === "selection" ? "monitor" : null;
+  // "monitor" and "apps" both open the selection screen, so remember which the
+  // user clicked to highlight the right one. compare/reports are their own
+  // screens; settings/team/dashboard highlight no workspace item.
+  const [selTab, setSelTab] = useState("monitor");
+  const wsActive = screen === "compare" ? "compare"
+    : screen === "reports" ? "reports"
+    : screen === "selection" ? selTab
+    : null;
 
   const appItems = [
     { id:"overview", icon:"chart",   label:t("nav_overview") },
@@ -171,7 +176,8 @@ function Sidebar({ screen, lang, setLang, t, go, activeApp, dashSection, onDashN
           <div className="sb-section-label">{t("nav_section_main")}</div>
           {workspaceItems.map(it => (
             <button key={it.id} className={`sb-item ${wsActive === it.id ? "active" : ""}`}
-              title={it.label} onClick={() => it.screen && go(it.screen)}>
+              title={it.label}
+              onClick={() => { if (it.id === "monitor" || it.id === "apps") setSelTab(it.id); if (it.screen) go(it.screen); }}>
               <Icon name={it.icon} size={19}/>
               <span>{it.label}</span>
             </button>

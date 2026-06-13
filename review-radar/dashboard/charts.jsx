@@ -20,15 +20,18 @@ function DonutChart({ data, t, activeCat, onSelect }) {
 
   return (
     <div style={{ display:"flex", gap:14, alignItems:"flex-start", flexWrap:"wrap" }}>
-      <div style={{ position:"relative", width:size, height:size, flexShrink:0 }}>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display:"block", overflow:"visible" }}>
+      <div style={{ position:"relative", width:size, height:size, flexShrink:0, overflow:"hidden" }}>
+        {/* Width/height are pinned via CSS (not just attributes) so the chart
+            keeps its fixed size after the component unmounts and remounts —
+            e.g. navigating into a review detail and back. No transforms here,
+            and the box clips, so it can never balloon past `size`px. */}
+        <svg viewBox={`0 0 ${size} ${size}`} style={{ display:"block", width:size, height:size }}>
           {segments.map((s, i) => {
             const dimmed = (activeCat && activeCat !== s.id) || (hover != null && hover !== i);
             const path = donutSlicePath(center, center, outerR, innerR, s.start, s.end);
             return (
               <path key={s.id} d={path} fill={s.color} fillRule="evenodd"
-                style={{ opacity: dimmed ? 0.28 : 1, cursor:"pointer", transition:"opacity .2s, transform .15s",
-                  transformOrigin:`${center}px ${center}px`, transform: hover === i ? "scale(1.015)" : "scale(1)" }}
+                style={{ opacity: dimmed ? 0.28 : 1, cursor:"pointer", transition:"opacity .2s" }}
                 onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
                 onClick={() => onSelect(s.id === activeCat ? null : s.id)} />
             );

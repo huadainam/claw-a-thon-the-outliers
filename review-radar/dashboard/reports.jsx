@@ -26,9 +26,9 @@ function ReportsPage({ t }) {
           <CardHead title={t("delivery_title")} sub={t("delivery_sub")}/>
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:12, marginTop:16 }}>
-          <ChannelCard t={t} icon="teams" name={t("ch_teams")} desc={t("ch_teams_d")} future grad={["#6264a7","#4b4d8f"]} glyph="T"/>
-          <ChannelCard t={t} icon="outlook" name={t("ch_outlook")} desc={t("ch_outlook_d")} future grad={["#0a84ff","#0058c8"]} glyph="O"/>
-          <ChannelCard t={t} icon="download" name={t("ch_download")} desc={t("ch_download_d")} grad={["#86868b","#6e6e73"]} glyph="↓"/>
+          <ChannelCard t={t} logo="teams" name={t("ch_teams")} desc={t("ch_teams_d")} future/>
+          <ChannelCard t={t} logo="outlook" name={t("ch_outlook")} desc={t("ch_outlook_d")} future/>
+          <ChannelCard t={t} icon="download" name={t("ch_download")} desc={t("ch_download_d")} future/>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:16, padding:"11px 14px", background:"var(--warning-soft)", borderRadius:11, fontSize:13, color:"#9a5a00" }}>
           <Icon name="clock" size={15} stroke={2}/>
@@ -100,11 +100,11 @@ function ReportsPage({ t }) {
   );
 }
 
-function ChannelCard({ t, name, desc, future, grad, glyph }) {
+function ChannelCard({ t, name, desc, future, logo, icon }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:11, padding:"15px 16px", border:"1px solid var(--hairline)", borderRadius:14, background:"var(--card-2)" }}>
       <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-        <div className="app-glyph" style={{ width:34, height:34, fontSize:16, background:`linear-gradient(155deg, ${grad[0]}, ${grad[1]})` }}>{glyph}</div>
+        <ReportChannelIcon logo={logo} icon={icon}/>
         <div style={{ flex:1 }}>
           <div style={{ fontSize:14, fontWeight:600 }}>{name}</div>
         </div>
@@ -117,4 +117,27 @@ function ChannelCard({ t, name, desc, future, grad, glyph }) {
   );
 }
 
-Object.assign(window, { ReportsPage, ChannelCard });
+function ReportChannelIcon({ logo, icon }) {
+  const logos = {
+    teams: "assets/integrations/teams.jpeg",
+    outlook: "assets/integrations/outlook.jpeg",
+  };
+  const boxStyle = {
+    width:34, height:34, borderRadius:9, background:"#fff", border:"1px solid rgba(0,0,0,0.06)",
+    display:"grid", placeItems:"center", flexShrink:0, overflow:"hidden",
+  };
+  if (logo && logos[logo]) {
+    return (
+      <div style={boxStyle}>
+        <img src={logos[logo]} alt={`${logo} logo`} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} loading="lazy"/>
+      </div>
+    );
+  }
+  return (
+    <div style={{ ...boxStyle, background:"linear-gradient(155deg, #86868b, #6e6e73)", color:"#fff" }}>
+      <Icon name={icon || "download"} size={17} stroke={2.4}/>
+    </div>
+  );
+}
+
+Object.assign(window, { ReportsPage, ChannelCard, ReportChannelIcon });

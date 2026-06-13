@@ -37,6 +37,24 @@ def test_track_registers_app_sets_active_and_runs(tmp_path):
     assert factory("com.zing.zalo").load_config()["title"] == "Zalo"
     assert calls["ran"] == 1
 
+def test_track_allows_10k_review_backfill_limit(tmp_path):
+    client, _, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={
+        "title": "ZaloPay",
+        "as_id": "1112407590",
+        "review_limit": 10000,
+    })
+    assert factory("1112407590").load_config()["review_limit"] == 10000
+
+def test_track_clamps_review_backfill_limit(tmp_path):
+    client, _, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={
+        "title": "ZaloPay",
+        "as_id": "1112407590",
+        "review_limit": 50000,
+    })
+    assert factory("1112407590").load_config()["review_limit"] == 10000
+
 def test_apps_lists_tracked(tmp_path):
     client, registry, _ = make_client(tmp_path, run_fn=lambda s: None)
     client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo"})
@@ -44,6 +62,27 @@ def test_apps_lists_tracked(tmp_path):
     body = client.get("/api/apps").get_json()
     assert body["active_app_id"] == "1112407590"
     assert {a["title"] for a in body["apps"]} == {"Zalo", "ZaloPay"}
+
+def test_apps_includes_review_totals(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo"})
+    factory("com.zing.zalo").append_reviews([{"id": "1"}, {"id": "2"}])
+    body = client.get("/api/apps").get_json()
+    assert body["apps"][0]["total_reviews"] == 2
+
+def test_apps_sorted_zalopay_first_then_alphabetical(tmp_path):
+    client, registry, _ = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zing MP3", "gp_id": "vng.zing.mp3"})
+    client.post("/api/track", json={"title": "Crossfire: Legends", "as_id": "6748588650"})
+    client.post("/api/track", json={"title": "Zalopay-Thanh toán & Tài chính", "as_id": "1112407590"})
+    client.post("/api/track", json={"title": "Ballistic Hero VNG", "as_id": "6754264117"})
+    titles = [a["title"] for a in client.get("/api/apps").get_json()["apps"]]
+    assert titles == [
+        "Zalopay-Thanh toán & Tài chính",
+        "Ballistic Hero VNG",
+        "Crossfire: Legends",
+        "Zing MP3",
+    ]
 
 def test_set_active_switches_app(tmp_path):
     client, registry, _ = make_client(tmp_path, run_fn=lambda s: None)
@@ -59,6 +98,20 @@ def test_patch_todo_status(tmp_path):
     resp = client.patch("/api/todos/t1", json={"status": "done"})
     assert resp.status_code == 200
     assert factory("com.zing.zalo").load_todos()[0]["status"] == "done"
+
+def test_patch_todo_status_uses_explicit_app_id(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo"})
+    client.post("/api/track", json={"title": "ZaloPay", "as_id": "1112407590"})
+    factory("com.zing.zalo").save_todos([{"id": "t1", "topic": "login", "status": "open"}])
+    factory("1112407590").save_todos([{"id": "t1", "topic": "payment", "status": "open"}])
+
+    resp = client.patch("/api/todos/t1?app_id=com.zing.zalo", json={"status": "done"})
+
+    assert resp.status_code == 200
+    assert resp.get_json()["ok"] is True
+    assert factory("com.zing.zalo").load_todos()[0]["status"] == "done"
+    assert factory("1112407590").load_todos()[0]["status"] == "open"
 
 def test_stats_shape_with_meta(tmp_path):
     client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)

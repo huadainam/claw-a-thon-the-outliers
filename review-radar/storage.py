@@ -9,6 +9,23 @@ def app_key(app: dict) -> str:
     """Stable partition key for an app: prefer Google Play id, else App Store id."""
     return app.get("gp_id") or app.get("as_id") or app.get("title", "unknown")
 
+def _has_value(value) -> bool:
+    if value is None:
+        return False
+    if value == "":
+        return False
+    if isinstance(value, (list, dict)) and not value:
+        return False
+    return True
+
+def merge_app_metadata(existing: dict, incoming: dict) -> dict:
+    """Merge app metadata without letting sparse refreshes erase known fields."""
+    merged = dict(existing or {})
+    for key, value in dict(incoming or {}).items():
+        if _has_value(value) or key not in merged:
+            merged[key] = value
+    return merged
+
 def _safe(app_id: str) -> str:
     return re.sub(r"[^A-Za-z0-9._-]", "_", str(app_id))
 
@@ -206,8 +223,9 @@ class Registry(ABC):
         """Add or update an app (keyed by app_key), make it active, return its id."""
         key = app_key(app)
         reg = self.load()
+        existing = next((a for a in reg["apps"] if a.get("app_id") == key), {})
         apps = [a for a in reg["apps"] if a.get("app_id") != key]
-        app = dict(app)
+        app = merge_app_metadata(existing, app)
         app["app_id"] = key
         apps.append(app)
         reg["apps"] = apps

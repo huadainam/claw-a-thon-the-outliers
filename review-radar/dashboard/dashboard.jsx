@@ -1,5 +1,5 @@
 /* ============ Screen 3: Review Monitoring Dashboard ============ */
-function Dashboard({ t, app, onBack, view, onNav }) {
+function Dashboard({ t, app, onBack, view, onNav, onDataChanged }) {
   const a = window.DATA.APPS[app];
   const [range, setRange] = useState(30);
   const [freq, setFreq] = useState("1h");
@@ -13,7 +13,7 @@ function Dashboard({ t, app, onBack, view, onNav }) {
 
   // Jump to the Reviews page filtered to the category of an action item
   const viewReviewsFor = (action) => {
-    setReviewFilters({ ...emptyFilters, cat: action.cat });
+    setReviewFilters({ ...emptyFilters, actionId: action.id });
     setReviewCtx(action);
     onNav("reviews");
   };
@@ -21,6 +21,7 @@ function Dashboard({ t, app, onBack, view, onNav }) {
   return (
     <div>
       <DashTopBar t={t} app={app} a={a} onBack={onBack} freq={freq} onConfigure={() => setShowSchedule(true)}
+        range={range} setRange={setRange} onFutureNote={() => showToast(t("future_note"))}
         filters={reviewFilters} setFilters={setReviewFilters}/>
       <div style={{ padding:"24px 32px 60px", maxWidth:1280, margin:"0 auto" }}>
 
@@ -69,7 +70,7 @@ function Dashboard({ t, app, onBack, view, onNav }) {
                 <button className="btn btn-ghost btn-sm" onClick={() => onNav("actions")}>{t("view_all")}<Icon name="chevron" size={15} stroke={2.2}/></button>
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                {window.DATA.ACTIONS.slice(0, 5).map((it) => <ActionRow key={it.id} it={it} t={t} onViewReviews={viewReviewsFor}/>)}
+                {window.DATA.ACTIONS.slice(0, 5).map((it) => <ActionRow key={it.id} app={app} it={it} t={t} onViewReviews={viewReviewsFor} onDataChanged={onDataChanged}/>)}
               </div>
             </div>
 
@@ -81,7 +82,7 @@ function Dashboard({ t, app, onBack, view, onNav }) {
         )}
 
         {view === "actions" && (
-          <ActionsPage t={t} onBack={() => onNav("overview")} onViewReviews={viewReviewsFor}/>
+          <ActionsPage t={t} app={app} onBack={() => onNav("overview")} onViewReviews={viewReviewsFor} onDataChanged={onDataChanged}/>
         )}
 
         {view === "reviews" && (
@@ -110,7 +111,7 @@ const FREQS = [
   { id:"24h", val:"24", unit:"hrs", key:"every_24h" },
 ];
 
-function DashTopBar({ t, app, a, onBack, freq, onConfigure, filters, setFilters }) {
+function DashTopBar({ t, app, a, onBack, freq, onConfigure, range, setRange, onFutureNote, filters, setFilters }) {
   const freqLabel = t((FREQS.find(f => f.id === freq) || FREQS[1]).key);
   const set = (key, val) => setFilters({ ...filters, [key]: val });
   const catOpts = window.DATA.CATEGORIES.map(c => ({ value:c.id, label:t("cat_"+c.id) }));
@@ -146,7 +147,7 @@ function DashTopBar({ t, app, a, onBack, freq, onConfigure, filters, setFilters 
           <div style={{ flex:1 }}></div>
 
           <button className="btn btn-secondary btn-sm" onClick={onConfigure}><Icon name="sliders" size={15}/>{t("configure")}</button>
-          <Dropdown icon="calendar" label={t("date_range")} options={["Last 7 days","Last 30 days","Last 90 days","Custom…"]} t={t}/>
+          <DateRangeDropdown t={t} value={range} onChange={setRange} onCustom={onFutureNote}/>
         </div>
 
         {/* Filters — master bar, drives the review table below */}
@@ -164,6 +165,62 @@ function DashTopBar({ t, app, a, onBack, freq, onConfigure, filters, setFilters 
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function DateRangeDropdown({ t, value, onChange, onCustom }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const options = [
+    { value:7, label:t("date_7") },
+    { value:30, label:t("date_30") },
+    { value:90, label:t("date_90") },
+    { value:"custom", label:t("date_custom") },
+  ];
+  const selected = options.find(o => o.value === value) || options[1];
+  useEffect(() => {
+    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+  const choose = (option) => {
+    if (option.value === "custom") {
+      onCustom && onCustom();
+    } else {
+      onChange(option.value);
+    }
+    setOpen(false);
+  };
+  return (
+    <div ref={ref} style={{ position:"relative" }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600,
+          padding:"7px 13px", borderRadius:9, border:"1px solid var(--hairline-strong)",
+          background:"#fff", color:"var(--text)", transition:"all .15s" }}>
+        <Icon name="calendar" size={15} style={{ color:"var(--text-2)" }}/>
+        <span>{selected.label}</span>
+        <Icon name="chevronDown" size={14} style={{ color:"var(--text-3)", transition:"transform .2s", transform: open?"rotate(180deg)":"none" }}/>
+      </button>
+      {open && (
+        <div className="scale-in" style={{ position:"absolute", top:"calc(100% + 6px)", right:0, minWidth:170, zIndex:40,
+          background:"#fff", border:"1px solid var(--hairline)", borderRadius:13, boxShadow:"var(--shadow-pop)", padding:6,
+          transformOrigin:"top right" }}>
+          {options.map(o => {
+            const active = o.value === value;
+            return (
+              <button key={o.value} onClick={() => choose(o)}
+                style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", textAlign:"left",
+                  padding:"8px 11px", borderRadius:8, fontSize:13.5, fontWeight:500,
+                  background: active ? "var(--accent-soft)":"transparent", color: active?"var(--accent)":"var(--text)" }}
+                onMouseEnter={e => { if(!active) e.currentTarget.style.background="rgba(0,0,0,0.04)"; }}
+                onMouseLeave={e => { if(!active) e.currentTarget.style.background="transparent"; }}>
+                {o.label}{active && <Icon name="check" size={15} stroke={2.4}/>}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -198,9 +255,27 @@ function KpiCard({ k, t, i }) {
 }
 
 /* ---------- Action row (fixed grid so columns align across rows) ---------- */
-function ActionRow({ it, t, onViewReviews }) {
+function ActionRow({ app, it, t, onViewReviews, onDataChanged }) {
   const L = t._lang;
   const [status, setStatus] = useState(it.status);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => setStatus(it.status), [it.status]);
+  const markFixed = () => {
+    if (saving) return;
+    const prev = status;
+    setStatus("fixed");
+    setSaving(true);
+    const existing = window.DATA.ACTIONS.find(a => a.id === it.id);
+    if (existing) existing.status = "fixed";
+    window.ARM_Bridge.patchTodo(app, it.id, { status: "done" })
+      .then(() => (onDataChanged ? onDataChanged() : null))
+      .catch(err => {
+        console.warn("[ActionRow] failed to mark fixed:", err);
+        if (existing) existing.status = prev;
+        setStatus(prev);
+      })
+      .finally(() => setSaving(false));
+  };
   return (
     <div className="action-row" style={{ display:"grid",
       gridTemplateColumns:"132px minmax(0,1fr) 128px 104px 232px", alignItems:"center", gap:14,
@@ -212,18 +287,16 @@ function ActionRow({ it, t, onViewReviews }) {
       <div style={{ minWidth:0 }}>
         <div style={{ fontSize:14, fontWeight:600, letterSpacing:"-0.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{it["title_"+L]}</div>
         <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:3, fontSize:12.5, color:"var(--text-3)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-          <span className="mono">{it.id}</span>
-          <span style={{ width:3, height:3, borderRadius:"50%", background:"var(--text-3)", flexShrink:0 }}></span>
           <span style={{ display:"inline-flex", alignItems:"center", gap:4 }}><Icon name="user" size={12}/>{it.owner}</span>
           <span style={{ width:3, height:3, borderRadius:"50%", background:"var(--text-3)", flexShrink:0 }}></span>
-          <span>{it.reviews} {t("affecting")} {t("reviews_word")}</span>
+          <span>{it.reviews} {t("linked_reviews")}</span>
         </div>
       </div>
       <div><FlagBadge flag={it.flag} t={t}/></div>
       <div><StatusBadge status={status} t={t}/></div>
       <div style={{ display:"flex", gap:6, justifyContent:"flex-end", alignItems:"center" }}>
         {status !== "fixed" && status !== "ignored" && (
-          <button className="btn btn-secondary btn-xs" onClick={() => setStatus("fixed")} style={{ color:"var(--positive)", whiteSpace:"nowrap" }}>
+          <button className="btn btn-secondary btn-xs" disabled={saving} onClick={markFixed} style={{ color:"var(--positive)", whiteSpace:"nowrap" }}>
             <Icon name="check" size={13} stroke={2.6}/>{t("mark_fixed")}</button>
         )}
         <button className="btn btn-ghost btn-xs" onClick={() => onViewReviews && onViewReviews(it)} style={{ whiteSpace:"nowrap" }}>{t("view_reviews")}</button>

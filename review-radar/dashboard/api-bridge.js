@@ -56,9 +56,9 @@
   function makeAvailableEntry(ba, stats) {
     var s = stats || {};
     var byLabel = (s.by_label) || {};
-    var total   = s.total || 0;
+    var total   = (s.total != null) ? s.total : (ba.total_reviews || ba.totalReviews || 0);
     var bugs    = (byLabel.BUG_REPORT || 0) + (byLabel.COMPLAINT || 0);
-    var health  = bugs > 50 ? 'critical' : bugs > 10 ? 'warning' : 'positive';
+    var health  = ba.health || (bugs > 50 ? 'critical' : bugs > 10 ? 'warning' : 'positive');
     var lu = (s.meta && s.meta.last_updated) || ba.last_updated;
     var minAgo = lu ? Math.round((Date.now() - new Date(lu).getTime()) / 60000) : 999;
     return {
@@ -72,24 +72,70 @@
     };
   }
 
-  function makeKPIs(stats, todos) {
+  function isZaloPay(entry) {
+    var id = String(entry.app || entry.app_id || '').toLowerCase();
+    var spec = window.DATA.APPS[entry.app || entry.app_id] || {};
+    var name = String(entry.title || spec.name || '').toLowerCase();
+    return id === '1112407590' || id.indexOf('zalopay') >= 0 || name.indexOf('zalopay') >= 0;
+  }
+
+  function appName(entry) {
+    var id = entry.app || entry.app_id;
+    var spec = window.DATA.APPS[id] || {};
+    return String(entry.title || spec.name || id || '').toLocaleLowerCase('vi');
+  }
+
+  function sortAppsForGallery(items) {
+    return (items || []).slice().sort(function(a, b) {
+      var az = isZaloPay(a), bz = isZaloPay(b);
+      if (az && !bz) return -1;
+      if (!az && bz) return 1;
+      return appName(a).localeCompare(appName(b), 'vi', { sensitivity: 'base' });
+    });
+  }
+
+  function formatDashboardCount(value) {
+    var n = Number(value) || 0;
+    var abs = Math.abs(n);
+    if (abs >= 1000000000) return (n / 1000000000).toFixed(1) + 'B';
+    if (abs >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    return Math.round(n).toLocaleString();
+  }
+
+  function reviewDateKey(review) {
+    var raw = review && review.at;
+    if (!raw) return '';
+    var d = new Date(raw);
+    if (!Number.isNaN(d.getTime())) return d.toLocaleDateString('en-CA');
+    return String(raw).slice(0, 10);
+  }
+
+  function countReviewsOn(reviews, dateKey) {
+    return (reviews || []).filter(function(r) {
+      return reviewDateKey(r) === dateKey;
+    }).length;
+  }
+
+  function makeKPIs(stats, todos, reviews) {
     var total    = stats.total || 0;
     var byLabel  = stats.by_label || {};
     var todosArr = todos || [];
     var bugs     = byLabel.BUG_REPORT || 0;
     var fixed    = todosArr.filter(function(t){ return t.status === 'done'; }).length;
     var pending  = todosArr.filter(function(t){ return t.status === 'open'; }).length;
+    var todayKey = new Date().toLocaleDateString('en-CA');
+    var today    = countReviewsOn(reviews, todayKey);
     var totalCats = Object.values(byLabel).reduce(function(a, b){ return a + b; }, 0) || 1;
     var pos = byLabel.POSITIVE || 0;
     var neg = (byLabel.COMPLAINT || 0) + (byLabel.BUG_REPORT || 0);
     var healthScore = Math.round(Math.max(0, Math.min(100, ((pos - neg * 0.5) / totalCats * 50) + 70)));
 
     return [
-      { id:"total",    value: total.toLocaleString(),  raw: total,    icon:"reviews",  trend: null, sub:"all_time",     tone:"neutral" },
-      { id:"today",    value: "—",                     raw: 0,        icon:"calendar", trend: null, sub:"vs_yesterday", tone:"neutral" },
-      { id:"critical", value: String(bugs),            raw: bugs,     icon:"alert",    trend: null, sub:"need_fix",     tone:"critical", invert: true },
-      { id:"fixed",    value: String(fixed),           raw: fixed,    icon:"check",    trend: null, sub:"last_30d",     tone:"positive" },
-      { id:"pending",  value: String(pending),         raw: pending,  icon:"flag",     trend: null, sub:"action_items", tone:"warning",  invert: true },
+      { id:"total",    value: formatDashboardCount(total), raw: total, icon:"reviews", trend: null, sub:"all_time", tone:"neutral" },
+      { id:"today",    value: formatDashboardCount(today), raw: today, icon:"calendar", trend: null, sub:"vs_yesterday", tone:"neutral" },
+      { id:"critical", value: formatDashboardCount(bugs), raw: bugs,  icon:"alert",    trend: null, sub:"need_fix",     tone:"critical", invert: true },
+      { id:"fixed",    value: formatDashboardCount(fixed), raw: fixed, icon:"check",    trend: null, sub:"last_30d",     tone:"positive" },
+      { id:"pending",  value: formatDashboardCount(pending), raw: pending, icon:"flag", trend: null, sub:"action_items", tone:"warning",  invert: true },
       { id:"health",   value: String(healthScore),     raw: healthScore, icon:"heart", trend: null, sub:"out_of_100",   tone:"positive", suffix:"/100" },
     ];
   }
@@ -106,18 +152,33 @@
     return Object.values(merged).filter(function(e){ return e.count > 0; }).sort(function(a, b){ return b.count - a.count; });
   }
 
-  function makeTrend(bugByDay) {
-    bugByDay = bugByDay || {};
-    var days = Object.keys(bugByDay).sort();
-    if (days.length === 0) return window.DATA.TREND;
-    return days.map(function(day) {
+  function reviewHealth(review) {
+    var score = Number(review && review.score);
+    if (Number.isFinite(score) && score > 0) return Math.max(0, Math.min(100, Math.round(score * 20)));
+    if (review && review.label === 'POSITIVE') return 90;
+    if (review && (review.label === 'BUG_REPORT' || review.label === 'COMPLAINT')) return 35;
+    return 65;
+  }
+
+  function makeTrend(reviews) {
+    var byDay = {};
+    (reviews || []).forEach(function(review) {
+      var day = reviewDateKey(review);
+      if (!day) return;
+      if (!byDay[day]) byDay[day] = { reviews: 0, critical: 0, healthTotal: 0 };
+      byDay[day].reviews += 1;
+      if (review.label === 'BUG_REPORT') byDay[day].critical += 1;
+      byDay[day].healthTotal += reviewHealth(review);
+    });
+    return Object.keys(byDay).sort().map(function(day) {
       var d = new Date(day + 'T00:00:00');
+      var row = byDay[day];
       return {
         date: d,
         label: (d.getDate()) + '/' + (d.getMonth() + 1),
-        reviews: bugByDay[day] || 0,
-        critical: bugByDay[day] || 0,
-        health: 80,
+        reviews: row.reviews,
+        critical: row.critical,
+        health: Math.round(row.healthTotal / row.reviews),
       };
     });
   }
@@ -126,6 +187,7 @@
     todos = todos || [];
     var SEV_TO_PRI = { critical: 'critical', medium: 'high', low: 'medium' };
     return todos.map(function(todo) {
+      var samples = todo.sample_reviews || [];
       return {
         id:       todo.id,
         priority: SEV_TO_PRI[todo.severity] || 'medium',
@@ -134,6 +196,8 @@
         cat:      'bug',
         title_en: todo.topic || '(unknown)',
         title_vi: todo.topic || '(unknown)',
+        sampleReviews: samples,
+        matchTopic: todo.topic || '',
         owner:    (todo.sources || []).map(function(s){ return s === 'app_store' ? 'App Store' : 'Google Play'; }).join(' / ') || 'Team',
         reviews:  todo.mention_count || 0,
         version:  '—',
@@ -141,9 +205,43 @@
     });
   }
 
-  function makeReviews(reviews) {
+  function normalizeText(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function todoMatchesReview(todo, review) {
+    if (review.label !== 'BUG_REPORT') return false;
+    var content = normalizeText(review.content);
+    var samples = (todo.sample_reviews || []).map(normalizeText).filter(Boolean);
+    if (samples.some(function(sample) { return sample === content; })) return true;
+
+    var topic = normalizeText(todo.topic);
+    var bugTopic = normalizeText(review.bug_topic);
+    if (!topic || !bugTopic) return false;
+    if (topic.length >= 8 && bugTopic.indexOf(topic) >= 0) return true;
+    if (bugTopic.length >= 8 && topic.indexOf(bugTopic) >= 0) return true;
+
+    var topicWords = topic.split(' ').filter(function(w) { return w.length > 2 && w !== 'loi'; });
+    if (topicWords.length === 0) return false;
+    var hits = topicWords.filter(function(w) { return bugTopic.indexOf(w) >= 0; }).length;
+    return hits >= Math.min(2, topicWords.length);
+  }
+
+  function linkedActionIds(review, todos) {
+    return (todos || [])
+      .filter(function(todo) { return todoMatchesReview(todo, review); })
+      .map(function(todo) { return todo.id; });
+  }
+
+  function makeReviews(reviews, todos) {
     reviews = reviews || [];
-    return reviews.slice(0, 200).map(function(r, i) {
+    return reviews.map(function(r, i) {
       var score = r.score || 3;
       var cat   = LABEL_TO_CAT[r.label] || 'feedback';
       var sent  = score >= 4 ? 'positive' : score <= 2 ? 'negative' : 'neutral';
@@ -160,6 +258,7 @@
         priority:   pri,
         flag:       flag,
         status:     'open',
+        actionIds:  linkedActionIds(r, todos),
         summary_en: summary,
         summary_vi: summary,
         text_en:    content,
@@ -199,7 +298,7 @@
     init: function() {
       var self = this;
       return self._get('/api/apps').then(function(data) {
-        var apps = data.apps || [];
+        var apps = sortAppsForGallery(data.apps || []);
         apps.forEach(function(ba) {
           if (!window.DATA.APPS[ba.app_id]) {
             window.DATA.APPS[ba.app_id] = makeAppSpec(ba);
@@ -218,7 +317,7 @@
     // (each with .status) so the caller can detect scrape completion.
     refreshApps: function() {
       return this._get('/api/apps').then(function(data) {
-        var apps = data.apps || [];
+        var apps = sortAppsForGallery(data.apps || []);
         var prevById = {};
         (window.DATA.AVAILABLE || []).forEach(function(e){ prevById[e.app] = e; });
         window.DATA.AVAILABLE = apps.map(function(ba) {
@@ -230,8 +329,8 @@
           return {
             app:          ba.app_id,
             lastUpdated:  minAgo,
-            totalReviews: prev.totalReviews || 0,
-            health:       prev.health || 'positive',
+            totalReviews: ba.total_reviews || prev.totalReviews || 0,
+            health:       ba.health || prev.health || 'positive',
             status:       ba.status || 'idle',
             progress:     ba.progress || null,
             trend:        null,
@@ -256,6 +355,21 @@
       return this._post('/api/active', { app_id: appId });
     },
 
+    patchTodo: function(appId, todoId, patch) {
+      var q = appId ? ('?app_id=' + encodeURIComponent(appId)) : '';
+      return fetch('/api/todos/' + encodeURIComponent(todoId) + q, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch || {}),
+      }).then(function(r) {
+        if (!r.ok) throw new Error(r.statusText);
+        return r.json();
+      }).then(function(body) {
+        if (!body || body.ok === false) throw new Error((body && body.error) || 'Todo update failed');
+        return body;
+      });
+    },
+
     loadDashboard: function(appId) {
       var self = this;
       // Pass app_id explicitly so each app fetches its own data via a distinct
@@ -274,19 +388,19 @@
           window.DATA.APPS[appId] = makeAppSpec(Object.assign({ app_id: appId }, stats.app));
         }
 
-        window.DATA.KPIS       = makeKPIs(stats, todos);
+        window.DATA.KPIS       = makeKPIs(stats, todos, reviews);
         window.DATA.CATEGORIES = makeCategories(stats.by_label);
         window.DATA.ACTIONS    = makeActions(todos);
-        window.DATA.REVIEWS    = makeReviews(reviews);
+        window.DATA.REVIEWS    = makeReviews(reviews, todos);
 
-        var trend = makeTrend(stats.bug_by_day);
-        if (trend !== window.DATA.TREND) window.DATA.TREND = trend;
+        window.DATA.TREND = makeTrend(reviews);
 
         // Update the AVAILABLE entry for this app
         var avIdx = window.DATA.AVAILABLE.findIndex(function(a){ return a.app === appId; });
         var avEntry = makeAvailableEntry({ app_id: appId }, stats);
         if (avIdx >= 0) window.DATA.AVAILABLE[avIdx] = avEntry;
         else window.DATA.AVAILABLE.push(avEntry);
+        window.DATA.AVAILABLE = sortAppsForGallery(window.DATA.AVAILABLE);
 
         return { stats: stats, todos: todos, reviews: reviews };
       }).catch(function(e) {

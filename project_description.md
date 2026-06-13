@@ -1,159 +1,193 @@
-# Review Radar — AI Agent tự động phân tích review ứng dụng
+# Review Radar - AI Agent Phân Tích Review Ứng Dụng
 
-## Tổng quan
+## Tổng Quan
 
-**Review Radar** là một AI agent nhận vào tên ứng dụng bất kỳ (Zalo, ZaloPay, Võ Lâm Truyền Kỳ,...), tự động cào 1.000 review mới nhất từ cả App Store và Google Play, phân loại review bằng AI (tập trung tiếng Việt), gom nhóm các bug report, và hiển thị toàn bộ kết quả trên một dashboard thống nhất kèm to-do list quản lý bug. Agent tự cập nhật mỗi 1 giờ để không bỏ sót review mới.
+Review Radar giúp team product và engineering nhanh chóng hiểu người dùng đang
+gặp vấn đề gì khi sử dụng mobile app.
 
----
+Bình thường, một ứng dụng có thể có hàng trăm review mới. Nếu đọc thủ công, team
+rất dễ bỏ sót lỗi quan trọng. Review Radar tự động thu thập review, dùng AI để
+phân loại nội dung, gom các bug giống nhau thành nhóm, và đưa tất cả lên một
+dashboard dễ theo dõi.
 
-## Vấn đề giải quyết
+## Bài Toán Giải Quyết
 
-Các team product/dev thường nhận hàng trăm review mỗi ngày nhưng không có công cụ tự động nào giúp họ:
-- Lọc ra review thực sự có giá trị trong đống review rác
-- Phát hiện nhanh các bug đang được user báo cáo
-- Theo dõi tình trạng xử lý bug theo thời gian
+Người dùng thường viết review theo nhiều cách khác nhau:
 
-Review Radar giải quyết toàn bộ vòng lặp này mà không cần dev/PM ngồi đọc thủ công.
+- "Không đăng nhập được"
+- "Login Google bị lỗi"
+- "Mở app lên cứ bắt đăng nhập lại"
+- "Tài khoản không vào được"
 
----
+Với người đọc, đây có thể là cùng một vấn đề. Review Radar cũng cố gắng hiểu
+theo cách đó và gom các câu trên thành một bug topic như:
 
-## Input / Output
+```text
+Lỗi đăng nhập
+```
 
-**Input:** Tên ứng dụng (ví dụ: `zalo`, `zalopay`, `võ lâm truyền kỳ`)
+Sau đó hệ thống tính số lượt nhắc tới bug này để xếp mức độ ưu tiên.
+
+## Input Và Output
+
+**Input:** tên ứng dụng, ví dụ `Zalo`, `ZaloPay`, `Phong Thần VNG`.
 
 **Output:**
-- Dashboard tổng quan với biểu đồ phân loại review
-- To-do list các bug report với severity và trạng thái xử lý
-- Tự động append review mới mỗi 1 giờ
 
----
+- Dashboard tổng quan về review.
+- Các nhóm bug đang được người dùng báo cáo.
+- Danh sách action items cho team xử lý.
+- Bảng review chi tiết để kiểm tra nội dung gốc.
+- Trang tiến độ khi hệ thống đang crawl/phân tích review mới.
 
-## Luồng xử lý (Agent Flow)
+## Flow Hoạt Động
 
+```text
+1. User nhập tên app
+        |
+        v
+2. Hệ thống tìm ứng viên trên App Store và Google Play
+        |
+        v
+3. User chọn đúng app cần theo dõi
+        |
+        v
+4. Hệ thống lấy review mới từ store
+        |
+        v
+5. Review đã xử lý trước đó được bỏ qua
+        |
+        v
+6. AI phân loại từng review
+        |
+        v
+7. AI gom các chủ đề bug tương tự về một tên chuẩn
+        |
+        v
+8. Hệ thống tạo bug groups và tính severity
+        |
+        v
+9. Dashboard cập nhật số liệu, biểu đồ, action items
 ```
-User nhập app name
-        ↓
-Tìm kiếm app ID trên App Store & Google Play
-        ↓
-Scrape 1.000 review mới nhất từ mỗi nền tảng (tổng ~2.000 review)
-        ↓
-Deduplication — loại bỏ review đã xử lý trước đó (theo review ID)
-        ↓
-Filter review rác (quá ngắn, chỉ có emoji, không nội dung)
-        ↓
-Phân loại từng review bằng AI (tiếng Việt + tiếng Anh):
-  • Bug Report
-  • Feature Request  
-  • Complaint (UX/performance)
-  • Positive Feedback
-  • Spam / Rác
-        ↓
-Gom nhóm Bug Report theo chủ đề (crash, lỗi login, lỗi thanh toán,...)
-        ↓
-Gắn Severity cho từng nhóm bug:
-  • Critical — nhiều user báo cáo (≥10 mention)
-  • Medium — vài user báo cáo (3–9 mention)
-  • Low — ít báo cáo (<3 mention)
-        ↓
-Tạo to-do item cho mỗi nhóm bug → đổ vào Dashboard
-        ↓
-Lưu trạng thái vào AgentBase Memory
+
+## Các Loại Review
+
+AI phân loại review thành 5 nhóm:
+
+| Label | Ý nghĩa |
+|---|---|
+| `BUG_REPORT` | Người dùng báo lỗi cụ thể |
+| `FEATURE_REQUEST` | Người dùng đề xuất tính năng |
+| `COMPLAINT` | Phàn nàn về trải nghiệm, hiệu năng, UX |
+| `POSITIVE` | Phản hồi tích cực |
+| `SPAM` | Review quá ngắn, vô nghĩa, rác |
+
+## Cách Tính Severity
+
+Severity dựa trên số review cùng nhắc tới một vấn đề:
+
+| Severity | Điều kiện | Ý nghĩa |
+|---|---:|---|
+| Critical | 10+ mentions | Nhiều người gặp, cần ưu tiên cao |
+| Medium | 3-9 mentions | Đang xuất hiện lặp lại, cần theo dõi |
+| Low | 1-2 mentions | Ít người báo cáo, ưu tiên thấp hơn |
+
+## Dashboard Hiện Tại
+
+Dashboard hiện có các khu vực:
+
+- **App selection:** tìm app mới hoặc mở app đã có dữ liệu.
+- **Currently scraping:** xem app nào đang được crawl.
+- **Crawling screen:** hiển thị tiến độ xử lý review.
+- **Overview:** KPI, phân loại review, trend, action items.
+- **Actions:** danh sách bug/action items.
+- **Reviews:** bảng review chi tiết có filter.
+- **Reports / Settings / Team / Compare:** UI demo hoặc future features.
+
+## Kiến Trúc Hệ Thống
+
+Ứng dụng là một Flask server chạy ở port `8080`.
+
+```text
+Browser
+  |
+  v
+React dashboard
+  |
+  v
+Flask REST API
+  |
+  v
+Pipeline xử lý review
+  |
+  +-- Scraper
+  +-- LLM classifier
+  +-- Topic canonicalizer
+  +-- Bug grouper
+  |
+  v
+Storage
+  +-- Local JSON khi dev
+  +-- AgentBase Memory khi deploy
 ```
 
----
+## Multi-App
 
-## Tính năng Dashboard
+Phiên bản hiện tại hỗ trợ nhiều app.
 
-### Tổng quan (Overview)
-- Tổng số review đã xử lý
-- Biểu đồ tròn phân loại review (Bug / Feature Request / Complaint / Positive / Spam)
-- Biểu đồ trend theo thời gian (số bug report tuần này vs tuần trước)
-- Timestamp cập nhật gần nhất
+Mỗi app có data riêng:
 
-### Bug To-Do List
-| Nhóm bug | Severity | Số mention | Trạng thái | Hành động |
-|---|---|---|---|---|
-| Lỗi đăng nhập Google | 🔴 Critical | 24 | Open | Mark Done |
-| App crash khi mở camera | 🔴 Critical | 15 | Open | Mark Done |
-| Giao diện lỗi trên iOS 17 | 🟡 Medium | 7 | In Progress | Mark Done |
-| Thông báo không hiện | 🟢 Low | 2 | Done | ✓ |
+```text
+data/apps/<app_id>/
+  config.json
+  processed_ids.json
+  reviews.json
+  todos.json
+  meta.json
+```
 
-- Mỗi to-do item có thể click để xem sample review gốc
-- Có thể filter theo severity, trạng thái, nền tảng (App Store / Google Play)
-- **Mark Done** → cập nhật trạng thái, item không bị xóa để giữ lịch sử
+`registry.json` lưu danh sách app đã theo dõi và app đang active.
 
-### Review Explorer
-- Xem danh sách review thô đã phân loại
-- Filter theo: loại, rating (1–5 sao), nền tảng, ngày
-- Highlight keyword AI đánh dấu
+Điều này giúp dashboard mở từng app mà không bị lẫn dữ liệu giữa các app.
 
----
+## Seed Data Để Demo
 
-## Cơ chế cập nhật tự động (Hourly Sync)
+Repo có thư mục `review-radar/seed/` gồm 13 app đã được crawl và phân tích sẵn.
 
-- Mỗi 1 giờ, agent chạy lại pipeline scrape cho app đang theo dõi
-- So sánh review ID với batch đã xử lý → chỉ xử lý review **mới** (incremental)
-- Nếu review mới tạo ra bug group trùng với group đã có → merge vào group cũ, cập nhật mention count
-- Nếu mention count vượt ngưỡng → tự động nâng severity (Low → Medium → Critical)
-- Dashboard tự refresh, không cần user thao tác thêm
+Khi ứng dụng khởi động lần đầu và store còn trống, seed data sẽ được copy vào
+store. Nhờ vậy dashboard có dữ liệu ngay khi demo, kể cả khi live scraping chậm
+hoặc bị store throttle.
 
----
+## Những Phần Đã Chạy Thật
 
-## Tech Stack dự kiến
+- Tìm app bằng fuzzy search.
+- Track app mới.
+- Crawl review App Store / Google Play.
+- Deduplicate review đã xử lý.
+- Gọi LLM để classify review.
+- Gọi LLM để canonicalize bug topic.
+- Group bug và tính severity.
+- Lưu data theo từng app.
+- Hiển thị dashboard bằng dữ liệu backend.
+- Bootstrap seed data.
+- Chạy test suite.
 
-| Layer | Công nghệ |
-|---|---|
-| Scraping | `google-play-scraper` (Python/Node), iTunes RSS / `app-store-scraper` |
-| AI Classification | GreenNode AI Platform — LLM (Claude / model GreenNode cung cấp) |
-| State / Memory | AgentBase Memory module |
-| Backend / Orchestration | Python, chạy qua AgentBase Runtime |
-| Frontend Dashboard | HTML/CSS/JS thuần hoặc React — self-contained |
-| Deployment | Docker → AgentBase (GreenNode) |
-| Source Control | GitHub (public repo) |
+## Những Phần Đang Là Demo/Future UI
 
----
+- Reports và scheduled reports.
+- Team feedback persistence.
+- Settings integrations.
+- Compare metrics.
+- Một số nút "mark fixed" trong frontend mới đổi local state, chưa phải tất cả
+  đều gọi API backend.
 
-## Các điểm kỹ thuật cần lưu ý
+## Tiêu Chí Demo
 
-### Scraping
-- Giới hạn 1.000 review mới nhất mỗi nền tảng (2.000 tổng) để tránh timeout và tốn credit
-- Lưu `review_id` sau mỗi lần xử lý → dùng để dedup lần sau
-- Test scraping ngay ngày đầu để biết rate limit thực tế
+Demo nên cho thấy:
 
-### AI Classification
-- Prompt phải handle tốt tiếng Việt (review thuần Việt, teen code, viết tắt)
-- Batch classification để tiết kiệm API call (gửi 20–50 review/request thay vì từng cái)
-- Dùng structured output (JSON) để parse kết quả ổn định
-
-### Dashboard
-- File HTML self-contained, không phụ thuộc external service
-- State (trạng thái to-do) lưu trong AgentBase Memory, không dùng localStorage
-- Endpoint public để share được (tránh lỗi localhost khi demo)
-
-### Deduplication & Merge Logic
-- Primary key: `review_id` từ store
-- Bug group key: hash của chủ đề (để merge tự động khi có mention mới)
-
----
-
-## Scope cho 7 ngày
-
-| Ưu tiên | Tính năng |
-|---|---|
-| ✅ Must have | Scrape → Classify → Dashboard + Bug To-Do List |
-| ✅ Must have | Deduplication, hourly sync |
-| ✅ Must have | Mark Done, filter theo severity |
-| 🔄 Should have | Trend chart theo thời gian |
-| 🔄 Should have | Click vào bug để xem review gốc |
-| ⭐ Nice to have | Export to-do list ra CSV/Notion |
-| ⭐ Nice to have | Hỗ trợ theo dõi nhiều app cùng lúc |
-
----
-
-## Tiêu chí thành công (Demo)
-
-1. Nhập `zalo` → agent tìm được app trên cả 2 store
-2. Dashboard hiện đúng phân loại review, bug list với severity
-3. Mark một bug là Done → trạng thái cập nhật
-4. Chạy lại sau 1 giờ → review mới được append, không bị duplicate
-5. Link agent public, ai cũng truy cập được
+1. Mở dashboard có sẵn app từ seed data.
+2. Tìm app mới bằng tên app.
+3. Chọn app và xem màn hình crawl progress.
+4. Mở dashboard app đã phân tích.
+5. Xem bug/action items và review gốc.
+6. Giải thích được cách AI gom review thành bug groups.

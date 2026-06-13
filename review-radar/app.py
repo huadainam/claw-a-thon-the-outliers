@@ -1,4 +1,5 @@
 import os
+import unicodedata
 import threading
 from collections import Counter
 from flask import Flask, jsonify, request, send_from_directory
@@ -37,6 +38,13 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
         aid = request.args.get("app_id") or registry.get_active()
         return store_factory(aid) if aid else None
 
+    def gallery_sort_key(app_obj):
+        title = (app_obj.get("title") or app_obj.get("app_id") or "").lower()
+        app_id = str(app_obj.get("app_id") or "").lower()
+        is_zalopay = app_id == "1112407590" or "zalopay" in app_id or "zalopay" in title
+        ascii_title = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii")
+        return (0 if is_zalopay else 1, ascii_title)
+
     @app.get("/health")
     def health():
         return jsonify({"status": "ok"}), 200
@@ -59,10 +67,10 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
                    "as_id": data.get("as_id"), "icon": data.get("icon", ""),
                    "developer": data.get("developer", ""), "stores": data.get("stores", [])}
         # Optional user-chosen number of reviews to scrape (persisted per app so
-        # recurring crawls reuse it). Clamp to a sane range.
+        # recurring crawls reuse it). Clamp to a sane range for backfills.
         try:
             rl = int(data.get("review_limit"))
-            app_obj["review_limit"] = max(10, min(rl, 2000))
+            app_obj["review_limit"] = max(10, min(rl, 10000))
         except (TypeError, ValueError):
             pass
         app_id = registry.upsert_app(app_obj)  # adds + makes active
@@ -74,17 +82,19 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
 
     @app.get("/api/apps")
     def apps():
-        # Include each app's crawl status so the gallery can show "currently
-        # scraping" apps and the client can detect when a scrape finishes.
-        # Reads only the small meta doc per app (cheap on either backend).
+        # Include each app's crawl status and review total so the gallery can
+        # show useful counts before a user opens an individual dashboard.
         out = []
         for a in registry.list_apps():
-            meta = store_factory(a["app_id"]).load_meta()
+            store = store_factory(a["app_id"])
+            meta = store.load_meta()
             entry = dict(a)
             entry["status"] = meta.get("status", "idle")
             entry["progress"] = meta.get("progress", {"done": 0, "total": 0})
             entry["last_updated"] = meta.get("last_updated")
+            entry["total_reviews"] = len(store.load_reviews())
             out.append(entry)
+        out.sort(key=gallery_sort_key)
         return _no_cache(jsonify({"active_app_id": registry.get_active(), "apps": out}))
 
     @app.post("/api/active")
@@ -130,16 +140,19 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
 
     @app.patch("/api/todos/<todo_id>")
     def patch_todo(todo_id):
-        store = active_store()
+        app_id = request.args.get("app_id")
+        store = store_factory(app_id) if app_id else active_store()
         if store is None:
             return jsonify({"ok": False, "error": "no active app"}), 200
         data = request.get_json(silent=True) or {}
         todos = store.load_todos()
+        found = False
         for t in todos:
             if t["id"] == todo_id and "status" in data:
                 t["status"] = data["status"]
+                found = True
         store.save_todos(todos)
-        return jsonify({"ok": True})
+        return jsonify({"ok": found, "todo_id": todo_id, "app_id": app_id or registry.get_active()})
 
     @app.get("/api/reviews")
     def get_reviews():

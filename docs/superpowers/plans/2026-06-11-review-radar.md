@@ -1,5 +1,22 @@
 # Review Radar Implementation Plan
 
+> **Status: historical implementation plan.**
+>
+> This document records the original implementation plan from 2026-06-11. The
+> current source code has evolved beyond parts of this plan:
+>
+> - the dashboard is now React 18 CDN + JSX files, not a single vanilla
+>   HTML/Chart.js page
+> - app tracking is now multi-app through a registry, not a single-app reset
+>   model
+> - storage is partitioned per app and includes `meta` progress state
+> - seed data is bundled and bootstrapped for instant demo data
+> - read APIs support `?app_id=` so the dashboard can load a specific app
+>
+> For the current architecture, use
+> `docs/superpowers/specs/2026-06-11-review-radar-design.md` as the source of
+> truth.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build an AI agent that scrapes the latest ~1.000 reviews of a chosen app from App Store + Google Play, classifies them with a GreenNode LLM, groups bug reports by topic/severity, and serves a self-contained dashboard with a bug to-do list — auto-refreshing hourly.

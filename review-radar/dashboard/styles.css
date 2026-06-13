@@ -296,12 +296,15 @@ input { font-family: inherit; }
 /* Toast */
 .toast {
   position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-  z-index: 120; background: rgba(28,28,30,0.95); color: #fff; backdrop-filter: blur(8px);
-  padding: 12px 18px; border-radius: 14px; font-size: 14px; font-weight: 500;
+  z-index: 120; background: rgba(28,28,30,0.96); color: #fff;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  padding: 12px 18px; border-radius: 14px; font-size: 14px; font-weight: 650;
+  border: 1px solid rgba(255,255,255,0.12);
   box-shadow: var(--shadow-pop); display: flex; align-items: center; gap: 9px;
-  animation: toastIn 0.35s cubic-bezier(0.22,0.61,0.36,1) both;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.28);
+  animation: toastBottomIn 0.35s cubic-bezier(0.22,0.61,0.36,1) both;
 }
-@keyframes toastIn { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes toastBottomIn { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
 /* Settings inputs */
 .set-input {
@@ -342,7 +345,9 @@ textarea.set-input { font-family: inherit; }
   display: flex; flex-direction: column; gap: 10px;
   pointer-events: none;
 }
-.toast {
+.toast-wrap .toast {
+  position: static; bottom: auto; left: auto; transform: none;
+  z-index: auto; color: var(--text); text-shadow: none;
   pointer-events: auto; cursor: pointer;
   display: flex; align-items: center; gap: 13px;
   min-width: 300px; max-width: 380px; padding: 12px 14px;
@@ -352,9 +357,9 @@ textarea.set-input { font-family: inherit; }
   backdrop-filter: saturate(180%) blur(22px);
   border: 0.5px solid rgba(255, 255, 255, 0.6);
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.08);
-  animation: toastIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: toastCardIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
-.toast-leaving { animation: toastOut 0.3s ease forwards; }
+.toast-wrap .toast-leaving { animation: toastCardOut 0.3s ease forwards; }
 .toast-glyph { flex-shrink: 0; }
 .toast-check {
   width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
@@ -369,11 +374,11 @@ textarea.set-input { font-family: inherit; }
   flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
   display: grid; place-items: center; color: #fff; background: var(--positive);
 }
-@keyframes toastIn {
+@keyframes toastCardIn {
   from { opacity: 0; transform: translateX(46px) scale(0.94); }
   to   { opacity: 1; transform: none; }
 }
-@keyframes toastOut {
+@keyframes toastCardOut {
   to { opacity: 0; transform: translateX(46px) scale(0.94); }
 }
 

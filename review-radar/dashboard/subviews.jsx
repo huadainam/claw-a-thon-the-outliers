@@ -17,7 +17,7 @@ function PageHeader({ t, title, sub, onBack, right }) {
 }
 
 /* ---------- Full Action Items page ---------- */
-function ActionsPage({ t, onBack, onViewReviews }) {
+function ActionsPage({ t, app, onBack, onViewReviews, onDataChanged }) {
   const [filters, setFilters] = useState({ priority:null, status:null, flag:null });
   const set = (k, v) => setFilters({ ...filters, [k]: v });
 
@@ -52,7 +52,7 @@ function ActionsPage({ t, onBack, onViewReviews }) {
       </div>
 
       <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-        {rows.map(it => <ActionRow key={it.id} it={it} t={t} onViewReviews={onViewReviews}/>)}
+        {rows.map(it => <ActionRow key={it.id} app={app} it={it} t={t} onViewReviews={onViewReviews} onDataChanged={onDataChanged}/>)}
         {rows.length === 0 && (
           <div className="card" style={{ padding:"50px 22px", textAlign:"center", color:"var(--text-3)" }}>
             <Icon name="flag" size={26} style={{ marginBottom:10, color:"var(--text-3)" }}/>
@@ -77,7 +77,7 @@ function ReviewsPage({ t, onBack, filters, setFilters, ctx, onClearCtx }) {
             <Icon name="flag" size={16}/>
           </div>
           <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:13, color:"var(--text-2)" }}>{t("reviews_for")} <span className="mono" style={{ fontWeight:600, color:"var(--text)" }}>{ctx.id}</span></div>
+            <div style={{ fontSize:13, color:"var(--text-2)" }}>{t("reviews_for")}</div>
             <div style={{ fontSize:14, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{ctx["title_"+t._lang]}</div>
           </div>
           <button className="btn btn-secondary btn-sm" onClick={onClearCtx}>{t("clear_context")}</button>

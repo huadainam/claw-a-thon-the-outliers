@@ -3,12 +3,15 @@
 /* ---------- Donut chart with center label ---------- */
 function DonutChart({ data, t, activeCat, onSelect }) {
   const total = data.reduce((s, d) => s + d.count, 0);
-  const size = 188, stroke = 26, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const size = 172, outerR = 86, innerR = 60;
+  const center = size / 2;
   const [hover, setHover] = useState(null);
   let offset = 0;
   const segments = data.map(d => {
-    const frac = d.count / total;
-    const seg = { ...d, frac, dash: frac * c, offset: offset * c };
+    const frac = total ? d.count / total : 0;
+    const start = offset * 360 - 90;
+    const end = (offset + frac) * 360 - 90;
+    const seg = { ...d, frac, start, end };
     offset += frac;
     return seg;
   });
@@ -16,17 +19,16 @@ function DonutChart({ data, t, activeCat, onSelect }) {
   const focus = hover != null ? data[hover] : (activeCat ? data.find(d => d.id === activeCat) : null);
 
   return (
-    <div style={{ display:"flex", gap:22, alignItems:"center", flexWrap:"wrap" }}>
+    <div style={{ display:"flex", gap:14, alignItems:"flex-start", flexWrap:"wrap" }}>
       <div style={{ position:"relative", width:size, height:size, flexShrink:0 }}>
-        <svg width={size} height={size} style={{ transform:"rotate(-90deg)" }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display:"block", overflow:"visible" }}>
           {segments.map((s, i) => {
             const dimmed = (activeCat && activeCat !== s.id) || (hover != null && hover !== i);
+            const path = donutSlicePath(center, center, outerR, innerR, s.start, s.end);
             return (
-              <circle key={s.id} cx={size/2} cy={size/2} r={r} fill="none"
-                stroke={s.color} strokeWidth={hover === i ? stroke + 4 : stroke}
-                strokeDasharray={`${s.dash} ${c - s.dash}`} strokeDashoffset={-s.offset}
-                strokeLinecap="butt"
-                style={{ opacity: dimmed ? 0.28 : 1, cursor:"pointer", transition:"opacity .2s, stroke-width .15s" }}
+              <path key={s.id} d={path} fill={s.color} fillRule="evenodd"
+                style={{ opacity: dimmed ? 0.28 : 1, cursor:"pointer", transition:"opacity .2s, transform .15s",
+                  transformOrigin:`${center}px ${center}px`, transform: hover === i ? "scale(1.015)" : "scale(1)" }}
                 onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
                 onClick={() => onSelect(s.id === activeCat ? null : s.id)} />
             );
@@ -35,32 +37,32 @@ function DonutChart({ data, t, activeCat, onSelect }) {
         <div style={{ position:"absolute", inset:0, display:"grid", placeItems:"center", textAlign:"center", pointerEvents:"none" }}>
           {focus ? (
             <div className="fade-in" key={focus.id}>
-              <div style={{ fontSize:26, fontWeight:700, letterSpacing:"-0.03em" }} className="mono">{Math.round(focus.count/total*100)}%</div>
-              <div style={{ fontSize:12, color:"var(--text-2)", fontWeight:600, maxWidth:90 }}>{t("cat_"+focus.id)}</div>
+              <div style={{ fontSize:24, fontWeight:700, letterSpacing:"-0.03em" }} className="mono">{Math.round(focus.count/total*100)}%</div>
+              <div style={{ fontSize:11.5, color:"var(--text-2)", fontWeight:600, maxWidth:86 }}>{t("cat_"+focus.id)}</div>
             </div>
           ) : (
             <div>
-              <div style={{ fontSize:25, fontWeight:700, letterSpacing:"-0.03em" }} className="mono">{(total/1000).toFixed(1)}k</div>
+              <div style={{ fontSize:24, fontWeight:700, letterSpacing:"-0.03em" }} className="mono">{formatDashboardCount(total)}</div>
               <div style={{ fontSize:11.5, color:"var(--text-3)", fontWeight:600 }}>{t("cat_total")}</div>
             </div>
           )}
         </div>
       </div>
 
-      <div style={{ flex:1, minWidth:170, display:"flex", flexDirection:"column", gap:2 }}>
+      <div style={{ flex:"1 1 150px", minWidth:0, marginTop:3, display:"flex", flexDirection:"column", gap:1 }}>
         {segments.map((s, i) => {
           const sel = activeCat === s.id;
           return (
             <button key={s.id}
               onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
               onClick={() => onSelect(s.id === activeCat ? null : s.id)}
-              style={{ display:"flex", alignItems:"center", gap:10, padding:"6px 9px", borderRadius:9,
+              style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 7px", borderRadius:8,
                 background: sel ? "var(--accent-soft)" : (hover === i ? "rgba(0,0,0,0.03)" : "transparent"),
                 transition:"background .15s", textAlign:"left", width:"100%" }}>
-              <span style={{ width:9, height:9, borderRadius:3, background:s.color, flexShrink:0 }}></span>
-              <span style={{ fontSize:13.5, fontWeight:500, flex:1, color: sel ? "var(--accent)" : "var(--text)" }}>{t("cat_"+s.id)}</span>
-              <span className="mono" style={{ fontSize:13, color:"var(--text-2)", fontWeight:600 }}>{s.count.toLocaleString()}</span>
-              <span className="mono" style={{ fontSize:12, color:"var(--text-3)", fontWeight:600, width:34, textAlign:"right" }}>{Math.round(s.frac*100)}%</span>
+              <span style={{ width:8, height:8, borderRadius:3, background:s.color, flexShrink:0 }}></span>
+              <span style={{ fontSize:13, fontWeight:500, flex:1, minWidth:0, color: sel ? "var(--accent)" : "var(--text)" }}>{t("cat_"+s.id)}</span>
+              <span className="mono" style={{ fontSize:12.5, color:"var(--text-2)", fontWeight:600 }}>{s.count.toLocaleString()}</span>
+              <span className="mono" style={{ fontSize:11.5, color:"var(--text-3)", fontWeight:600, width:30, textAlign:"right" }}>{Math.round(s.frac*100)}%</span>
             </button>
           );
         })}
@@ -69,18 +71,64 @@ function DonutChart({ data, t, activeCat, onSelect }) {
   );
 }
 
+function formatDashboardCount(value) {
+  const n = Number(value) || 0;
+  if (Math.abs(n) >= 1000000000) return `${(n / 1000000000).toFixed(1)}B`;
+  if (Math.abs(n) >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+  return Math.round(n).toLocaleString();
+}
+
+function polarToCartesian(cx, cy, r, angleDeg) {
+  const angle = angleDeg * Math.PI / 180;
+  return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+}
+
+function donutSlicePath(cx, cy, outerR, innerR, startAngle, endAngle) {
+  const sweep = Math.max(0, endAngle - startAngle);
+  if (sweep >= 359.99) {
+    return [
+      `M ${cx} ${cy - outerR}`,
+      `A ${outerR} ${outerR} 0 1 1 ${cx - 0.01} ${cy - outerR}`,
+      `A ${outerR} ${outerR} 0 1 1 ${cx} ${cy - outerR}`,
+      `M ${cx} ${cy - innerR}`,
+      `A ${innerR} ${innerR} 0 1 0 ${cx - 0.01} ${cy - innerR}`,
+      `A ${innerR} ${innerR} 0 1 0 ${cx} ${cy - innerR}`,
+      "Z",
+    ].join(" ");
+  }
+  const outerStart = polarToCartesian(cx, cy, outerR, startAngle);
+  const outerEnd = polarToCartesian(cx, cy, outerR, endAngle);
+  const innerEnd = polarToCartesian(cx, cy, innerR, endAngle);
+  const innerStart = polarToCartesian(cx, cy, innerR, startAngle);
+  const largeArc = sweep > 180 ? 1 : 0;
+  return [
+    `M ${outerStart.x.toFixed(3)} ${outerStart.y.toFixed(3)}`,
+    `A ${outerR} ${outerR} 0 ${largeArc} 1 ${outerEnd.x.toFixed(3)} ${outerEnd.y.toFixed(3)}`,
+    `L ${innerEnd.x.toFixed(3)} ${innerEnd.y.toFixed(3)}`,
+    `A ${innerR} ${innerR} 0 ${largeArc} 0 ${innerStart.x.toFixed(3)} ${innerStart.y.toFixed(3)}`,
+    "Z",
+  ].join(" ");
+}
+
 /* ---------- Combined bar + line trend chart ---------- */
 function TrendChart({ data, t, range }) {
   const slice = range === 7 ? data.slice(-7) : range === 90 ? data : data.slice(-30);
+  if (!slice.length) {
+    return (
+      <div style={{ minHeight:240, display:"grid", placeItems:"center", color:"var(--text-3)", fontSize:14, fontWeight:500 }}>
+        {t("no_results")}
+      </div>
+    );
+  }
   const W = 760, H = 240, padL = 8, padR = 8, padT = 22, padB = 26;
   const iw = W - padL - padR, ih = H - padT - padB;
-  const maxR = Math.max(...slice.map(d => d.reviews)) * 1.12;
+  const maxR = Math.max(1, Math.max(...slice.map(d => d.reviews)) * 1.12);
   const barW = Math.min(26, (iw / slice.length) * 0.55);
   const gap = iw / slice.length;
   const [hover, setHover] = useState(null);
 
   // health line points (0-100 mapped)
-  const hMin = 60, hMax = 95;
+  const hMin = 0, hMax = 100;
   const pts = slice.map((d, i) => ({
     x: padL + gap * i + gap / 2,
     y: padT + ih - ((d.health - hMin) / (hMax - hMin)) * ih,

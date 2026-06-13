@@ -1,6 +1,7 @@
 /* ============ Review Detail Table (expandable rows) ============ */
 function ReviewTable({ t, filters, setFilters, title, sub }) {
   const [expanded, setExpanded] = useState(null);
+  const [pageSize, setPageSize] = useState(50);
   const rows = useMemo(() => {
     return window.DATA.REVIEWS.filter(r =>
       (filters.rating == null || r.rating === filters.rating) &&
@@ -8,9 +9,11 @@ function ReviewTable({ t, filters, setFilters, title, sub }) {
       (filters.priority == null || r.priority === filters.priority) &&
       (filters.status == null || r.status === filters.status) &&
       (filters.sentiment == null || r.sentiment === filters.sentiment) &&
-      (filters.platform == null || r.platform === filters.platform)
+      (filters.platform == null || r.platform === filters.platform) &&
+      (filters.actionId == null || (r.actionIds || []).includes(filters.actionId))
     );
   }, [filters]);
+  const visibleRows = pageSize === "all" ? rows : rows.slice(0, pageSize);
 
   return (
     <div className="card" style={{ overflow:"hidden" }}>
@@ -19,7 +22,10 @@ function ReviewTable({ t, filters, setFilters, title, sub }) {
           <h3 style={{ fontSize:18, fontWeight:700, letterSpacing:"-0.02em" }}>{title || t("table_title")}</h3>
           <p style={{ fontSize:13.5, color:"var(--text-2)", marginTop:2 }}>{sub || t("table_sub")}</p>
         </div>
-        <span style={{ fontSize:13, color:"var(--text-3)", fontWeight:500 }} className="mono">{t("showing")} {rows.length} {t("of")} {window.DATA.REVIEWS.length}</span>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <ReviewLimitSelect t={t} value={pageSize} onChange={setPageSize}/>
+          <span style={{ fontSize:13, color:"var(--text-3)", fontWeight:500 }} className="mono">{t("showing")} {visibleRows.length} {t("of")} {rows.length}</span>
+        </div>
       </div>
 
       <ReviewFilterBar t={t} filters={filters} setFilters={setFilters}/>
@@ -38,10 +44,10 @@ function ReviewTable({ t, filters, setFilters, title, sub }) {
       </div>
 
       <div>
-        {rows.map((r, i) => {
+        {visibleRows.map((r, i) => {
           const open = expanded === r.id;
           return (
-            <div key={r.id} style={{ borderBottom: i < rows.length-1 || open ? "1px solid var(--hairline)" : "none" }}>
+            <div key={r.id} style={{ borderBottom: i < visibleRows.length-1 || open ? "1px solid var(--hairline)" : "none" }}>
               <div className="rt-row" onClick={() => setExpanded(open ? null : r.id)}
                 style={{ display:"grid", gridTemplateColumns:"112px 92px 96px 130px 1fr 110px 38px", gap:14,
                   padding:"14px 22px", alignItems:"center", cursor:"pointer", transition:"background .12s",
@@ -70,6 +76,54 @@ function ReviewTable({ t, filters, setFilters, title, sub }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function ReviewLimitSelect({ t, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const options = [
+    { value:50, label:"50" },
+    { value:100, label:"100" },
+    { value:200, label:"200" },
+    { value:"all", label:t("all") },
+  ];
+  const current = (options.find(o => o.value === value) || options[0]).label;
+  useEffect(() => {
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+  return (
+    <div ref={ref} style={{ position:"relative" }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600,
+          padding:"6px 10px", borderRadius:9, border:"1px solid var(--hairline-strong)",
+          background:"#fff", color:"var(--text)", transition:"all .15s" }}>
+        <span style={{ color:"var(--text-3)", fontWeight:600 }}>{t("rows_limit")}:</span>
+        <span className="mono">{current}</span>
+        <Icon name="chevronDown" size={14} style={{ color:"var(--text-3)", transition:"transform .2s", transform: open?"rotate(180deg)":"none" }}/>
+      </button>
+      {open && (
+        <div className="scale-in" style={{ position:"absolute", top:"calc(100% + 6px)", right:0, minWidth:128, zIndex:50,
+          background:"#fff", border:"1px solid var(--hairline)", borderRadius:13, boxShadow:"var(--shadow-pop)", padding:6,
+          transformOrigin:"top right" }}>
+          {options.map(o => {
+            const selected = o.value === value;
+            return (
+              <button key={String(o.value)} onClick={() => { onChange(o.value); setOpen(false); }}
+                style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, width:"100%", textAlign:"left",
+                  padding:"8px 11px", borderRadius:8, fontSize:13.5, fontWeight:500,
+                  background: selected ? "var(--accent-soft)":"transparent", color: selected?"var(--accent)":"var(--text)" }}
+                onMouseEnter={e => { if(!selected) e.currentTarget.style.background="rgba(0,0,0,0.04)"; }}
+                onMouseLeave={e => { if(!selected) e.currentTarget.style.background="transparent"; }}>
+                <span>{o.label}</span>{selected && <Icon name="check" size={15} stroke={2.4}/>}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -148,4 +202,4 @@ function Meta({ label, value }) {
   );
 }
 
-Object.assign(window, { ReviewTable, ReviewExpand, Block, Meta });
+Object.assign(window, { ReviewTable, ReviewLimitSelect, ReviewExpand, Block, Meta });

@@ -61,6 +61,12 @@ def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
                 "last_updated": _now()}
         store.save_meta(meta)
 
+        if total == 0 and not used_fallback:
+            todos = store.load_todos()
+            store.save_meta({"status": "idle", "progress": {"done": 0, "total": 0},
+                             "last_updated": _now()})
+            return {"new_reviews": 0, "todos": len(todos), "used_fallback": False}
+
         # Classify in batches so the review count + progress bar advance live.
         for i in range(0, total, batch_size):
             chunk = new_reviews[i:i + batch_size]

@@ -53,18 +53,13 @@ function App() {
     return () => { cancelled = true; clearTimeout(timer); };
   }, []);
 
-  // Init: check backend for existing active app
+  // Init: always land on the app gallery. The backend may still have an active
+  // app for scheduled crawls, but the first screen should be "all available apps"
+  // so users can choose what they want to inspect.
   useEffect(() => {
-    window.ARM_Bridge.init().then(({ hasActiveApp, appId }) => {
-      if (hasActiveApp && appId) {
-        setActiveApp(appId);
-        return window.ARM_Bridge.loadDashboard(appId).then(() => {
-          setDataVersion(v => v + 1);
-          setScreen("dashboard");
-        });
-      } else {
-        setScreen("selection");
-      }
+    window.ARM_Bridge.init().then(({ appId }) => {
+      if (appId) setActiveApp(appId);
+      setScreen("selection");
     }).catch(() => setScreen("selection"));
   }, []);
 
@@ -143,6 +138,12 @@ function App() {
   };
 
   const onDashNav = (viewId) => { setDashView(viewId); requestAnimationFrame(scrollTop); };
+  const refreshActiveDashboard = () => {
+    if (!activeApp) return Promise.resolve();
+    return window.ARM_Bridge.loadDashboard(activeApp).then(() => {
+      setDataVersion(v => v + 1);
+    });
+  };
 
   // Loading splash
   if (screen === "initializing") {
@@ -188,7 +189,7 @@ function App() {
         {screen === "dashboard" && (
           <Dashboard key={"dash"+(activeApp||"app")+lang+dataVersion}
             t={t} app={activeApp || "zalopay"} onBack={() => go("selection")}
-            view={dashView} onNav={onDashNav}/>
+            view={dashView} onNav={onDashNav} onDataChanged={refreshActiveDashboard}/>
         )}
         {screen === "reports" && (
           <ReportsPage key={"rep"+lang} t={t}/>

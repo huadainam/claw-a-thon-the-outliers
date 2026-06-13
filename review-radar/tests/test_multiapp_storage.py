@@ -40,6 +40,32 @@ def test_local_registry_upsert_and_active(tmp_path):
     reg.set_active("com.zing.zalo")
     assert reg.get_active() == "com.zing.zalo"
 
+def test_registry_upsert_preserves_known_metadata_when_incoming_is_sparse(tmp_path):
+    reg = LocalRegistry(data_dir=str(tmp_path))
+    reg.upsert_app({
+        "title": "Top Eleven",
+        "as_id": "1643854223",
+        "developer": "VNG CORPORATION",
+        "icon": "https://example.com/icon.jpg",
+        "stores": ["app_store"],
+    })
+
+    reg.upsert_app({
+        "title": "Top Eleven: Quản Lý Bóng Đá",
+        "as_id": "1643854223",
+        "developer": "",
+        "icon": "",
+        "stores": [],
+        "review_limit": 10000,
+    })
+
+    app = reg.get_app("1643854223")
+    assert app["title"] == "Top Eleven: Quản Lý Bóng Đá"
+    assert app["developer"] == "VNG CORPORATION"
+    assert app["icon"] == "https://example.com/icon.jpg"
+    assert app["stores"] == ["app_store"]
+    assert app["review_limit"] == 10000
+
 class FakeHTTP:
     def __init__(self):
         self.sessions = {}

@@ -34,27 +34,11 @@
     { id:"health",   value:"—", raw:0,  icon:"heart",    trend:null, sub:"out_of_100",    tone:"positive", suffix:"/100" },
   ];
 
-  // ---------- Category breakdown — overridden by api-bridge.js ----------
-  var CATEGORIES = [
-    { id:"positive",    count:1, color:"var(--cat-positive)" },
-    { id:"feedback",    count:1, color:"var(--cat-feedback)" },
-    { id:"bug",         count:1, color:"var(--cat-bug)" },
-  ];
+  // ---------- Category breakdown — populated by api-bridge.js ----------
+  var CATEGORIES = [];
 
-  // ---------- 30-day trend — overridden by api-bridge.js ----------
-  var TREND = (function() {
-    var out = [];
-    var base = 980;
-    for (var i = 29; i >= 0; i--) {
-      var d = new Date(2026, 5, 13 - i);
-      var wobble = Math.sin(i * 0.7) * 180;
-      var reviews = Math.round(base + wobble + (29 - i) * 8);
-      var critical = Math.max(0, Math.round(6 + Math.sin(i * 0.5) * 4));
-      var health = Math.round(86 - Math.sin(i * 0.6) * 5);
-      out.push({ date: d, label: d.getDate()+"/"+(d.getMonth()+1), reviews: reviews, critical: critical, health: health });
-    }
-    return out;
-  })();
+  // ---------- Trend — populated by api-bridge.js from real review rows ----------
+  var TREND = [];
 
   // ---------- Priority / action items — overridden by api-bridge.js ----------
   var ACTIONS = [];
@@ -92,7 +76,7 @@
       est_time:"Estimated time", reviews_collected:"Reviews collected", current_step:"Current step",
       notify:"Notify me when ready", back_apps:"Back to available apps", almost:"Almost there…",
       platform_label:"Platform", last_crawled:"Last crawled", crawl_freq:"Crawl frequency", every_hour:"Every 1 hour",
-      configure:"Configure schedule", date_range:"Last 30 days", toggle_nav:"Collapse menu",
+      configure:"Configure schedule", date_range:"Last 30 days", date_7:"Last 7 days", date_30:"Last 30 days", date_90:"Last 90 days", date_custom:"Custom...", toggle_nav:"Collapse menu",
       every_30m:"Every 30 min", every_6h:"Every 6 hours", every_12h:"Every 12 hours", every_24h:"Daily",
       schedule_title:"Crawl schedule", schedule_sub:"Choose how often we re-crawl reviews for this app.",
       freq_label:"Crawl frequency", schedule_help:"Reviews are collected automatically on this schedule.",
@@ -112,7 +96,7 @@
       pri_critical:"Critical", pri_high:"High", pri_medium:"Medium", pri_low:"Low",
       flag_need_fix:"Need Fix", flag_need_reply:"Need Reply", flag_need_investigation:"Need Investigation", flag_spam_review:"Spam Review",
       st_open:"Open", st_in_progress:"In Progress", st_fixed:"Fixed", st_ignored:"Ignored",
-      owner:"Owner", affecting:"affecting", reviews_word:"reviews",
+      owner:"Owner", affecting:"affecting", reviews_word:"reviews", linked_reviews:"linked reviews",
       table_title:"Review Detail", table_sub:"Click a row to expand the full review",
       col_review:"Review", col_date:"Date", col_rating:"Rating", col_category:"Category", col_sentiment:"Sentiment", col_priority:"Priority", col_status:"Status", col_summary:"AI Summary",
       filtered_by:"Filtered by", clear_filter:"Clear",
@@ -120,13 +104,13 @@
       meta_version:"App version", meta_device:"Device", meta_country:"Country", meta_platform:"Platform",
       create_ticket:"Create Ticket", ignore:"Ignore", reply_suggestion:"Reply Suggestion",
       sent_positive:"Positive", sent_negative:"Negative", sent_neutral:"Neutral",
-      showing:"Showing", of:"of",
+      showing:"Showing", of:"of", rows_limit:"Rows",
       filter_status:"Status", filter_flag:"Action", filter_rating:"Rating", clear_all:"Clear filters", no_results:"No reviews match these filters.", no_actions:"No action items match these filters.",
       back_overview:"Overview", actions_page_sub:"All flagged issues for this app, ranked by impact.", reviews_page_sub:"Every crawled review, fully filterable.",
       reviews_for:"Reviews linked to", clear_context:"Show all reviews", open_count:"open",
       reports_sub:"Generate and schedule review reports for your team.", coming_soon:"Coming soon", future_note:"Planned for a future release.",
       delivery_title:"Delivery channels", delivery_sub:"Reports will be delivered to where your team already works.",
-      ch_teams:"Microsoft Teams", ch_teams_d:"Post summaries to a Teams channel", ch_outlook:"Outlook email", ch_outlook_d:"Scheduled email to a distribution list", ch_download:"Download", ch_download_d:"Export as PDF or CSV anytime", available_badge:"Available",
+      ch_teams:"Microsoft Teams", ch_teams_d:"Post summaries to a Teams channel", ch_outlook:"Outlook email", ch_outlook_d:"Scheduled email to a distribution list", ch_download:"Download", ch_download_d:"Export as PDF anytime", available_badge:"Available",
       templates_title:"Report templates", templates_sub:"Start from a ready-made report", scheduled_title:"Scheduled reports", scheduled_sub:"Running automatically",
       generate:"Generate", export_pdf:"Export PDF", schedule_btn:"Schedule", recipients:"Recipients", report_format:"Format", run_freq:"Frequency", next_run:"Next run", new_report:"New report",
       tpl_weekly:"Weekly review summary", tpl_weekly_d:"Volume, sentiment and top issues from the past 7 days.",
@@ -177,7 +161,7 @@
       est_time:"Thời gian dự kiến", reviews_collected:"Đã thu thập", current_step:"Bước hiện tại",
       notify:"Báo tôi khi xong", back_apps:"Về danh sách ứng dụng", almost:"Sắp xong…",
       platform_label:"Nền tảng", last_crawled:"Thu thập gần nhất", crawl_freq:"Tần suất", every_hour:"Mỗi 1 giờ",
-      configure:"Cấu hình lịch", date_range:"30 ngày qua", toggle_nav:"Thu gọn menu",
+      configure:"Cấu hình lịch", date_range:"30 ngày qua", date_7:"7 ngày qua", date_30:"30 ngày qua", date_90:"90 ngày qua", date_custom:"Tùy chỉnh...", toggle_nav:"Thu gọn menu",
       every_30m:"Mỗi 30 phút", every_6h:"Mỗi 6 giờ", every_12h:"Mỗi 12 giờ", every_24h:"Hàng ngày",
       schedule_title:"Lịch thu thập", schedule_sub:"Chọn tần suất thu thập lại đánh giá cho ứng dụng này.",
       freq_label:"Tần suất thu thập", schedule_help:"Đánh giá được thu thập tự động theo lịch này.",
@@ -197,7 +181,7 @@
       pri_critical:"Nghiêm trọng", pri_high:"Cao", pri_medium:"Trung bình", pri_low:"Thấp",
       flag_need_fix:"Cần sửa", flag_need_reply:"Cần phản hồi", flag_need_investigation:"Cần điều tra", flag_spam_review:"Đánh giá spam",
       st_open:"Mở", st_in_progress:"Đang xử lý", st_fixed:"Đã sửa", st_ignored:"Bỏ qua",
-      owner:"Phụ trách", affecting:"ảnh hưởng", reviews_word:"đánh giá",
+      owner:"Phụ trách", affecting:"ảnh hưởng", reviews_word:"đánh giá", linked_reviews:"đánh giá liên quan",
       table_title:"Chi tiết đánh giá", table_sub:"Bấm vào một dòng để xem đầy đủ đánh giá",
       col_review:"Đánh giá", col_date:"Ngày", col_rating:"Sao", col_category:"Danh mục", col_sentiment:"Cảm xúc", col_priority:"Ưu tiên", col_status:"Trạng thái", col_summary:"Tóm tắt AI",
       filtered_by:"Lọc theo", clear_filter:"Xóa lọc",
@@ -205,13 +189,13 @@
       meta_version:"Phiên bản", meta_device:"Thiết bị", meta_country:"Quốc gia", meta_platform:"Nền tảng",
       create_ticket:"Tạo ticket", ignore:"Bỏ qua", reply_suggestion:"Gợi ý phản hồi",
       sent_positive:"Tích cực", sent_negative:"Tiêu cực", sent_neutral:"Trung lập",
-      showing:"Hiển thị", of:"trên",
+      showing:"Hiển thị", of:"trên", rows_limit:"Số dòng",
       filter_status:"Trạng thái", filter_flag:"Hành động", filter_rating:"Số sao", clear_all:"Xóa bộ lọc", no_results:"Không có đánh giá nào khớp bộ lọc.", no_actions:"Không có việc nào khớp bộ lọc.",
       back_overview:"Tổng quan", actions_page_sub:"Toàn bộ vấn đề được gắn cờ cho ứng dụng này, xếp theo mức ảnh hưởng.", reviews_page_sub:"Mọi đánh giá đã thu thập, lọc được toàn diện.",
       reviews_for:"Đánh giá liên quan đến", clear_context:"Xem tất cả đánh giá", open_count:"đang mở",
       reports_sub:"Tạo và lên lịch báo cáo đánh giá cho team.", coming_soon:"Sắp ra mắt", future_note:"Dự kiến phát triển trong bản phát hành sau.",
       delivery_title:"Kênh gửi báo cáo", delivery_sub:"Báo cáo sẽ được gửi tới nơi team đang làm việc.",
-      ch_teams:"Microsoft Teams", ch_teams_d:"Đăng báo cáo vào kênh Teams", ch_outlook:"Email Outlook", ch_outlook_d:"Gửi email định kỳ tới danh sách nhận", ch_download:"Tải về", ch_download_d:"Xuất PDF hoặc CSV bất kỳ lúc nào", available_badge:"Đang dùng được",
+      ch_teams:"Microsoft Teams", ch_teams_d:"Đăng báo cáo vào kênh Teams", ch_outlook:"Email Outlook", ch_outlook_d:"Gửi email định kỳ tới danh sách nhận", ch_download:"Tải về", ch_download_d:"Xuất PDF bất kỳ lúc nào", available_badge:"Đang dùng được",
       templates_title:"Mẫu báo cáo", templates_sub:"Bắt đầu từ mẫu có sẵn", scheduled_title:"Báo cáo định kỳ", scheduled_sub:"Đang chạy tự động",
       generate:"Tạo", export_pdf:"Xuất PDF", schedule_btn:"Lên lịch", recipients:"Người nhận", report_format:"Định dạng", run_freq:"Tần suất", next_run:"Lần chạy tới", new_report:"Báo cáo mới",
       tpl_weekly:"Tóm tắt đánh giá tuần", tpl_weekly_d:"Lưu lượng, cảm xúc và vấn đề nổi bật 7 ngày qua.",
@@ -251,25 +235,11 @@
     { id:"teams", name:"Microsoft Teams", desc_en:"Post alerts & reports to channels", desc_vi:"Đăng cảnh báo & báo cáo vào kênh", status:"future", glyph:"T", grad:["#6264a7","#4b4d8f"] },
     { id:"outlook", name:"Outlook", desc_en:"Email digests to distribution lists", desc_vi:"Gửi email tổng hợp tới danh sách", status:"future", glyph:"O", grad:["#0a84ff","#0058c8"] },
     { id:"jira", name:"Jira", desc_en:"Create tickets from action items", desc_vi:"Tạo ticket từ việc cần xử lý", status:"future", glyph:"J", grad:["#2b8aff","#1565d8"] },
-    { id:"slack", name:"Slack", desc_en:"Real-time alerts to a channel", desc_vi:"Cảnh báo realtime tới kênh", status:"available", glyph:"S", grad:["#e0b0ff","#9b2fae"] },
+    { id:"slack", name:"Slack", desc_en:"Real-time alerts to a channel", desc_vi:"Cảnh báo realtime tới kênh", status:"future", glyph:"S", grad:["#e0b0ff","#9b2fae"] },
   ];
 
-  // ---------- Per-app comparison stats (mock for Compare page) ----------
-  var mkSpark = function(base) { return Array.from({length:14}, function(_,i){ return Math.round(base + Math.sin(i*0.6)*4); }); };
-  var COMPARE = {
-    zalopay: { health:82, rating:4.1, totalReviews:128450, today:1284, critical:23, sentiment:{positive:46,neutral:26,negative:28}, trend:+18,
-      cats:{positive:36,feedback:24,bug:17,negative:12,feature:7,criticalbug:3,spam:1}, stars:{5:48,4:18,3:10,2:9,1:15}, spark:mkSpark(82) },
-    zalo:    { health:88, rating:4.4, totalReviews:342980, today:2140, critical:9,  sentiment:{positive:58,neutral:24,negative:18}, trend:+4,
-      cats:{positive:48,feedback:21,bug:11,negative:9,feature:7,criticalbug:2,spam:2}, stars:{5:62,4:17,3:8,2:5,1:8}, spark:mkSpark(88) },
-    momo:    { health:71, rating:3.8, totalReviews:201320, today:1890, critical:41, sentiment:{positive:39,neutral:23,negative:38}, trend:+31,
-      cats:{positive:30,feedback:22,bug:21,negative:15,feature:5,criticalbug:5,spam:2}, stars:{5:41,4:15,3:11,2:12,1:21}, spark:mkSpark(71) },
-    shopee:  { health:79, rating:4.0, totalReviews:489210, today:3050, critical:28, sentiment:{positive:44,neutral:25,negative:31}, trend:-6,
-      cats:{positive:34,feedback:23,bug:18,negative:13,feature:6,criticalbug:4,spam:2}, stars:{5:45,4:19,3:11,2:9,1:16}, spark:mkSpark(79) },
-    grab:    { health:85, rating:4.3, totalReviews:176540, today:1320, critical:14, sentiment:{positive:54,neutral:25,negative:21}, trend:+9,
-      cats:{positive:44,feedback:22,bug:13,negative:11,feature:7,criticalbug:2,spam:1}, stars:{5:57,4:18,3:9,2:6,1:10}, spark:mkSpark(85) },
-    tiki:    { health:90, rating:4.5, totalReviews:88730,  today:510,  critical:5,  sentiment:{positive:61,neutral:24,negative:15}, trend:+2,
-      cats:{positive:50,feedback:21,bug:10,negative:8,feature:8,criticalbug:1,spam:2}, stars:{5:65,4:18,3:7,2:4,1:6}, spark:mkSpark(90) },
-  };
+  // ---------- Per-app comparison stats — populated from live APIs ----------
+  var COMPARE = {};
 
   window.DATA = { APPS: APPS, AVAILABLE: AVAILABLE, SUGGESTIONS: SUGGESTIONS, KPIS: KPIS, CATEGORIES: CATEGORIES, TREND: TREND, ACTIONS: ACTIONS, REVIEWS: REVIEWS, I18N: I18N, SCHEDULED: SCHEDULED, TEAM: TEAM, INTEGRATIONS: INTEGRATIONS, COMPARE: COMPARE };
 })();

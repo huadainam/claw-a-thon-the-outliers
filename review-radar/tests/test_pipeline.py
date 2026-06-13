@@ -41,6 +41,25 @@ def test_pipeline_dedups_already_processed(tmp_path):
     result = run_pipeline(store=store, **make_deps(gp, []))
     assert result["new_reviews"] == 0
 
+def test_pipeline_skips_regroup_when_refresh_has_no_new_reviews(tmp_path):
+    store = LocalStore(data_dir=str(tmp_path))
+    store.save_config({"title": "Zalo", "gp_id": "g", "as_id": "a"})
+    store.save_processed_ids({"g1"})
+    store.save_todos([{"id": "t1", "topic": "Lỗi A", "status": "open"}])
+    gp = [{"id": "g1", "content": "lỗi", "score": 1, "source": "google_play", "at": "d"}]
+    calls = {"canonicalize": 0}
+
+    def canonicalize(topics, preferred):
+        calls["canonicalize"] += 1
+        return {t: t for t in topics}
+
+    deps = make_deps(gp, [])
+    deps["canonicalize_fn"] = canonicalize
+    result = run_pipeline(store=store, **deps)
+    assert result == {"new_reviews": 0, "todos": 1, "used_fallback": False}
+    assert calls["canonicalize"] == 0
+    assert store.load_meta()["status"] == "idle"
+
 def test_pipeline_falls_back_to_cache_when_scrape_empty(tmp_path):
     store = LocalStore(data_dir=str(tmp_path))
     store.save_config({"title": "Zalo", "gp_id": "g", "as_id": "a"})

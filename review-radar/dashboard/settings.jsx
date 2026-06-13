@@ -83,7 +83,7 @@ function SettingsPage({ t, lang, setLang }) {
             const future = ig.status === "future";
             return (
               <div key={ig.id} style={{ display:"flex", alignItems:"center", gap:11, padding:"13px 14px", border:"1px solid var(--hairline)", borderRadius:13 }}>
-                <div className="app-glyph" style={{ width:36, height:36, fontSize:16, background:`linear-gradient(155deg, ${ig.grad[0]}, ${ig.grad[1]})` }}>{ig.glyph}</div>
+                <IntegrationLogo id={ig.id}/>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:14, fontWeight:600 }}>{ig.name}</div>
                   <div style={{ fontSize:12, color:"var(--text-3)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{ig["desc_"+L]}</div>
@@ -97,7 +97,7 @@ function SettingsPage({ t, lang, setLang }) {
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:14, padding:"11px 14px", background:"var(--warning-soft)", borderRadius:11, fontSize:13, color:"#9a5a00" }}>
           <Icon name="clock" size={15} stroke={2}/>
-          <span>{t("future_note")} — Teams, Outlook & Jira.</span>
+          <span>{t("future_note")} — Teams, Outlook, Jira & Slack.</span>
         </div>
       </SettingsCard>
 
@@ -115,6 +115,31 @@ function SettingsPage({ t, lang, setLang }) {
       {toast && <div className="toast"><Icon name="checkCircle" size={16} stroke={2.2} style={{ color:"var(--positive)" }}/>{toast}</div>}
     </div>
   );
+}
+
+function IntegrationLogo({ id }) {
+  const logos = {
+    teams: "assets/integrations/teams.jpeg",
+    outlook: "assets/integrations/outlook.jpeg",
+    jira: "assets/integrations/jira.jpeg",
+    slack: "assets/integrations/slack.png",
+  };
+  if (logos[id]) {
+    return (
+      <div style={{
+        width:36, height:36, borderRadius:9, background:"#fff", border:"1px solid rgba(0,0,0,0.06)",
+        display:"grid", placeItems:"center", flexShrink:0, overflow:"hidden",
+      }}>
+        <img
+          src={logos[id]}
+          alt={`${id} logo`}
+          style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+  return <div className="app-glyph" style={{ width:36, height:36, fontSize:16 }}>{String(id || "?").slice(0, 1).toUpperCase()}</div>;
 }
 
 function SettingsCard({ t, title, icon, children, action, delay }) {

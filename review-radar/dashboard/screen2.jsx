@@ -5,13 +5,17 @@ function Crawling({ t, app, onDone, onBack }) {
   const [progress, setProgress] = useState(0);
   const [collected, setCollected] = useState(0);
   const [notified, setNotified] = useState(false);
-  const [estSec, setEstSec] = useState(30);
+  const [estSec, setEstSec] = useState(null);   // null until a real measurement exists
   const a = window.DATA.APPS[app] || { name: app };
+  // Anchor for an adaptive ETA: measured throughput (reviews/sec), not a guess.
+  const rateAnchor = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
     let seenAnalyzing = false;
     let pollCount = 0;
+    rateAnchor.current = null;
+    setEstSec(null);
 
     const poll = async () => {
       if (cancelled) return;
@@ -35,8 +39,22 @@ function Crawling({ t, app, onDone, onBack }) {
             setActive(3); setProgress(Math.round(((pct - 80) / 20) * 100));
             setCollected(total);
           }
-          const remaining = total - done;
-          setEstSec(Math.max(1, Math.round(remaining * 0.05)));
+          // Adaptive ETA: anchor on the first observed (time, done) once analysis
+          // is underway, then extrapolate from the measured classification rate.
+          if (done > 0) {
+            const now = Date.now();
+            if (!rateAnchor.current) {
+              rateAnchor.current = { t: now, done };
+            } else {
+              const elapsed = (now - rateAnchor.current.t) / 1000;     // seconds
+              const processed = done - rateAnchor.current.done;        // reviews since anchor
+              if (elapsed > 1.5 && processed > 0) {
+                const rate = processed / elapsed;                      // reviews/sec
+                const remaining = Math.max(0, total - done);
+                setEstSec(Math.max(1, Math.round(remaining / rate)));
+              }
+            }
+          }
         } else if (meta.status === "idle" && seenAnalyzing) {
           if (!cancelled) onDone();
           return;
@@ -115,7 +133,7 @@ function Crawling({ t, app, onDone, onBack }) {
 
         {/* Live stats */}
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:26 }}>
-          <StatBox icon="clock" label={t("est_time")} value={`~${estSec}s`}/>
+          <StatBox icon="clock" label={t("est_time")} value={estSec ? `~${estSec}s` : "…"}/>
           <StatBox icon="reviews" label={t("reviews_collected")} value={collected > 0 ? collected.toLocaleString() : "—"} accent/>
           <StatBox icon="sparkle" label={t("current_step")} value={t("step_"+STEPS[Math.min(active, STEPS.length-1)])} small/>
         </div>

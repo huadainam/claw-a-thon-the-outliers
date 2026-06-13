@@ -1,10 +1,25 @@
 import os
+import glob
 import unicodedata
 import threading
 from collections import Counter
 from flask import Flask, jsonify, request, send_from_directory
 
 DASHBOARD_DIR = os.path.join(os.path.dirname(__file__), "dashboard")
+
+
+def _asset_build_stamp():
+    """A cache-busting token that changes whenever any dashboard asset changes.
+    Newest file mtime → stable across restarts if code is unchanged, but always
+    fresh after a new image build (COPY rewrites mtimes), so browsers never run
+    a stale .jsx/.css after a deploy."""
+    try:
+        files = glob.glob(os.path.join(DASHBOARD_DIR, "*.js")) \
+            + glob.glob(os.path.join(DASHBOARD_DIR, "*.jsx")) \
+            + [os.path.join(DASHBOARD_DIR, "styles.css")]
+        return str(int(max(os.path.getmtime(f) for f in files if os.path.exists(f))))
+    except Exception:
+        return "1"
 
 def _default_run_fn(store):
     """Production runner: kick the pipeline off in a background thread so the
@@ -51,7 +66,11 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
 
     @app.get("/")
     def index():
-        return send_from_directory(DASHBOARD_DIR, "index.html")
+        # Inject the cache-busting build stamp so a redeploy always serves fresh
+        # JS/CSS (the .jsx files are otherwise reused from the browser cache).
+        with open(os.path.join(DASHBOARD_DIR, "index.html"), encoding="utf-8") as f:
+            html = f.read()
+        return html.replace("__BUILD__", _asset_build_stamp())
 
     @app.post("/api/resolve")
     def resolve():

@@ -194,11 +194,11 @@ function Dashboard({ t, app, onBack, view, onNav, onDataChanged }) {
         )}
 
         {view === "actions" && (
-          <ActionsPage t={t} app={app} onBack={() => onNav("overview")} onViewReviews={viewReviewsFor} onDataChanged={onDataChanged}/>
+          <ActionsPage t={t} app={app} onBack={() => { setReviewCtx(null); setReviewFilters(emptyFilters); onNav("overview"); }} onViewReviews={viewReviewsFor} onDataChanged={onDataChanged}/>
         )}
 
         {view === "reviews" && (
-          <ReviewsPage t={t} onBack={() => onNav("overview")} filters={reviewFilters} setFilters={setReviewFilters}
+          <ReviewsPage t={t} onBack={() => { setReviewCtx(null); setReviewFilters(emptyFilters); onNav("overview"); }} filters={reviewFilters} setFilters={setReviewFilters}
             ctx={reviewCtx} onClearCtx={() => { setReviewCtx(null); setReviewFilters(emptyFilters); }}/>
         )}
       </div>

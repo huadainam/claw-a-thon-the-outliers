@@ -40,7 +40,7 @@ def _bool_flag(value, default=True):
     return bool(value)
 
 def _hourly_refresh_enabled(app_obj):
-    return _bool_flag((app_obj or {}).get("hourly_refresh_enabled"), True)
+    return _bool_flag((app_obj or {}).get("hourly_refresh_enabled"), False)
 
 def _store_queue_key(store):
     try:

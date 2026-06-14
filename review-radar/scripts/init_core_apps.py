@@ -127,6 +127,7 @@ registry = get_registry()
 parser = argparse.ArgumentParser()
 parser.add_argument("--start-at", default="", help="Core app name or 1-based index to start crawling from.")
 parser.add_argument("--only", action="store_true", help="Only crawl the --start-at app.")
+parser.add_argument("--configure-only", action="store_true", help="Only update app config/hourly flags; do not crawl.")
 args = parser.parse_args()
 
 start_idx = 1
@@ -141,6 +142,8 @@ if args.start_at:
                 break
         else:
             raise SystemExit(f"Unknown --start-at value: {args.start_at}")
+
+original_active_app_id = registry.get_active()
 
 print("Disabling hourly refresh for non-core apps...", flush=True)
 for app in registry.list_apps():
@@ -166,6 +169,11 @@ for idx, spec in enumerate(CORE_APPS, start=1):
     store = save_app_config(app_id)
 
     before = len(store.load_reviews())
+    if args.configure_only:
+        print(f"[{idx}/{len(CORE_APPS)}] {spec['name']} -> {app_obj.get('title')} ({app_id})", flush=True)
+        print(f"  configured hourly=true, review_limit={REVIEW_LIMIT}; skipped crawl due --configure-only", flush=True)
+        continue
+
     if idx < start_idx:
         print(f"[{idx}/{len(CORE_APPS)}] {spec['name']} -> {app_obj.get('title')} ({app_id})", flush=True)
         print(f"  configured hourly=true, review_limit={REVIEW_LIMIT}; skipped crawl before --start-at", flush=True)
@@ -198,5 +206,8 @@ for app_id in core_ids:
     updated = registry.update_app(app_id, {"hourly_refresh_enabled": True, "review_limit": REVIEW_LIMIT})
     if updated:
         get_store(app_id).save_config(updated)
+
+if original_active_app_id:
+    registry.set_active(original_active_app_id)
 
 print("CORE_INIT_SUMMARY=" + json.dumps(results, ensure_ascii=False), flush=True)

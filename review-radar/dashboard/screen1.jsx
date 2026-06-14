@@ -248,7 +248,7 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
               const detailLabel = isQueued
                 ? (queueRank ? `${t("queue_position")} ${queueRank} · ${t("queue_next")}` : t("queue_starting"))
                 : (total > 0 ? `${done.toLocaleString()} / ${total.toLocaleString()} ${t("reviews_word")}` : t("s2_eyebrow"));
-              const hourlyEnabled = row.hourlyRefreshEnabled !== false;
+              const hourlyEnabled = row.hourlyRefreshEnabled === true;
               return (
                 <button key={row.app} className="card"
                   onClick={() => onOpenCrawling(row.app)}
@@ -329,7 +329,7 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
               const a = window.DATA.APPS[row.app];
               if (!a) return null;
               const needsCrawl = (row.totalReviews || 0) === 0 && (row.lastUpdated == null || row.lastUpdated >= 999);
-              const hourlyEnabled = row.hourlyRefreshEnabled !== false;
+              const hourlyEnabled = row.hourlyRefreshEnabled === true;
               return (
                 <button key={row.app} className="card"
                   onClick={() => needsCrawl ? onOpenCrawling(row.app, true) : onOpenDashboard(row.app)}

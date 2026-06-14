@@ -225,7 +225,7 @@ const FREQS = [
 
 function DashTopBar({ t, app, a, onBack, freq, onConfigure, range, setRange, onFutureNote, filters, setFilters }) {
   const appRow = window.DATA.AVAILABLE.find(row => row.app === app);
-  const hourlyEnabled = !appRow || appRow.hourlyRefreshEnabled !== false;
+  const hourlyEnabled = !!(appRow && appRow.hourlyRefreshEnabled === true);
   const freqLabel = hourlyEnabled ? t((FREQS.find(f => f.id === freq) || FREQS[1]).key) : t("hourly_disabled_short");
   const lastCrawled = formatCrawlTimestamp(appRow && appRow.lastUpdatedAt, t);
   const set = (key, val) => setFilters({ ...filters, [key]: val });

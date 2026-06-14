@@ -185,8 +185,28 @@ function numericScores(reviews) {
     .filter(score => Number.isFinite(score) && score > 0);
 }
 
-function todayKey() {
-  return new Date().toLocaleDateString("en-CA");
+function comparePadDatePart(value) {
+  return String(value).padStart(2, "0");
+}
+
+function compareDateKeyFromDate(date) {
+  return `${date.getFullYear()}-${comparePadDatePart(date.getMonth() + 1)}-${comparePadDatePart(date.getDate())}`;
+}
+
+function compareReviewDay(review) {
+  const raw = review && review.at;
+  if (!raw) return "";
+  let d = new Date(String(raw));
+  if (Number.isNaN(d.getTime())) d = new Date(String(raw).replace(" ", "T"));
+  if (!Number.isNaN(d.getTime())) return compareDateKeyFromDate(d);
+  return String(raw).slice(0, 10);
+}
+
+function latestCompareDay(reviews) {
+  return (reviews || []).reduce((latest, review) => {
+    const day = compareReviewDay(review);
+    return day && day > latest ? day : latest;
+  }, "");
 }
 
 function healthFromLabels(byLabel, total) {
@@ -242,7 +262,7 @@ function scoreHealth(review) {
 function sparkFromReviews(reviews, fallbackHealth) {
   const byDay = {};
   reviews.forEach(review => {
-    const day = (review.at || "").slice(0, 10);
+    const day = compareReviewDay(review);
     if (!day) return;
     if (!byDay[day]) byDay[day] = [];
     byDay[day].push(scoreHealth(review));
@@ -258,12 +278,12 @@ function sparkFromReviews(reviews, fallbackHealth) {
 
 function trendFromReviews(reviews) {
   const days = Object.keys(reviews.reduce((acc, review) => {
-    const day = (review.at || "").slice(0, 10);
+    const day = compareReviewDay(review);
     if (day) acc[day] = (acc[day] || 0) + 1;
     return acc;
   }, {})).sort();
   if (days.length < 2) return null;
-  const counts = days.map(day => reviews.filter(r => (r.at || "").slice(0, 10) === day).length);
+  const counts = days.map(day => reviews.filter(r => compareReviewDay(r) === day).length);
   const half = Math.max(1, Math.floor(counts.length / 2));
   const prev = counts.slice(0, -half).reduce((a, b) => a + b, 0);
   const recent = counts.slice(-half).reduce((a, b) => a + b, 0);
@@ -275,6 +295,7 @@ function makeRealCompareStats(id, stats, reviews, todos) {
   const total = reviews.length || stats.total || 0;
   const byLabel = Object.keys(stats.by_label || {}).length ? stats.by_label : labelCounts(reviews);
   const scores = numericScores(reviews);
+  const latestDay = latestCompareDay(reviews);
   const rating = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
   const health = healthFromLabels(byLabel, total);
   const openTodos = todos.filter(todo => !["done", "fixed", "ignored"].includes(todo.status));
@@ -284,7 +305,7 @@ function makeRealCompareStats(id, stats, reviews, todos) {
     health,
     rating,
     totalReviews: total,
-    today: reviews.filter(r => (r.at || "").slice(0, 10) === todayKey()).length,
+    latestReviews: latestDay ? reviews.filter(r => compareReviewDay(r) === latestDay).length : 0,
     critical: criticalTodos,
     sentiment: sentimentFromLabels(byLabel, total),
     trend: trendFromReviews(reviews),
@@ -302,7 +323,7 @@ function unavailableCompareStats(id) {
     health: null,
     rating: null,
     totalReviews: total,
-    today: null,
+    latestReviews: null,
     critical: null,
     sentiment: { positive: 0, neutral: 0, negative: 0 },
     trend: null,
@@ -325,7 +346,7 @@ function CompareResult({ t, selected, compareData }) {
     { key:"health",   label:t("m_health"),   get:s=>s.health, fmt:v=>v, suffix:"/100", best:"max" },
     { key:"rating",   label:t("m_rating"),   get:s=>s.rating, fmt:v=>v.toFixed(1), best:"max" },
     { key:"total",    label:t("m_total"),    get:s=>s.totalReviews, fmt:v=>v.toLocaleString(), best:"max" },
-    { key:"today",    label:t("m_today"),    get:s=>s.today, fmt:v=>v.toLocaleString(), best:"max" },
+    { key:"latest",   label:t("m_latest"),   get:s=>s.latestReviews, fmt:v=>v.toLocaleString(), best:"max" },
     { key:"critical", label:t("m_critical"), get:s=>s.critical, fmt:v=>v, best:"min" },
     { key:"positive", label:t("m_positive"), get:s=>s.sentiment.positive, fmt:v=>v+"%", best:"max" },
   ];

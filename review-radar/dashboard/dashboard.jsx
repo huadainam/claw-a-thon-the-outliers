@@ -19,18 +19,43 @@ function dashboardCount(value) {
   return Math.round(n).toLocaleString();
 }
 
+function padDatePart(value) {
+  return String(value).padStart(2, "0");
+}
+
+function dateKeyFromDate(date) {
+  return `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`;
+}
+
+function formatDateKeyForUi(dateKey, t) {
+  if (!dateKey) return "—";
+  const d = new Date(`${dateKey}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return dateKey;
+  return d.toLocaleDateString(t._lang === "vi" ? "vi-VN" : "en-US", {
+    day:"2-digit", month:"2-digit", year:"numeric",
+  });
+}
+
 function reviewDayKey(review) {
+  if (review && review.dateKey) return review.dateKey;
   const raw = review && review.date;
   if (!raw || raw === "—") return "";
   const d = new Date(String(raw).replace(" ", "T"));
-  if (!Number.isNaN(d.getTime())) return d.toLocaleDateString("en-CA");
+  if (!Number.isNaN(d.getTime())) return dateKeyFromDate(d);
   return String(raw).slice(0, 10);
+}
+
+function latestReviewDayKey(reviews) {
+  return reviews.reduce((latest, review) => {
+    const day = reviewDayKey(review);
+    return day && day > latest ? day : latest;
+  }, "");
 }
 
 function makeFilteredKpis(reviews, actions) {
   const total = reviews.length;
-  const todayKey = new Date().toLocaleDateString("en-CA");
-  const today = reviews.filter(r => reviewDayKey(r) === todayKey).length;
+  const latestKey = latestReviewDayKey(reviews);
+  const latest = latestKey ? reviews.filter(r => reviewDayKey(r) === latestKey).length : 0;
   const bugs = reviews.filter(r => r.cat === "bug").length;
   const fixed = actions.filter(a => a.status === "fixed").length;
   const pending = actions.filter(a => a.status === "open").length;
@@ -40,7 +65,7 @@ function makeFilteredKpis(reviews, actions) {
   const healthScore = Math.round(Math.max(0, Math.min(100, ((positive - negative * 0.5) / denom * 50) + 70)));
   return [
     { id:"total",    value:dashboardCount(total), raw:total, icon:"reviews", trend:null, sub:"all_time", tone:"neutral" },
-    { id:"today",    value:dashboardCount(today), raw:today, icon:"calendar", trend:null, sub:"vs_yesterday", tone:"neutral" },
+    { id:"latest",   value:dashboardCount(latest), raw:latest, icon:"calendar", trend:null, sub:"source_latest_day", dateKey:latestKey, tone:"neutral" },
     { id:"critical", value:dashboardCount(bugs), raw:bugs, icon:"alert", trend:null, sub:"need_fix", tone:"critical", invert:true },
     { id:"fixed",    value:dashboardCount(fixed), raw:fixed, icon:"check", trend:null, sub:"last_30d", tone:"positive" },
     { id:"pending",  value:dashboardCount(pending), raw:pending, icon:"flag", trend:null, sub:"action_items", tone:"warning", invert:true },
@@ -228,6 +253,8 @@ function DashTopBar({ t, app, a, onBack, freq, onConfigure, range, setRange, onF
   const hourlyEnabled = !!(appRow && appRow.hourlyRefreshEnabled === true);
   const freqLabel = hourlyEnabled ? t((FREQS.find(f => f.id === freq) || FREQS[1]).key) : t("hourly_disabled_short");
   const lastCrawled = formatCrawlTimestamp(appRow && appRow.lastUpdatedAt, t);
+  const sourceDateKey = (window.DATA.SOURCE_DATE && (window.DATA.SOURCE_DATE.cutoffKey || window.DATA.SOURCE_DATE.key)) || "";
+  const sourceDateLabel = sourceDateKey ? formatDateKeyForUi(sourceDateKey, t) : t("source_date_none");
   const set = (key, val) => setFilters({ ...filters, [key]: val });
   const catOpts = window.DATA.CATEGORIES.map(c => ({ value:c.id, label:t("cat_"+c.id) }));
   const priOpts = ["critical","high","medium","low"].map(p => ({ value:p, label:t("pri_"+p) }));
@@ -250,10 +277,12 @@ function DashTopBar({ t, app, a, onBack, freq, onConfigure, range, setRange, onF
               <h1 style={{ fontSize:20, fontWeight:700, letterSpacing:"-0.025em" }}>{a.name}</h1>
               <span className="badge badge-muted" style={{ fontSize:11.5 }}><Icon name="globe" size={12}/>{a.platform}</span>
             </div>
-            <div style={{ display:"flex", alignItems:"center", gap:10, fontSize:12.5, color:"var(--text-2)", marginTop:2 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10, fontSize:12.5, color:"var(--text-2)", marginTop:2, flexWrap:"wrap" }}>
               <span style={{ display:"inline-flex", alignItems:"center", gap:4 }}>
                 <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--positive)", boxShadow:"0 0 0 3px var(--positive-soft)" }}></span>
                 {t("last_crawled")} {lastCrawled}</span>
+              <span style={{ width:3, height:3, borderRadius:"50%", background:"var(--text-3)" }}></span>
+              <span style={{ display:"inline-flex", alignItems:"center", gap:4 }}><Icon name="calendar" size={13}/>{t("source_latest")}: {sourceDateLabel}</span>
               <span style={{ width:3, height:3, borderRadius:"50%", background:"var(--text-3)" }}></span>
               <span style={{ display:"inline-flex", alignItems:"center", gap:4 }}><Icon name="refresh" size={13}/>{t("crawl_freq")}: {freqLabel}</span>
             </div>
@@ -344,6 +373,7 @@ function DateRangeDropdown({ t, value, onChange, onCustom }) {
 function KpiCard({ k, t, i }) {
   const toneColor = { neutral:"var(--accent)", critical:"var(--critical)", positive:"var(--positive)", warning:"var(--warning)" }[k.tone];
   const toneSoft = { neutral:"var(--accent-soft)", critical:"var(--critical-soft)", positive:"var(--positive-soft)", warning:"var(--warning-soft)" }[k.tone];
+  const subText = k.subText || (k.dateKey ? `${t("sub_"+k.sub)} ${formatDateKeyForUi(k.dateKey, t)}` : t("sub_"+k.sub));
   return (
     <div className="card fade-up" style={{ padding:"15px 16px", animationDelay:`${i*0.04}s`,
       display:"flex", flexDirection:"column", gap:11, minHeight:152 }}>
@@ -362,7 +392,7 @@ function KpiCard({ k, t, i }) {
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:8, minWidth:0 }}>
           <TrendDelta value={k.trend} invert={k.invert} size={12.5}/>
-          <span style={{ fontSize:11.5, color:"var(--text-3)", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{t("sub_"+k.sub)}</span>
+          <span style={{ fontSize:11.5, color:"var(--text-3)", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{subText}</span>
         </div>
       </div>
     </div>

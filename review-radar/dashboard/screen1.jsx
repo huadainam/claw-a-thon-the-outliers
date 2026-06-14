@@ -9,6 +9,18 @@ function normalizeSearchText(value) {
 
 const REVIEW_LIMIT_STORAGE_KEY = "arm_review_limit_v2";
 
+function formatHeroDate(date, lang) {
+  return date.toLocaleDateString(lang === "vi" ? "vi-VN" : "en-US", {
+    day:"2-digit", month:"2-digit", year:"numeric",
+  });
+}
+
+function defaultSourceWindowLabel(lang) {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return formatHeroDate(d, lang);
+}
+
 function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, availVersion }) {
   const [query, setQuery] = useState("");
   const [availableQuery, setAvailableQuery] = useState("");
@@ -28,20 +40,26 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
   function ensureAppSpec(rawApp) {
     const id = rawApp.app_id || rawApp.gp_id || rawApp.as_id
       || (rawApp.title || "").toLowerCase().replace(/[\s.]+/g, "_");
-    if (!window.DATA.APPS[id]) {
-      const name   = rawApp.title || id;
-      const stores = rawApp.stores || [];
-      const platform = stores.includes("app_store") && stores.includes("google_play")
-        ? "App Store & Google Play"
-        : stores.includes("app_store") ? "App Store"
-        : stores.includes("google_play") ? "Google Play"
-        : "Unknown";
-      let hash = 0;
-      for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) & 0xffffffff;
-      const grads = [["#0a84ff","#0058c8"],["#34c759","#248a3d"],["#ff375f","#c0002a"],
-                     ["#ff9f0a","#c07000"],["#af52de","#7a1fa2"],["#32ade6","#1d7ea8"]];
-      const grad = grads[Math.abs(hash) % grads.length];
+    const name   = rawApp.title || id;
+    const stores = rawApp.stores || [];
+    const platform = stores.includes("app_store") && stores.includes("google_play")
+      ? "App Store & Google Play"
+      : stores.includes("app_store") ? "App Store"
+      : stores.includes("google_play") ? "Google Play"
+      : "Unknown";
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) & 0xffffffff;
+    const grads = [["#0a84ff","#0058c8"],["#34c759","#248a3d"],["#ff375f","#c0002a"],
+                   ["#ff9f0a","#c07000"],["#af52de","#7a1fa2"],["#32ade6","#1d7ea8"]];
+    const grad = grads[Math.abs(hash) % grads.length];
+    const existing = window.DATA.APPS[id];
+    if (!existing) {
       window.DATA.APPS[id] = { id, name, logo: rawApp.icon || "", glyph: name.slice(0, 2).toUpperCase(), grad, publisher: rawApp.developer || "", platform };
+    } else {
+      if (!existing.logo && rawApp.icon) existing.logo = rawApp.icon;
+      if (!existing.publisher && rawApp.developer) existing.publisher = rawApp.developer;
+      if ((!existing.platform || existing.platform === "Unknown") && platform) existing.platform = platform;
+      if ((!existing.name || existing.name === id) && name) existing.name = name;
     }
     return id;
   }
@@ -110,13 +128,23 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
         <div style={{ fontSize:13, fontWeight:700, color:"var(--accent)", letterSpacing:"0.02em", marginBottom:12, textTransform:"uppercase" }}>{t("s1_eyebrow")}</div>
         <h1 style={{ fontSize:42, fontWeight:700, letterSpacing:"-0.035em", lineHeight:1.05, marginBottom:14 }}>{t("s1_title")}</h1>
         <p style={{ fontSize:17, color:"var(--text-2)", maxWidth:560, margin:"0 auto", lineHeight:1.5 }}>{t("s1_subtitle")}</p>
-        <div style={{
-          display:"inline-flex", alignItems:"center", gap:7, margin:"16px auto 0",
-          padding:"7px 12px", borderRadius:999, background:"rgba(0,0,0,0.045)",
-          color:"var(--text-2)", fontSize:13, fontWeight:650
-        }}>
-          <Icon name="monitor" size={15} style={{ color:"var(--accent)" }}/>
-          <span>{t("desktop_notice")}</span>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, margin:"16px auto 0", flexWrap:"wrap" }}>
+          <div style={{
+            display:"inline-flex", alignItems:"center", gap:7,
+            padding:"7px 12px", borderRadius:999, background:"rgba(0,0,0,0.045)",
+            color:"var(--text-2)", fontSize:13, fontWeight:650
+          }}>
+            <Icon name="monitor" size={15} style={{ color:"var(--accent)" }}/>
+            <span>{t("desktop_notice")}</span>
+          </div>
+          <div style={{
+            display:"inline-flex", alignItems:"center", gap:7,
+            padding:"7px 12px", borderRadius:999, background:"var(--accent-soft)",
+            color:"var(--accent)", fontSize:13, fontWeight:700
+          }}>
+            <Icon name="calendar" size={15}/>
+            <span>{t("source_window_prefix")} {defaultSourceWindowLabel(lang)}</span>
+          </div>
         </div>
 
         <div style={{ display:"flex", gap:10, maxWidth:560, margin:"22px auto 0" }}>

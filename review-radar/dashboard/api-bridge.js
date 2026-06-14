@@ -53,10 +53,50 @@
     };
   }
 
+  function upsertAppSpec(ba) {
+    var spec = makeAppSpec(ba);
+    var current = window.DATA.APPS[spec.id];
+    if (!current) {
+      window.DATA.APPS[spec.id] = spec;
+      return;
+    }
+    if (!current.logo && spec.logo) current.logo = spec.logo;
+    if (!current.publisher && spec.publisher) current.publisher = spec.publisher;
+    if ((!current.platform || current.platform === 'Unknown') && spec.platform) current.platform = spec.platform;
+    if ((!current.name || current.name === spec.id) && spec.name) current.name = spec.name;
+  }
+
   function minutesSince(value) {
     var time = value ? new Date(value).getTime() : NaN;
     if (!Number.isFinite(time)) return 999;
     return Math.max(0, Math.round((Date.now() - time) / 60000));
+  }
+
+  function pad2(value) {
+    return String(value).padStart(2, '0');
+  }
+
+  function dateKeyFromDate(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  function parseReviewDate(value) {
+    if (!value) return null;
+    var d = new Date(String(value));
+    if (Number.isNaN(d.getTime())) d = new Date(String(value).replace(' ', 'T'));
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function localDateKey(value) {
+    var d = parseReviewDate(value);
+    if (d) return dateKeyFromDate(d);
+    return String(value || '').slice(0, 10);
+  }
+
+  function formatReviewDate(value) {
+    var d = parseReviewDate(value);
+    if (!d) return value ? String(value).slice(0, 16).replace('T', ' ') : '—';
+    return dateKeyFromDate(d) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
   }
 
   function makeAvailableEntry(ba, stats) {
@@ -119,9 +159,25 @@
   function reviewDateKey(review) {
     var raw = review && review.at;
     if (!raw) return '';
-    var d = new Date(raw);
-    if (!Number.isNaN(d.getTime())) return d.toLocaleDateString('en-CA');
-    return String(raw).slice(0, 10);
+    return localDateKey(raw);
+  }
+
+  function latestReviewDateKey(reviews) {
+    var latest = '';
+    (reviews || []).forEach(function(review) {
+      var day = reviewDateKey(review);
+      if (day && day > latest) latest = day;
+    });
+    return latest;
+  }
+
+  function sourceDateSummary(reviews, cutoffKey) {
+    var key = latestReviewDateKey(reviews);
+    return {
+      key: key,
+      count: key ? countReviewsOn(reviews, key) : 0,
+      cutoffKey: cutoffKey || '',
+    };
   }
 
   function countReviewsOn(reviews, dateKey) {
@@ -140,8 +196,7 @@
       var status = todoStatusToActionStatus(t.status);
       return status === 'open' || status === 'in_progress';
     }).length;
-    var todayKey = new Date().toLocaleDateString('en-CA');
-    var today    = countReviewsOn(reviews, todayKey);
+    var sourceDate = sourceDateSummary(reviews, stats.source_cutoff_day || (stats.meta && stats.meta.source_cutoff_day));
     var totalCats = Object.values(byLabel).reduce(function(a, b){ return a + b; }, 0) || 1;
     var pos = byLabel.POSITIVE || 0;
     var neg = (byLabel.COMPLAINT || 0) + (byLabel.BUG_REPORT || 0);
@@ -149,7 +204,7 @@
 
     return [
       { id:"total",    value: formatDashboardCount(total), raw: total, icon:"reviews", trend: null, sub:"all_time", tone:"neutral" },
-      { id:"today",    value: formatDashboardCount(today), raw: today, icon:"calendar", trend: null, sub:"vs_yesterday", tone:"neutral" },
+      { id:"latest",   value: formatDashboardCount(sourceDate.count), raw: sourceDate.count, icon:"calendar", trend: null, sub:"source_latest_day", dateKey: sourceDate.key, tone:"neutral" },
       { id:"critical", value: formatDashboardCount(bugs), raw: bugs,  icon:"alert",    trend: null, sub:"need_fix",     tone:"critical", invert: true },
       { id:"fixed",    value: formatDashboardCount(fixed), raw: fixed, icon:"check",    trend: null, sub:"last_30d",     tone:"positive" },
       { id:"pending",  value: formatDashboardCount(pending), raw: pending, icon:"flag", trend: null, sub:"action_items", tone:"warning",  invert: true },
@@ -213,10 +268,8 @@
     var SEV_TO_PRI = { critical: 'critical', medium: 'high', low: 'medium' };
     return todos.map(function(todo) {
       var samples = todo.sample_reviews || [];
-      // Count the reviews that will actually be shown when the user clicks
-      // "Xem đánh giá" (same matcher as the review link), so the "N đánh giá
-      // liên quan" badge never disagrees with the detail view. Fall back to the
-      // backend mention_count only when no reviews are loaded yet.
+      // Count only reviews inside the visible source window, so action items
+      // created from current-day partial reviews stay hidden until T+1.
       var linked = reviews.filter(function(r) { return todoMatchesReview(todo, r); }).length;
       return {
         id:       todo.id,
@@ -229,9 +282,11 @@
         sampleReviews: samples,
         matchTopic: todo.topic || '',
         owner:    (todo.sources || []).map(function(s){ return s === 'app_store' ? 'App Store' : 'Google Play'; }).join(' / ') || 'Team',
-        reviews:  reviews.length ? linked : (todo.mention_count || 0),
+        reviews:  linked,
         version:  '—',
       };
+    }).filter(function(action) {
+      return action.reviews > 0;
     });
   }
 
@@ -281,7 +336,8 @@
       var summary = content.length > 120 ? content.slice(0, 120) + '…' : content;
       return {
         id:         'R-' + String(i + 1).padStart(5, '0'),
-        date:       r.at ? r.at.slice(0, 16).replace('T', ' ') : '—',
+        date:       formatReviewDate(r.at),
+        dateKey:    localDateKey(r.at),
         rating:     Math.round(Math.min(5, Math.max(1, score))),
         cat:        cat,
         sentiment:  sent,
@@ -338,12 +394,10 @@
 
     init: function() {
       var self = this;
-      return self._get('/api/apps').then(function(data) {
+      return self._get('/api/apps?lite=1').then(function(data) {
         var apps = sortAppsForGallery(data.apps || []);
         apps.forEach(function(ba) {
-          if (!window.DATA.APPS[ba.app_id]) {
-            window.DATA.APPS[ba.app_id] = makeAppSpec(ba);
-          }
+          upsertAppSpec(ba);
         });
         window.DATA.AVAILABLE = apps.map(function(ba){ return makeAvailableEntry(ba, null); });
         return { hasActiveApp: !!data.active_app_id, appId: data.active_app_id, apps: apps };
@@ -362,7 +416,7 @@
         var prevById = {};
         (window.DATA.AVAILABLE || []).forEach(function(e){ prevById[e.app] = e; });
         window.DATA.AVAILABLE = apps.map(function(ba) {
-          if (!window.DATA.APPS[ba.app_id]) window.DATA.APPS[ba.app_id] = makeAppSpec(ba);
+          upsertAppSpec(ba);
           var prev = prevById[ba.app_id] || {};
           var lu = ba.last_updated || prev.lastUpdatedAt || null;
           return {
@@ -447,13 +501,16 @@
         var reviews = results[2];
 
         if (stats.app && !window.DATA.APPS[appId]) {
-          window.DATA.APPS[appId] = makeAppSpec(Object.assign({ app_id: appId }, stats.app));
+          upsertAppSpec(Object.assign({ app_id: appId }, stats.app));
+        } else if (stats.app) {
+          upsertAppSpec(Object.assign({ app_id: appId }, stats.app));
         }
 
         window.DATA.KPIS       = makeKPIs(stats, todos, reviews);
         window.DATA.CATEGORIES = makeCategories(stats.by_label);
         window.DATA.ACTIONS    = makeActions(todos, reviews);
         window.DATA.REVIEWS    = makeReviews(reviews, todos);
+        window.DATA.SOURCE_DATE = sourceDateSummary(reviews, stats.source_cutoff_day || (stats.meta && stats.meta.source_cutoff_day));
 
         window.DATA.TREND = makeTrend(reviews);
 

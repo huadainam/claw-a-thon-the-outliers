@@ -1,5 +1,5 @@
 from storage import LocalStore, LocalRegistry
-from app import create_app, _enqueue_scheduled_crawls, _queue_positions
+from app import create_app, _enqueue_scheduled_crawls, _queue_positions, REVIEW_DAY_TZ
 from datetime import datetime, timezone, timedelta
 
 def make_client(tmp_path, **overrides):
@@ -86,6 +86,22 @@ def test_apps_includes_review_totals(tmp_path):
     assert body["apps"][0]["last_run"]["classified_reviews"] == 2
     assert body["apps"][0]["hourly_refresh_enabled"] is False
 
+def test_apps_lite_does_not_load_review_blobs(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo", "icon": "https://example.com/zalo.png"})
+    store = factory("com.zing.zalo")
+
+    def fail_load_reviews():
+        raise AssertionError("lite app list should not load reviews")
+
+    store.load_reviews = fail_load_reviews
+
+    body = client.get("/api/apps?lite=1").get_json()
+
+    assert body["apps"][0]["title"] == "Zalo"
+    assert body["apps"][0]["icon"] == "https://example.com/zalo.png"
+    assert body["apps"][0]["total_reviews"] == 0
+
 def test_patch_app_toggles_hourly_refresh_and_persists_config(tmp_path):
     client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
     client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo"})
@@ -149,6 +165,51 @@ def test_scheduled_crawl_enqueues_all_hourly_enabled_apps_not_only_active(tmp_pa
 
     assert count == 2
     assert calls == ["Zalo", "ZaloPay"]
+
+def test_scheduled_crawl_skips_apps_before_refresh_interval(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo", "hourly_refresh_enabled": True})
+    now = datetime(2026, 6, 14, 8, 0, tzinfo=timezone.utc)
+    factory("com.zing.zalo").save_meta({
+        "status": "idle",
+        "progress": {"done": 0, "total": 0},
+        "last_updated": (now - timedelta(minutes=30)).isoformat(),
+    })
+    calls = []
+
+    count = _enqueue_scheduled_crawls(
+        registry,
+        factory,
+        lambda store: calls.append(store.load_config().get("title")),
+        now=now,
+        interval=timedelta(hours=1),
+    )
+
+    assert count == 0
+    assert calls == []
+
+def test_scheduled_crawl_enqueues_due_apps_and_marks_schedule_time(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo", "hourly_refresh_enabled": True})
+    now = datetime(2026, 6, 14, 8, 0, tzinfo=timezone.utc)
+    factory("com.zing.zalo").save_meta({
+        "status": "idle",
+        "progress": {"done": 0, "total": 0},
+        "last_updated": (now - timedelta(hours=2)).isoformat(),
+    })
+    calls = []
+
+    count = _enqueue_scheduled_crawls(
+        registry,
+        factory,
+        lambda store: calls.append(store.load_config().get("title")),
+        now=now,
+        interval=timedelta(hours=1),
+    )
+
+    assert count == 1
+    assert calls == ["Zalo"]
+    assert factory("com.zing.zalo").load_meta()["last_scheduled_refresh_at"] == now.isoformat()
 
 def test_scheduled_crawl_skips_apps_with_hourly_refresh_disabled(tmp_path):
     client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
@@ -226,15 +287,44 @@ def test_patch_todo_status_uses_explicit_app_id(tmp_path):
 def test_stats_shape_with_meta(tmp_path):
     client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
     client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo"})
+    cutoff_day = datetime.now(REVIEW_DAY_TZ).date() - timedelta(days=1)
+    older_day = cutoff_day - timedelta(days=3)
+    shifted_source_day = cutoff_day - timedelta(days=1)
     factory("com.zing.zalo").append_reviews([
-        {"id": "1", "label": "BUG_REPORT", "at": "2026-06-10T00:00:00"},
-        {"id": "2", "label": "POSITIVE", "at": "2026-06-10T00:00:00"},
+        {"id": "1", "label": "BUG_REPORT", "at": f"{older_day.isoformat()}T00:00:00"},
+        {"id": "2", "label": "POSITIVE", "at": f"{older_day.isoformat()}T00:00:00"},
+        {"id": "3", "label": "BUG_REPORT", "at": f"{shifted_source_day.isoformat()}T18:30:00-07:00"},
     ])
     body = client.get("/api/stats").get_json()
     assert body["app"]["title"] == "Zalo"
-    assert body["total"] == 2
-    assert body["by_label"]["BUG_REPORT"] == 1
+    assert body["total"] == 3
+    assert body["by_label"]["BUG_REPORT"] == 2
+    assert body["source_cutoff_day"] == cutoff_day.isoformat()
+    assert body["bug_by_day"][cutoff_day.isoformat()] == 1
     assert "status" in body["meta"]
+
+def test_source_window_excludes_current_day_reviews(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo"})
+    today = datetime.now(REVIEW_DAY_TZ).date()
+    cutoff_day = today - timedelta(days=1)
+    future_day = today + timedelta(days=1)
+    factory("com.zing.zalo").append_reviews([
+        {"id": "yesterday", "label": "BUG_REPORT", "at": f"{cutoff_day.isoformat()}T23:59:00+07:00"},
+        {"id": "today", "label": "POSITIVE", "at": f"{today.isoformat()}T00:00:00+07:00"},
+        {"id": "future", "label": "COMPLAINT", "at": f"{future_day.isoformat()}T00:00:00+07:00"},
+    ])
+
+    reviews = client.get("/api/reviews").get_json()
+    stats = client.get("/api/stats").get_json()
+    apps = client.get("/api/apps").get_json()
+
+    assert [r["id"] for r in reviews] == ["yesterday"]
+    assert stats["total"] == 1
+    assert stats["by_label"] == {"BUG_REPORT": 1}
+    assert stats["source_cutoff_day"] == cutoff_day.isoformat()
+    assert apps["apps"][0]["total_reviews"] == 1
+    assert apps["apps"][0]["source_cutoff_day"] == cutoff_day.isoformat()
 
 def test_stats_empty_when_no_active_app(tmp_path):
     client, _, _ = make_client(tmp_path)

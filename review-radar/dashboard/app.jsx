@@ -84,7 +84,7 @@ function App() {
         timer = setTimeout(poll, anyAnalyzing ? 2500 : 6000);
       }).catch(() => { if (!cancelled) timer = setTimeout(poll, 6000); });
     };
-    poll();
+    timer = setTimeout(poll, 1200);
     return () => { cancelled = true; clearTimeout(timer); };
   }, []);
 

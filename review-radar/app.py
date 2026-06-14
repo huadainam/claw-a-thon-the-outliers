@@ -1,19 +1,26 @@
 import os
 import glob
 import queue
+import time
 import unicodedata
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from collections import Counter
 from datetime import datetime, timezone, timedelta
 from flask import Flask, jsonify, request
 
 DASHBOARD_DIR = os.path.join(os.path.dirname(__file__), "dashboard")
 ANALYZING_STALE_AFTER = timedelta(minutes=10)
+REVIEW_DAY_TZ = timezone(timedelta(hours=7))
 _RUN_QUEUE = queue.Queue()
 _QUEUE_LOCK = threading.Lock()
 _QUEUED_KEYS = set()
 _QUEUE_WORKER_STARTED = False
 _RUNNING_KEY = None
+_APPS_CACHE_LOCK = threading.Lock()
+_APPS_FULL_CACHE = {"at": 0.0, "body": None}
+APPS_FULL_CACHE_SECONDS = 15
+SCHEDULED_REFRESH_INTERVAL = timedelta(hours=1)
 
 
 def _asset_build_stamp():
@@ -31,6 +38,68 @@ def _asset_build_stamp():
 
 def _now():
     return datetime.now(timezone.utc).isoformat()
+
+def _parse_datetime(value):
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+def _review_day_key(value):
+    raw = str(value or "")
+    if not raw:
+        return ""
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return raw[:10]
+    if parsed.tzinfo is None:
+        return parsed.date().isoformat()
+    return parsed.astimezone(REVIEW_DAY_TZ).date().isoformat()
+
+def _source_cutoff_day_key():
+    return (datetime.now(REVIEW_DAY_TZ).date() - timedelta(days=1)).isoformat()
+
+def _review_is_in_source_window(review, cutoff_day=None):
+    day = _review_day_key((review or {}).get("at"))
+    if not day:
+        return True
+    return day <= (cutoff_day or _source_cutoff_day_key())
+
+def _source_window_reviews(reviews, cutoff_day=None):
+    cutoff = cutoff_day or _source_cutoff_day_key()
+    return [r for r in (reviews or []) if _review_is_in_source_window(r, cutoff)]
+
+def _int_or_none(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+def _gallery_review_total(store, meta, cutoff_day):
+    # Memory-backed review lists are chunked remote documents. Loading every
+    # app's full review blob just to draw the gallery makes initial page load
+    # very slow, so use the latest run summary there. Local files are cheap and
+    # can keep the exact source-window count for tests/dev.
+    if store.__class__.__name__ == "LocalStore":
+        return len(_source_window_reviews(store.load_reviews(), cutoff_day))
+    last_run = (meta or {}).get("last_run") or {}
+    total = _int_or_none(last_run.get("total_reviews") if isinstance(last_run, dict) else None)
+    if total is not None:
+        return total
+    progress = (meta or {}).get("progress") or {}
+    done = _int_or_none(progress.get("done") if isinstance(progress, dict) else None)
+    return done or 0
+
+def _clear_apps_cache():
+    with _APPS_CACHE_LOCK:
+        _APPS_FULL_CACHE["at"] = 0.0
+        _APPS_FULL_CACHE["body"] = None
 
 def _bool_flag(value, default=True):
     if value is None:
@@ -62,7 +131,10 @@ def _mark_queued(store):
         }
         if current.get("last_run"):
             meta["last_run"] = current["last_run"]
+        if current.get("last_scheduled_refresh_at"):
+            meta["last_scheduled_refresh_at"] = current["last_scheduled_refresh_at"]
         store.save_meta(meta)
+        _clear_apps_cache()
     except Exception:
         pass
 
@@ -101,6 +173,7 @@ def _queue_worker():
                 _QUEUED_KEYS.discard(key)
                 if _RUNNING_KEY == key:
                     _RUNNING_KEY = None
+            _clear_apps_cache()
             _RUN_QUEUE.task_done()
 
 def _ensure_queue_worker():
@@ -150,15 +223,55 @@ def _queue_details(store, snapshot=None):
         "queue_running": snapshot["running_key"] == key,
     }
 
-def _enqueue_scheduled_crawls(registry, store_factory, run_fn):
+def _scheduled_refresh_due(store, now=None, interval=None):
+    now = now or datetime.now(timezone.utc)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+    now = now.astimezone(timezone.utc)
+    interval = interval or SCHEDULED_REFRESH_INTERVAL
+    try:
+        meta = store.load_meta() or {}
+    except Exception:
+        return True
+
+    last_updated = _parse_datetime(meta.get("last_updated"))
+    if meta.get("status") in ("analyzing", "queued"):
+        if last_updated is None or now - last_updated <= ANALYZING_STALE_AFTER:
+            return False
+
+    last_scheduled = _parse_datetime(meta.get("last_scheduled_refresh_at"))
+    reference = last_scheduled or last_updated
+    if reference is None:
+        return True
+    return now - reference >= interval
+
+def _mark_scheduled_refresh(store, when=None):
+    when = when or datetime.now(timezone.utc)
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    try:
+        meta = dict(store.load_meta() or {})
+        meta["last_scheduled_refresh_at"] = when.astimezone(timezone.utc).isoformat()
+        store.save_meta(meta)
+    except Exception:
+        pass
+
+def _enqueue_scheduled_crawls(registry, store_factory, run_fn, now=None, interval=None):
+    now = now or datetime.now(timezone.utc)
     apps = [
         app
         for app in registry.list_apps()
         if app.get("app_id") and _hourly_refresh_enabled(app)
     ]
+    enqueued = 0
     for app_obj in apps:
-        run_fn(store_factory(app_obj["app_id"]))
-    return len(apps)
+        store = store_factory(app_obj["app_id"])
+        if not _scheduled_refresh_due(store, now=now, interval=interval):
+            continue
+        _mark_scheduled_refresh(store, when=now)
+        run_fn(store)
+        enqueued += 1
+    return enqueued
 
 def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
     if registry is None:
@@ -262,6 +375,7 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
         if "hourly_refresh_enabled" in data:
             app_obj["hourly_refresh_enabled"] = _bool_flag(data.get("hourly_refresh_enabled"), True)
         app_id = registry.upsert_app(app_obj)  # adds + makes active
+        _clear_apps_cache()
         store = store_factory(app_id)
         store.save_config(registry.get_app(app_id))
         cached = bool(store.load_reviews())  # show cache instantly while we refresh
@@ -286,6 +400,7 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
             if updated is None:
                 return jsonify({"ok": False, "error": "app not found"}), 404
             store_factory(app_id).save_config(updated)
+            _clear_apps_cache()
 
         return jsonify({"ok": True, "app": updated}), 200
 
@@ -293,28 +408,75 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
     def apps():
         # Include each app's crawl status and review total so the gallery can
         # show useful counts before a user opens an individual dashboard.
-        out = []
+        if not app.config.get("TESTING") and request.args.get("lite") not in ("1", "true", "yes"):
+            with _APPS_CACHE_LOCK:
+                cached = _APPS_FULL_CACHE.get("body")
+                age = time.monotonic() - float(_APPS_FULL_CACHE.get("at") or 0)
+                if cached is not None and age < APPS_FULL_CACHE_SECONDS:
+                    return _no_cache(jsonify(cached))
+
+        reg = registry.load()
+        app_objs = reg.get("apps", [])
+        active_app_id = reg.get("active_app_id")
         queue_snapshot = _queue_snapshot()
-        for a in registry.list_apps():
+        cutoff_day = _source_cutoff_day_key()
+        lite = request.args.get("lite") in ("1", "true", "yes")
+
+        if lite:
+            out = []
+            for a in app_objs:
+                entry = dict(a)
+                entry["status"] = entry.get("status") or "idle"
+                entry["progress"] = entry.get("progress") or {"done": 0, "total": 0}
+                entry["last_updated"] = entry.get("last_updated")
+                entry["last_run"] = entry.get("last_run")
+                entry["error"] = entry.get("error")
+                entry["source_cutoff_day"] = cutoff_day
+                entry["total_reviews"] = _int_or_none(entry.get("total_reviews")) or 0
+                entry["hourly_refresh_enabled"] = _hourly_refresh_enabled(a)
+                entry["queue_position"] = entry.get("queue_position")
+                entry["queue_waiting_count"] = entry.get("queue_waiting_count")
+                entry["queue_running"] = bool(entry.get("queue_running"))
+                out.append(entry)
+            out.sort(key=gallery_sort_key)
+            return _no_cache(jsonify({"active_app_id": active_app_id, "apps": out}))
+
+        def build_entry(a):
             store = store_factory(a["app_id"])
-            meta = normalize_meta(store)
+            try:
+                meta = normalize_meta(store)
+            except Exception as exc:
+                meta = {"status": "idle", "progress": {"done": 0, "total": 0}, "error": str(exc)}
             entry = dict(a)
             entry["status"] = meta.get("status", "idle")
             entry["progress"] = meta.get("progress", {"done": 0, "total": 0})
             entry["last_updated"] = meta.get("last_updated")
             entry["last_run"] = meta.get("last_run")
             entry["error"] = meta.get("error")
-            entry["total_reviews"] = len(store.load_reviews())
+            entry["source_cutoff_day"] = cutoff_day
+            entry["total_reviews"] = _gallery_review_total(store, meta, cutoff_day)
             entry["hourly_refresh_enabled"] = _hourly_refresh_enabled(a)
             entry.update(_queue_details(store, queue_snapshot))
-            out.append(entry)
+            return entry
+
+        if len(app_objs) > 1:
+            with ThreadPoolExecutor(max_workers=min(16, len(app_objs))) as pool:
+                out = list(pool.map(build_entry, app_objs))
+        else:
+            out = [build_entry(a) for a in app_objs]
         out.sort(key=gallery_sort_key)
-        return _no_cache(jsonify({"active_app_id": registry.get_active(), "apps": out}))
+        body = {"active_app_id": active_app_id, "apps": out}
+        if not app.config.get("TESTING"):
+            with _APPS_CACHE_LOCK:
+                _APPS_FULL_CACHE["at"] = time.monotonic()
+                _APPS_FULL_CACHE["body"] = body
+        return _no_cache(jsonify(body))
 
     @app.post("/api/active")
     def set_active():
         app_id = (request.get_json(silent=True) or {}).get("app_id")
         registry.set_active(app_id)
+        _clear_apps_cache()
         return jsonify({"ok": True, "app_id": app_id})
 
     @app.post("/run")
@@ -334,18 +496,22 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
     @app.get("/api/stats")
     def stats():
         store = request_store()
+        cutoff_day = _source_cutoff_day_key()
         if store is None:
             return _no_cache(jsonify({"app": {}, "total": 0, "by_label": {}, "bug_by_day": {},
+                            "source_cutoff_day": cutoff_day,
                             "meta": {"status": "idle", "progress": {"done": 0, "total": 0},
-                                     "last_updated": None}}))
-        reviews = store.load_reviews()
+                                     "last_updated": None, "source_cutoff_day": cutoff_day}}))
+        reviews = _source_window_reviews(store.load_reviews(), cutoff_day)
         meta = dict(normalize_meta(store))
         meta.update(_queue_details(store))
+        meta["source_cutoff_day"] = cutoff_day
         by_label = dict(Counter(r.get("label") for r in reviews))
         by_day = dict(Counter(
-            (r.get("at") or "")[:10] for r in reviews if r.get("label") == "BUG_REPORT"
+            _review_day_key(r.get("at")) for r in reviews if r.get("label") == "BUG_REPORT"
         ))
         return _no_cache(jsonify({"app": store.load_config(), "total": len(reviews),
+                        "source_cutoff_day": cutoff_day,
                         "by_label": by_label, "bug_by_day": by_day,
                         "meta": meta}))
 
@@ -373,7 +539,7 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
     @app.get("/api/reviews")
     def get_reviews():
         store = request_store()
-        return _no_cache(jsonify(store.load_reviews() if store else []))
+        return _no_cache(jsonify(_source_window_reviews(store.load_reviews()) if store else []))
 
     return app
 
@@ -385,8 +551,10 @@ def _start_scheduler():
     def run_tracked_apps():
         _enqueue_scheduled_crawls(get_registry(), get_store, _scheduled_run_fn)
 
+    # Run a cheap due check on start/cold-start and then periodically. The due
+    # gate prevents a cold start from refreshing every hourly-enabled app.
     run_tracked_apps()
-    schedule.every(1).hours.do(run_tracked_apps)
+    schedule.every(5).minutes.do(run_tracked_apps)
     while True:
         schedule.run_pending()
         time.sleep(60)

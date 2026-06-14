@@ -90,6 +90,88 @@ def app_key(app):
     return app.get("gp_id") or app.get("as_id") or app.get("title")
 
 
+def has_value(value):
+    if value is None:
+        return False
+    if value == "":
+        return False
+    if isinstance(value, (list, dict)) and not value:
+        return False
+    return True
+
+
+def same_app(left, right):
+    left_ids = {left.get("app_id"), left.get("gp_id"), left.get("as_id")}
+    right_ids = {right.get("app_id"), right.get("gp_id"), right.get("as_id")}
+    left_ids.discard(None)
+    right_ids.discard(None)
+    if left_ids and right_ids:
+        return bool(left_ids.intersection(right_ids))
+    left_title = norm(left.get("title"))
+    return bool(left_title and left_title == norm(right.get("title")))
+
+
+def merge_missing_metadata(app_obj, metadata):
+    merged = dict(app_obj)
+    for key in ("icon", "developer", "stores", "gp_id", "as_id", "title"):
+        if not has_value(merged.get(key)) and has_value(metadata.get(key)):
+            merged[key] = metadata[key]
+    return merged
+
+
+def google_play_metadata(gp_id):
+    if not gp_id:
+        return None
+    try:
+        from google_play_scraper import app as gp_app
+        data = gp_app(gp_id, lang="vi", country="vn")
+    except Exception:
+        return None
+    return {
+        "title": data.get("title"),
+        "developer": data.get("developer"),
+        "icon": data.get("icon"),
+        "gp_id": gp_id,
+        "stores": ["google_play"],
+    }
+
+
+def app_store_metadata(as_id):
+    if not as_id:
+        return None
+    try:
+        import requests
+        resp = requests.get(
+            "https://itunes.apple.com/lookup",
+            params={"id": as_id, "country": "vn", "entity": "software"},
+            timeout=20,
+        )
+        items = resp.json().get("results", [])
+    except Exception:
+        return None
+    if not items:
+        return None
+    item = items[0]
+    return {
+        "title": item.get("trackName"),
+        "developer": item.get("artistName"),
+        "icon": item.get("artworkUrl100"),
+        "as_id": str(item.get("trackId") or as_id),
+        "stores": ["app_store"],
+    }
+
+
+def store_id_metadata(app_obj):
+    out = []
+    gp_meta = google_play_metadata(app_obj.get("gp_id"))
+    if gp_meta:
+        out.append(gp_meta)
+    as_meta = app_store_metadata(app_obj.get("as_id"))
+    if as_meta:
+        out.append(as_meta)
+    return out
+
+
 def existing_for(registry, fallback):
     wanted_ids = {fallback.get("gp_id"), fallback.get("as_id")}
     wanted_ids.discard(None)
@@ -115,6 +197,33 @@ def resolve_or_fallback(spec):
     if suggestions:
         return suggestions[0]
     raise RuntimeError(f"Could not resolve {spec['name']}: {res.get('message')}")
+
+
+def backfill_missing_metadata(spec, app_obj):
+    if has_value(app_obj.get("icon")):
+        return app_obj
+
+    for metadata in store_id_metadata(app_obj):
+        if same_app(app_obj, metadata):
+            merged = merge_missing_metadata(app_obj, metadata)
+            if has_value(merged.get("icon")):
+                return merged
+
+    try:
+        res = resolve_app(spec["name"])
+    except Exception:
+        return app_obj
+
+    candidates = []
+    if res.get("status") == "matched" and res.get("app"):
+        candidates.append(res["app"])
+    candidates.extend(res.get("suggestions") or [])
+
+    match = next((candidate for candidate in candidates if same_app(app_obj, candidate)), None)
+    if match is None:
+        return app_obj
+
+    return merge_missing_metadata(app_obj, match)
 
 
 def save_app_config(app_id):
@@ -160,7 +269,7 @@ results = []
 for idx, spec in enumerate(CORE_APPS, start=1):
     fallback = spec.get("fallback") or {}
     existing = existing_for(registry, fallback) if fallback else None
-    app_obj = dict(existing or resolve_or_fallback(spec))
+    app_obj = backfill_missing_metadata(spec, dict(existing or resolve_or_fallback(spec)))
     app_obj["review_limit"] = REVIEW_LIMIT
     app_obj["hourly_refresh_enabled"] = True
 
@@ -168,11 +277,12 @@ for idx, spec in enumerate(CORE_APPS, start=1):
     core_ids.append(app_id)
     store = save_app_config(app_id)
 
-    before = len(store.load_reviews())
     if args.configure_only:
         print(f"[{idx}/{len(CORE_APPS)}] {spec['name']} -> {app_obj.get('title')} ({app_id})", flush=True)
         print(f"  configured hourly=true, review_limit={REVIEW_LIMIT}; skipped crawl due --configure-only", flush=True)
         continue
+
+    before = len(store.load_reviews())
 
     if idx < start_idx:
         print(f"[{idx}/{len(CORE_APPS)}] {spec['name']} -> {app_obj.get('title')} ({app_id})", flush=True)

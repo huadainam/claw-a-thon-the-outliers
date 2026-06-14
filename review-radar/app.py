@@ -45,11 +45,14 @@ def _store_queue_key(store):
 def _mark_queued(store):
     try:
         current = store.load_meta() or {}
-        store.save_meta({
+        meta = {
             "status": "queued",
             "progress": current.get("progress", {"done": 0, "total": 0}),
             "last_updated": _now(),
-        })
+        }
+        if current.get("last_run"):
+            meta["last_run"] = current["last_run"]
+        store.save_meta(meta)
     except Exception:
         pass
 
@@ -58,12 +61,17 @@ def _queue_worker():
     from pipeline import run_pipeline
     import time
     while True:
-        key, store = _RUN_QUEUE.get()
+        item = _RUN_QUEUE.get()
+        if len(item) == 2:
+            key, store = item
+            review_limit = None
+        else:
+            key, store, review_limit = item
         with _QUEUE_LOCK:
             _RUNNING_KEY = key
         try:
             while True:
-                result = run_pipeline(store=store)
+                result = run_pipeline(store=store, review_limit=review_limit)
                 if not (isinstance(result, dict) and result.get("skipped")):
                     break
                 time.sleep(2)
@@ -93,7 +101,7 @@ def _ensure_queue_worker():
         threading.Thread(target=_queue_worker, daemon=True).start()
         _QUEUE_WORKER_STARTED = True
 
-def _default_run_fn(store):
+def _default_run_fn(store, review_limit=None):
     """Production runner: enqueue pipeline work so multiple app selections do
     not get dropped by the pipeline's single-run lock."""
     _ensure_queue_worker()
@@ -103,7 +111,11 @@ def _default_run_fn(store):
             return
         _QUEUED_KEYS.add(key)
     _mark_queued(store)
-    _RUN_QUEUE.put((key, store))
+    _RUN_QUEUE.put((key, store, review_limit))
+
+def _scheduled_run_fn(store):
+    from config import get_config
+    _default_run_fn(store, review_limit=get_config().refresh_review_limit)
 
 def _queue_positions(waiting_keys):
     return {key: idx + 1 for idx, key in enumerate(waiting_keys)}
@@ -337,8 +349,9 @@ def _start_scheduler():
     from storage import get_store, get_registry
 
     def run_tracked_apps():
-        _enqueue_scheduled_crawls(get_registry(), get_store, _default_run_fn)
+        _enqueue_scheduled_crawls(get_registry(), get_store, _scheduled_run_fn)
 
+    run_tracked_apps()
     schedule.every(1).hours.do(run_tracked_apps)
     while True:
         schedule.run_pending()

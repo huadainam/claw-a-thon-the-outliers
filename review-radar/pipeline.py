@@ -38,6 +38,7 @@ def _run_summary(requested_reviews=0, crawled_reviews=0, new_reviews=0,
     return summary
 
 def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
+                 review_limit=None,
                  canonicalize_fn=None, batch_size=BATCH_SIZE):
     # default wiring (production)
     if store is None:
@@ -46,9 +47,13 @@ def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
     if scrape_gp is None or scrape_as is None:
         from scraper import scrape_google_play, scrape_app_store
         from config import get_config
-        # Per-app review_limit (chosen by the user when tracking) wins; otherwise
-        # fall back to the global REVIEW_LIMIT. Applies to recurring crawls too.
-        limit = (store.load_config() or {}).get("review_limit") or get_config().review_limit
+        # Per-run review_limit lets scheduled refreshes fetch a smaller latest
+        # slice, while initial/user-triggered crawls still use the app's setting.
+        cfg_for_limit = store.load_config() or {}
+        limit = review_limit if review_limit is not None else (
+            cfg_for_limit.get("review_limit") or get_config().review_limit
+        )
+        limit = int(limit)
         scrape_gp = scrape_gp or (lambda app_id: scrape_google_play(app_id, count=limit))
         scrape_as = scrape_as or (lambda app_id: scrape_app_store(app_id, count=limit))
     if classify is None:
@@ -69,7 +74,7 @@ def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
         cfg = store.load_config()
         if not cfg:
             return {"error": "no app configured"}
-        requested_reviews = int(cfg.get("review_limit") or 0)
+        requested_reviews = int(review_limit if review_limit is not None else cfg.get("review_limit") or 0)
 
         scraped = scrape_gp(cfg.get("gp_id")) + scrape_as(cfg.get("as_id"))
         crawled_count = len(scraped)

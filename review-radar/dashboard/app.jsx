@@ -32,7 +32,7 @@ function App() {
   const [screen, setScreen] = useState("initializing");
   const [activeApp, setActiveApp] = useState(null);
   const [dashView, setDashView] = useState("overview");
-  const [navCollapsed, setNavCollapsed] = useState(() => localStorage.getItem("arm_nav") === "1");
+  const [navCollapsed, setNavCollapsed] = useState(false);
   const [dataVersion, setDataVersion] = useState(0);
   const [availVersion, setAvailVersion] = useState(0);  // bumps when app statuses refresh
   const [toasts, setToasts] = useState([]);
@@ -41,7 +41,7 @@ function App() {
   useEffect(() => { langRef.current = lang; }, [lang]);
 
   useEffect(() => { localStorage.setItem("arm_lang", lang); }, [lang]);
-  useEffect(() => { localStorage.setItem("arm_nav", navCollapsed ? "1" : "0"); }, [navCollapsed]);
+  useEffect(() => { localStorage.removeItem("arm_nav"); }, []);
 
   const dismissToast = (id) => setToasts(ts => ts.filter(x => x.id !== id));
   const isBusyStatus = (status) => status === "analyzing" || status === "queued";
@@ -73,6 +73,9 @@ function App() {
           a.app_id,
           a.status,
           a.queue_position || "",
+          a.last_updated || "",
+          a.error || "",
+          a.last_run ? JSON.stringify(a.last_run) : "",
           (a.progress && a.progress.done) || 0,
         ].join(":")).join("|");
         if (sig !== lastSig) { lastSig = sig; setAvailVersion(v => v + 1); }

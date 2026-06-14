@@ -13,6 +13,7 @@ class Config:
     openai_base_url: str
     model_name: str
     review_limit: int
+    refresh_review_limit: int
 
 def get_config() -> Config:
     return Config(
@@ -25,4 +26,5 @@ def get_config() -> Config:
         openai_base_url=os.getenv("OPENAI_BASE_URL", ""),
         model_name=os.getenv("MODEL_NAME", "gpt-4o-mini"),
         review_limit=int(os.getenv("REVIEW_LIMIT", "500")),
+        refresh_review_limit=int(os.getenv("REFRESH_REVIEW_LIMIT", "100")),
     )

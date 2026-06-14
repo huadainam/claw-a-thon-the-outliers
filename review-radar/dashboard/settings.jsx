@@ -1,5 +1,6 @@
 /* ============ Settings page ============ */
 function SettingsPage({ t, lang, setLang }) {
+  const adminOnly = true;
   const [autocat, setAutocat] = useState(true);
   const [spam, setSpam] = useState(true);
   const [notifCrit, setNotifCrit] = useState(true);
@@ -20,19 +21,27 @@ function SettingsPage({ t, lang, setLang }) {
         <div>
           <h1 style={{ fontSize:28, fontWeight:700, letterSpacing:"-0.03em" }}>{t("nav_settings")}</h1>
           <p style={{ fontSize:15, color:"var(--text-2)", marginTop:3 }}>{t("settings_sub")}</p>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:7, marginTop:10, padding:"7px 10px",
+            borderRadius:10, background:"rgba(0,0,0,0.05)", color:"var(--text-2)", fontSize:12.5, fontWeight:650 }}>
+            <Icon name="lock" size={14}/>
+            <span>{t("settings_admin_only")}</span>
+          </div>
         </div>
-        <button className="btn btn-primary" onClick={() => showToast(t("settings_saved"))}><Icon name="check" size={16} stroke={2.4}/>{t("save_changes")}</button>
+        <button className="btn btn-primary" disabled={adminOnly} title={t("settings_admin_only")}
+          onClick={() => showToast(t("settings_saved"))}>
+          <Icon name="check" size={16} stroke={2.4}/>{t("save_changes")}
+        </button>
       </div>
 
       {/* General */}
       <SettingsCard t={t} title={t("set_general")} icon="sliders" delay=".05s">
         <FieldRow label={t("set_workspace_name")}>
-          <input className="set-input" defaultValue="The Outlier · App Review" style={{ width:280 }}/>
+          <input className="set-input" defaultValue="The Outlier · App Review" disabled={adminOnly} style={{ width:280 }}/>
         </FieldRow>
         <FieldRow label={t("set_default_lang")} border>
           <div className="lang-switch" style={{ background:"rgba(0,0,0,0.05)" }}>
-            <button className={lang==="en"?"active":""} onClick={()=>setLang("en")}>EN</button>
-            <button className={lang==="vi"?"active":""} onClick={()=>setLang("vi")}>VI</button>
+            <button className={lang==="en"?"active":""} disabled={adminOnly} onClick={()=>setLang("en")}>EN</button>
+            <button className={lang==="vi"?"active":""} disabled={adminOnly} onClick={()=>setLang("vi")}>VI</button>
           </div>
         </FieldRow>
         <FieldRow label={t("set_timezone")} border>
@@ -45,24 +54,25 @@ function SettingsPage({ t, lang, setLang }) {
         <FieldRow label={t("set_default_freq")}>
           <div className="set-seg">
             {freqOpts.map(o => (
-              <button key={o.value} className={defaultFreq===o.value?"active":""} onClick={()=>setDefaultFreq(o.value)}>{o.label}</button>
+              <button key={o.value} className={defaultFreq===o.value?"active":""} disabled={adminOnly} onClick={()=>setDefaultFreq(o.value)}>{o.label}</button>
             ))}
           </div>
         </FieldRow>
-        <ToggleRow label={t("set_autocat")} desc={t("set_autocat_d")} checked={autocat} onChange={setAutocat} border/>
-        <ToggleRow label={t("set_spam")} desc={t("set_spam_d")} checked={spam} onChange={setSpam} border/>
+        <ToggleRow label={t("set_autocat")} desc={t("set_autocat_d")} checked={autocat} onChange={setAutocat} disabled={adminOnly} border/>
+        <ToggleRow label={t("set_spam")} desc={t("set_spam_d")} checked={spam} onChange={setSpam} disabled={adminOnly} border/>
       </SettingsCard>
 
       {/* Notifications */}
       <SettingsCard t={t} title={t("set_notif")} icon="bell" delay=".15s">
-        <ToggleRow label={t("opt_notify")} desc={t("opt_notify_d")} checked={notifCrit} onChange={setNotifCrit}/>
-        <ToggleRow label={t("sch_weekly_bug")} desc={t("tpl_weekly_d")} checked={notifWeekly} onChange={setNotifWeekly} border/>
-        <ToggleRow label={t("flag_need_reply")} desc={t("reviews_page_sub")} checked={notifMentions} onChange={setNotifMentions} border/>
+        <ToggleRow label={t("opt_notify")} desc={t("opt_notify_d")} checked={notifCrit} onChange={setNotifCrit} disabled={adminOnly}/>
+        <ToggleRow label={t("sch_weekly_bug")} desc={t("tpl_weekly_d")} checked={notifWeekly} onChange={setNotifWeekly} disabled={adminOnly} border/>
+        <ToggleRow label={t("flag_need_reply")} desc={t("reviews_page_sub")} checked={notifMentions} onChange={setNotifMentions} disabled={adminOnly} border/>
       </SettingsCard>
 
       {/* Team */}
       <SettingsCard t={t} title={t("set_team")} icon="user" delay=".2s"
-        action={<button className="btn btn-secondary btn-sm" onClick={()=>showToast(t("future_note"))}><Icon name="plus" size={15} stroke={2.2}/>{t("set_invite")}</button>}>
+        action={<button className="btn btn-secondary btn-sm" disabled={adminOnly} title={t("settings_admin_only")}
+          onClick={()=>showToast(t("future_note"))}><Icon name="plus" size={15} stroke={2.2}/>{t("set_invite")}</button>}>
         {window.DATA.TEAM.map((m, i) => (
           <div key={m.email} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 0", borderTop: i>0?"1px solid var(--hairline)":"none" }}>
             {m.avatar
@@ -92,7 +102,8 @@ function SettingsPage({ t, lang, setLang }) {
                 </div>
                 {future
                   ? <span className="badge badge-warning" style={{ fontSize:11, flexShrink:0 }}>{t("coming_soon")}</span>
-                  : <button className="btn btn-secondary btn-xs" onClick={()=>showToast(t("future_note"))} style={{ flexShrink:0 }}>{t("connect")}</button>}
+                  : <button className="btn btn-secondary btn-xs" disabled={adminOnly} title={t("settings_admin_only")}
+                      onClick={()=>showToast(t("future_note"))} style={{ flexShrink:0 }}>{t("connect")}</button>}
               </div>
             );
           })}
@@ -109,7 +120,8 @@ function SettingsPage({ t, lang, setLang }) {
         <FieldRow label={t("set_api_key")}>
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
             <code className="api-key mono">arm_live_••••••••••••8f2a</code>
-            <button className="btn btn-secondary btn-sm" onClick={()=>showToast(t("future_note"))}><Icon name="refresh" size={14}/>{t("set_regenerate")}</button>
+            <button className="btn btn-secondary btn-sm" disabled={adminOnly} title={t("settings_admin_only")}
+              onClick={()=>showToast(t("future_note"))}><Icon name="refresh" size={14}/>{t("set_regenerate")}</button>
           </div>
         </FieldRow>
       </SettingsCard>
@@ -168,14 +180,14 @@ function FieldRow({ label, children, border }) {
   );
 }
 
-function ToggleRow({ label, desc, checked, onChange, border }) {
+function ToggleRow({ label, desc, checked, onChange, disabled, border }) {
   return (
     <div style={{ display:"flex", alignItems:"center", gap:14, padding:"13px 0", borderTop: border?"1px solid var(--hairline)":"none" }}>
       <div style={{ flex:1 }}>
         <div style={{ fontSize:14, fontWeight:500 }}>{label}</div>
         <div style={{ fontSize:12.5, color:"var(--text-3)", marginTop:1, lineHeight:1.4 }}>{desc}</div>
       </div>
-      <Toggle checked={checked} onChange={onChange}/>
+      <Toggle checked={checked} onChange={onChange} disabled={disabled}/>
     </div>
   );
 }

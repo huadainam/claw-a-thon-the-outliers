@@ -102,3 +102,30 @@ def test_pipeline_resets_meta_to_idle_when_classification_fails(tmp_path):
     assert meta["status"] == "idle"
     assert meta["progress"] == {"done": 0, "total": 1}
     assert "classifier unavailable" in meta["error"]
+
+def test_pipeline_review_limit_override_controls_default_scrapers(tmp_path, monkeypatch):
+    store = LocalStore(data_dir=str(tmp_path))
+    store.save_config({"title": "Zalo", "gp_id": "g", "as_id": "a", "review_limit": 1000})
+    calls = []
+
+    import scraper
+    import classifier
+    import canonicalize
+
+    monkeypatch.setattr(
+        scraper,
+        "scrape_google_play",
+        lambda app_id, count: calls.append(("gp", app_id, count)) or [],
+    )
+    monkeypatch.setattr(
+        scraper,
+        "scrape_app_store",
+        lambda app_id, count: calls.append(("as", app_id, count)) or [],
+    )
+    monkeypatch.setattr(classifier, "classify_reviews", lambda reviews: reviews)
+    monkeypatch.setattr(canonicalize, "canonicalize_topics", lambda topics, preferred=None: {})
+
+    run_pipeline(store=store, review_limit=100)
+
+    assert calls == [("gp", "g", 100), ("as", "a", 100)]
+    assert store.load_meta()["last_run"]["requested_reviews"] == 100

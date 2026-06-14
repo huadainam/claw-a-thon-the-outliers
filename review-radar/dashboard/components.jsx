@@ -290,9 +290,10 @@ function TrendDelta({ value, invert, size = 14 }) {
 }
 
 /* ---------- iOS-style toggle switch ---------- */
-function Toggle({ checked, onChange }) {
+function Toggle({ checked, onChange, disabled }) {
   return (
-    <button type="button" className="ios-toggle" data-on={checked} onClick={() => onChange(!checked)} aria-pressed={checked}>
+    <button type="button" className="ios-toggle" data-on={checked} disabled={disabled}
+      onClick={() => !disabled && onChange(!checked)} aria-pressed={checked}>
       <span className="ios-knob"></span>
     </button>
   );

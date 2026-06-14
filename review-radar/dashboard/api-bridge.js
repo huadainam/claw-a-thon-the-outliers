@@ -66,10 +66,13 @@
     var bugs    = (byLabel.BUG_REPORT || 0) + (byLabel.COMPLAINT || 0);
     var health  = ba.health || (bugs > 50 ? 'critical' : bugs > 10 ? 'warning' : 'positive');
     var lu = (s.meta && s.meta.last_updated) || ba.last_updated;
+    var hourly = ba.hourly_refresh_enabled;
+    if (hourly == null && ba.hourlyRefreshEnabled != null) hourly = ba.hourlyRefreshEnabled;
     return {
       app:          ba.app_id,
       lastUpdated:  minutesSince(lu),
       lastUpdatedAt: lu || null,
+      hourlyRefreshEnabled: hourly !== false,
       queuePosition: ba.queue_position != null ? ba.queue_position : (s.meta && s.meta.queue_position),
       queueWaitingCount: ba.queue_waiting_count != null ? ba.queue_waiting_count : (s.meta && s.meta.queue_waiting_count),
       queueRunning: !!(ba.queue_running || (s.meta && s.meta.queue_running)),
@@ -322,6 +325,17 @@
       });
     },
 
+    _patch: function(url, body) {
+      return fetch(url, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }).then(function(r) {
+        if (!r.ok) throw new Error(r.statusText);
+        return r.json();
+      });
+    },
+
     init: function() {
       var self = this;
       return self._get('/api/apps').then(function(data) {
@@ -355,6 +369,7 @@
             app:          ba.app_id,
             lastUpdated:  lu ? minutesSince(lu) : (prev.lastUpdated != null ? prev.lastUpdated : 999),
             lastUpdatedAt: lu,
+            hourlyRefreshEnabled: ba.hourly_refresh_enabled !== false,
             queuePosition: ba.queue_position,
             queueWaitingCount: ba.queue_waiting_count,
             queueRunning: !!ba.queue_running,
@@ -388,6 +403,18 @@
 
     runNow: function() {
       return this._post('/run', {});
+    },
+
+    setHourlyRefresh: function(appId, enabled) {
+      return this._patch('/api/apps/' + encodeURIComponent(appId), {
+        hourly_refresh_enabled: !!enabled,
+      }).then(function(body) {
+        window.DATA.AVAILABLE = (window.DATA.AVAILABLE || []).map(function(row) {
+          if (row.app !== appId) return row;
+          return Object.assign({}, row, { hourlyRefreshEnabled: !!enabled });
+        });
+        return body;
+      });
     },
 
     patchTodo: function(appId, todoId, patch) {
@@ -432,7 +459,12 @@
 
         // Update the AVAILABLE entry for this app
         var avIdx = window.DATA.AVAILABLE.findIndex(function(a){ return a.app === appId; });
-        var avEntry = makeAvailableEntry({ app_id: appId }, stats);
+        var prevEntry = avIdx >= 0 ? window.DATA.AVAILABLE[avIdx] : {};
+        var appMeta = Object.assign({ app_id: appId }, stats.app || {});
+        if (appMeta.hourly_refresh_enabled == null && prevEntry.hourlyRefreshEnabled != null) {
+          appMeta.hourly_refresh_enabled = prevEntry.hourlyRefreshEnabled;
+        }
+        var avEntry = makeAvailableEntry(appMeta, stats);
         if (avIdx >= 0) window.DATA.AVAILABLE[avIdx] = avEntry;
         else window.DATA.AVAILABLE.push(avEntry);
         window.DATA.AVAILABLE = sortAppsForGallery(window.DATA.AVAILABLE);
@@ -447,9 +479,11 @@
     getCrawlProgress: function(appId) {
       var q = appId ? ('?app_id=' + encodeURIComponent(appId)) : '';
       return this._get('/api/stats' + q).then(function(stats) {
-        return stats.meta || { status: 'idle', progress: { done: 0, total: 0 } };
+        var meta = stats.meta || { status: 'idle', progress: { done: 0, total: 0 } };
+        meta.total_reviews = stats.total || 0;
+        return meta;
       }).catch(function() {
-        return { status: 'idle', progress: { done: 0, total: 0 } };
+        return { status: 'idle', progress: { done: 0, total: 0 }, total_reviews: 0 };
       });
     },
   };

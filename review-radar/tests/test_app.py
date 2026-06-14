@@ -84,6 +84,19 @@ def test_apps_includes_review_totals(tmp_path):
     assert body["apps"][0]["total_reviews"] == 2
     assert body["apps"][0]["last_run"]["crawled_reviews"] == 5
     assert body["apps"][0]["last_run"]["classified_reviews"] == 2
+    assert body["apps"][0]["hourly_refresh_enabled"] is True
+
+def test_patch_app_toggles_hourly_refresh_and_persists_config(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo"})
+
+    resp = client.patch("/api/apps/com.zing.zalo", json={"hourly_refresh_enabled": False})
+
+    assert resp.status_code == 200
+    assert resp.get_json()["app"]["hourly_refresh_enabled"] is False
+    assert registry.get_app("com.zing.zalo")["hourly_refresh_enabled"] is False
+    assert factory("com.zing.zalo").load_config()["hourly_refresh_enabled"] is False
+    assert client.get("/api/apps").get_json()["apps"][0]["hourly_refresh_enabled"] is False
 
 def test_apps_sorted_zalopay_first_then_alphabetical(tmp_path):
     client, registry, _ = make_client(tmp_path, run_fn=lambda s: None)
@@ -136,6 +149,22 @@ def test_scheduled_crawl_enqueues_all_tracked_apps_not_only_active(tmp_path):
 
     assert count == 2
     assert calls == ["Zalo", "ZaloPay"]
+
+def test_scheduled_crawl_skips_apps_with_hourly_refresh_disabled(tmp_path):
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo"})
+    client.post("/api/track", json={"title": "ZaloPay", "as_id": "1112407590"})
+    registry.update_app("com.zing.zalo", {"hourly_refresh_enabled": False})
+    calls = []
+
+    count = _enqueue_scheduled_crawls(
+        registry,
+        factory,
+        lambda store: calls.append(store.load_config().get("title")),
+    )
+
+    assert count == 1
+    assert calls == ["ZaloPay"]
 
 def test_queue_positions_are_one_indexed_by_waiting_order():
     assert _queue_positions(["app-a", "app-b", "app-c"]) == {

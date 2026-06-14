@@ -32,6 +32,16 @@ def _asset_build_stamp():
 def _now():
     return datetime.now(timezone.utc).isoformat()
 
+def _bool_flag(value, default=True):
+    if value is None:
+        return default
+    if isinstance(value, str):
+        return value.strip().lower() not in ("0", "false", "no", "off")
+    return bool(value)
+
+def _hourly_refresh_enabled(app_obj):
+    return _bool_flag((app_obj or {}).get("hourly_refresh_enabled"), True)
+
 def _store_queue_key(store):
     try:
         cfg = store.load_config() or {}
@@ -141,14 +151,14 @@ def _queue_details(store, snapshot=None):
     }
 
 def _enqueue_scheduled_crawls(registry, store_factory, run_fn):
-    app_ids = [
-        app.get("app_id")
+    apps = [
+        app
         for app in registry.list_apps()
-        if app.get("app_id")
+        if app.get("app_id") and _hourly_refresh_enabled(app)
     ]
-    for app_id in app_ids:
-        run_fn(store_factory(app_id))
-    return len(app_ids)
+    for app_obj in apps:
+        run_fn(store_factory(app_obj["app_id"]))
+    return len(apps)
 
 def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
     if registry is None:
@@ -249,12 +259,35 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
             app_obj["review_limit"] = max(10, min(rl, 10000))
         except (TypeError, ValueError):
             pass
+        if "hourly_refresh_enabled" in data:
+            app_obj["hourly_refresh_enabled"] = _bool_flag(data.get("hourly_refresh_enabled"), True)
         app_id = registry.upsert_app(app_obj)  # adds + makes active
         store = store_factory(app_id)
         store.save_config(registry.get_app(app_id))
         cached = bool(store.load_reviews())  # show cache instantly while we refresh
         run_fn(store)
         return jsonify({"ok": True, "app_id": app_id, "cached": cached}), 200
+
+    @app.patch("/api/apps/<app_id>")
+    def patch_app(app_id):
+        current = registry.get_app(app_id)
+        if current is None:
+            return jsonify({"ok": False, "error": "app not found"}), 404
+
+        data = request.get_json(silent=True) or {}
+        patch = {}
+        if "hourly_refresh_enabled" in data:
+            patch["hourly_refresh_enabled"] = _bool_flag(data.get("hourly_refresh_enabled"), True)
+
+        if not patch:
+            updated = current
+        else:
+            updated = registry.update_app(app_id, patch)
+            if updated is None:
+                return jsonify({"ok": False, "error": "app not found"}), 404
+            store_factory(app_id).save_config(updated)
+
+        return jsonify({"ok": True, "app": updated}), 200
 
     @app.get("/api/apps")
     def apps():
@@ -272,6 +305,7 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
             entry["last_run"] = meta.get("last_run")
             entry["error"] = meta.get("error")
             entry["total_reviews"] = len(store.load_reviews())
+            entry["hourly_refresh_enabled"] = _hourly_refresh_enabled(a)
             entry.update(_queue_details(store, queue_snapshot))
             out.append(entry)
         out.sort(key=gallery_sort_key)

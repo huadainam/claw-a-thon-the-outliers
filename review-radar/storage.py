@@ -115,6 +115,7 @@ class LocalStore(Store):
                 os.remove(path)
 
 import json as _json
+import uuid
 
 # Base session ids used as state keys inside the single Memory store. When the
 # store is scoped to an app, the app_id is appended (e.g. "rr-reviews-<app_id>").
@@ -125,6 +126,8 @@ _SESS_TODOS = "rr-todos"
 _SESS_META = "rr-meta"
 
 class MemoryStore(Store):
+    REVIEWS_CHUNK_SIZE = 50
+
     def __init__(self, memory_id: str, actor_id: str = "review-radar", http=None, app_id: str = None):
         self.memory_id = memory_id
         self.actor_id = actor_id
@@ -161,13 +164,50 @@ class MemoryStore(Store):
     def save_processed_ids(self, ids: set):
         self._save_doc(_SESS_IDS, sorted(ids))
 
+    def _reviews_index_sess(self):
+        return f"{_SESS_REVIEWS}-index"
+
+    def _reviews_chunk_sess(self, generation, idx):
+        return f"{_SESS_REVIEWS}-chunk-{generation}-{idx}"
+
+    def _save_reviews(self, reviews: list):
+        reviews = list(reviews or [])
+        generation = uuid.uuid4().hex
+        chunks = [
+            reviews[i:i + self.REVIEWS_CHUNK_SIZE]
+            for i in range(0, len(reviews), self.REVIEWS_CHUNK_SIZE)
+        ]
+        for idx, chunk in enumerate(chunks):
+            self._save_doc(self._reviews_chunk_sess(generation, idx), chunk)
+        self._save_doc(self._reviews_index_sess(), {
+            "version": 1,
+            "generation": generation,
+            "chunk_count": len(chunks),
+            "count": len(reviews),
+        })
+
     def load_reviews(self) -> list:
-        return self._load_doc(_SESS_REVIEWS, [])
+        index = self._load_doc(self._reviews_index_sess(), None)
+        if not isinstance(index, dict) or index.get("version") != 1:
+            return self._load_doc(_SESS_REVIEWS, [])
+
+        generation = index.get("generation")
+        chunk_count = int(index.get("chunk_count") or 0)
+        total = int(index.get("count") or 0)
+        if not generation or chunk_count <= 0:
+            return []
+
+        reviews = []
+        for idx in range(chunk_count):
+            chunk = self._load_doc(self._reviews_chunk_sess(generation, idx), [])
+            if isinstance(chunk, list):
+                reviews.extend(chunk)
+        return reviews[:total]
 
     def append_reviews(self, reviews: list):
         existing = self.load_reviews()
         existing.extend(reviews)
-        self._save_doc(_SESS_REVIEWS, existing)
+        self._save_reviews(existing)
 
     def load_todos(self) -> list:
         return self._load_doc(_SESS_TODOS, [])
@@ -184,6 +224,7 @@ class MemoryStore(Store):
     def reset(self):
         self._save_doc(_SESS_IDS, [])
         self._save_doc(_SESS_REVIEWS, [])
+        self._save_reviews([])
         self._save_doc(_SESS_TODOS, [])
         self._save_doc(_SESS_META, dict(DEFAULT_META))
 
@@ -218,6 +259,23 @@ class Registry(ABC):
         reg = self.load()
         reg["active_app_id"] = app_id
         self._save(reg)
+
+    def update_app(self, app_id: str, patch: dict):
+        reg = self.load()
+        updated = None
+        apps = []
+        for app in reg["apps"]:
+            if app.get("app_id") == app_id:
+                updated = merge_app_metadata(app, patch)
+                updated["app_id"] = app_id
+                apps.append(updated)
+            else:
+                apps.append(app)
+        if updated is None:
+            return None
+        reg["apps"] = apps
+        self._save(reg)
+        return updated
 
     def upsert_app(self, app: dict) -> str:
         """Add or update an app (keyed by app_key), make it active, return its id."""

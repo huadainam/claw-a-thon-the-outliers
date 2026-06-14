@@ -27,7 +27,7 @@ def test_config_review_limit(monkeypatch):
     monkeypatch.delenv("REFRESH_REVIEW_LIMIT", raising=False)
     import config
     importlib.reload(config)
-    assert config.get_config().review_limit == 500
+    assert config.get_config().review_limit == 100
     assert config.get_config().refresh_review_limit == 100
     monkeypatch.setenv("REVIEW_LIMIT", "200")
     monkeypatch.setenv("REFRESH_REVIEW_LIMIT", "75")

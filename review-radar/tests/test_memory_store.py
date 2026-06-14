@@ -32,6 +32,22 @@ def test_memory_store_append_reviews_accumulates():
     s.append_reviews([{"id": "b"}])
     assert len(s.load_reviews()) == 2
 
+def test_memory_store_reviews_are_chunked():
+    s = make_store()
+    s.REVIEWS_CHUNK_SIZE = 2
+    s.append_reviews([{"id": "a"}, {"id": "b"}, {"id": "c"}])
+
+    assert s.load_reviews() == [{"id": "a"}, {"id": "b"}, {"id": "c"}]
+    assert "rr-reviews-index" in s.http.sessions
+    chunk_sessions = [name for name in s.http.sessions if name.startswith("rr-reviews-chunk-")]
+    assert len(chunk_sessions) == 2
+
+def test_memory_store_reads_legacy_reviews_without_index():
+    s = make_store()
+    s.http.post_event("m1", "agent", "rr-reviews", '[{"id":"legacy"}]')
+
+    assert s.load_reviews() == [{"id": "legacy"}]
+
 def test_memory_store_reset_clears():
     s = make_store()
     s.save_processed_ids({"a"})

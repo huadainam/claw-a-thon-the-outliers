@@ -33,7 +33,12 @@ def _llm_default(prompt: str) -> str:
     from openai import OpenAI
     from config import get_config
     cfg = get_config()
-    client = OpenAI(api_key=cfg.openai_api_key, base_url=cfg.openai_base_url)
+    client = OpenAI(
+        api_key=cfg.openai_api_key,
+        base_url=cfg.openai_base_url,
+        timeout=60.0,
+        max_retries=1,
+    )
     resp = client.chat.completions.create(
         model=cfg.model_name,
         messages=[{"role": "user", "content": prompt}],

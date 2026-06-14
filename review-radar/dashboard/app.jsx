@@ -75,6 +75,7 @@ function App() {
           a.queue_position || "",
           a.last_updated || "",
           a.error || "",
+          a.hourly_refresh_enabled === false ? "0" : "1",
           a.last_run ? JSON.stringify(a.last_run) : "",
           (a.progress && a.progress.done) || 0,
         ].join(":")).join("|");
@@ -228,6 +229,7 @@ function App() {
             onDone={() => {
               loadDashboardWithRetry(activeApp).finally(() => go("dashboard"));
             }}
+            onOpenDashboard={handleOpenDashboard}
             onBack={() => go("selection")}/>
         )}
         {screen === "dashboard" && (

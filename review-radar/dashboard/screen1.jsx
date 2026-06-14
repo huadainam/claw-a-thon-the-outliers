@@ -7,6 +7,8 @@ function normalizeSearchText(value) {
     .trim();
 }
 
+const REVIEW_LIMIT_STORAGE_KEY = "arm_review_limit_v2";
+
 function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, availVersion }) {
   const [query, setQuery] = useState("");
   const [availableQuery, setAvailableQuery] = useState("");
@@ -14,12 +16,12 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
   const [suggestions, setSuggestions] = useState([]);
   const [confirmed, setConfirmed] = useState(null);
   const [reviewLimit, setReviewLimit] = useState(() => {
-    const v = parseInt(localStorage.getItem("arm_review_limit"), 10);
+    const v = parseInt(localStorage.getItem(REVIEW_LIMIT_STORAGE_KEY), 10);
     return [50, 100, 200, 500, 1000].includes(v) ? v : 100;
   });
   const inputRef = useRef(null);
 
-  useEffect(() => { localStorage.setItem("arm_review_limit", String(reviewLimit)); }, [reviewLimit]);
+  useEffect(() => { localStorage.setItem(REVIEW_LIMIT_STORAGE_KEY, String(reviewLimit)); }, [reviewLimit]);
 
   useEffect(() => { inputRef.current && inputRef.current.focus(); }, []);
 
@@ -246,6 +248,7 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
               const detailLabel = isQueued
                 ? (queueRank ? `${t("queue_position")} ${queueRank} · ${t("queue_next")}` : t("queue_starting"))
                 : (total > 0 ? `${done.toLocaleString()} / ${total.toLocaleString()} ${t("reviews_word")}` : t("s2_eyebrow"));
+              const hourlyEnabled = row.hourlyRefreshEnabled !== false;
               return (
                 <button key={row.app} className="card"
                   onClick={() => onOpenCrawling(row.app)}
@@ -278,9 +281,12 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
                   <div style={{ height:5, borderRadius:5, background:"rgba(0,0,0,0.06)", overflow:"hidden" }}>
                     <div style={{ width:isQueued ? "0%" : `${pct}%`, height:"100%", borderRadius:5, background:"linear-gradient(90deg,#0a84ff,#0071e3)", transition:"width .4s linear" }}></div>
                   </div>
-                  <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:13, fontWeight:600, color:"var(--accent)" }}>
-                    {t("view_status")}<Icon name="chevron" size={15} stroke={2.2}/>
-                  </span>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
+                    <HourlyRefreshInfo t={t} enabled={hourlyEnabled} style={{ marginTop:0, flex:1 }}/>
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:3, fontSize:13, fontWeight:600, color:"var(--accent)" }}>
+                      {t("view_status")}<Icon name="chevron" size={15} stroke={2.2}/>
+                    </span>
+                  </div>
                 </button>
               );
             })}
@@ -323,6 +329,7 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
               const a = window.DATA.APPS[row.app];
               if (!a) return null;
               const needsCrawl = (row.totalReviews || 0) === 0 && (row.lastUpdated == null || row.lastUpdated >= 999);
+              const hourlyEnabled = row.hourlyRefreshEnabled !== false;
               return (
                 <button key={row.app} className="card"
                   onClick={() => needsCrawl ? onOpenCrawling(row.app, true) : onOpenDashboard(row.app)}
@@ -341,6 +348,7 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
                       <Icon name="clock" size={12.5}/>
                       {formatCrawlTimestamp(row.lastUpdatedAt, t)}
                     </div>
+                    <HourlyRefreshInfo t={t} enabled={hourlyEnabled}/>
                   </div>
                   <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", borderTop:"1px solid var(--hairline)", paddingTop:12 }}>
                     <div>
@@ -387,6 +395,23 @@ function SectionHeader({ title, sub }) {
   );
 }
 
+function HourlyRefreshInfo({ t, enabled, style }) {
+  return (
+    <div style={{ marginTop:9, display:"flex", flexDirection:"column", alignItems:"flex-start", gap:4, minWidth:0, ...style }}>
+      <span style={{ display:"inline-flex", alignItems:"center", gap:5,
+        padding:"5px 9px", borderRadius:999, fontSize:11.5, fontWeight:700,
+        color: enabled ? "var(--accent)" : "var(--text-3)",
+        background: enabled ? "var(--accent-soft)" : "rgba(0,0,0,0.055)" }}>
+        <Icon name="refresh" size={12} stroke={2}/>
+        {enabled ? t("hourly_on") : t("hourly_off")}
+      </span>
+      <span style={{ fontSize:11.5, lineHeight:1.35, color:"var(--text-3)" }}>
+        {t("hourly_admin_contact")}
+      </span>
+    </div>
+  );
+}
+
 function SimilarityMeter({ score, t }) {
   const tone = score >= 85 ? "var(--positive)" : score >= 65 ? "var(--warning)" : "var(--text-3)";
   return (
@@ -400,4 +425,4 @@ function SimilarityMeter({ score, t }) {
   );
 }
 
-Object.assign(window, { AppSelection, SectionHeader, SimilarityMeter });
+Object.assign(window, { AppSelection, SectionHeader, HourlyRefreshInfo, SimilarityMeter });

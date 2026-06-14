@@ -1,10 +1,14 @@
 /* ============ Screen 2: Crawling / Processing State — polls real backend ============ */
-function Crawling({ t, app, onDone, onBack }) {
+function Crawling({ t, app, onDone, onBack, onOpenDashboard }) {
   const STEPS = ["confirmed", "crawling", "categorizing", "building"];
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
   const [counts, setCounts] = useState({ done: 0, total: 0 });  // reviews classified / total
   const [queueInfo, setQueueInfo] = useState(null);
+  const [hasExistingData, setHasExistingData] = useState(() => {
+    const row = (window.DATA.AVAILABLE || []).find(r => r.app === app);
+    return ((row && row.totalReviews) || 0) > 0;
+  });
   const [notified, setNotified] = useState(false);
   const a = window.DATA.APPS[app] || { name: app };
 
@@ -19,6 +23,7 @@ function Crawling({ t, app, onDone, onBack }) {
         const meta = await window.ARM_Bridge.getCrawlProgress(app);
         const done  = (meta.progress && meta.progress.done)  || 0;
         const total = (meta.progress && meta.progress.total) || 0;
+        setHasExistingData((meta.total_reviews || 0) > 0);
 
         if (meta.status === "queued") {
           setQueueInfo({ position: meta.queue_position, waitingCount: meta.queue_waiting_count });
@@ -71,11 +76,13 @@ function Crawling({ t, app, onDone, onBack }) {
   }, [app]);
 
   const totalProgress = ((active + progress / 100) / STEPS.length) * 100;
-  const canOpenDashboard = active >= 2;
+  const canOpenDashboard = active >= 2 || hasExistingData;
+  const isWaitingWithExistingData = active < 2 && hasExistingData;
   const openDashboardNow = () => {
     setActive(3);
     setProgress(100);
-    onDone();
+    if (onOpenDashboard) onOpenDashboard(app);
+    else onDone();
   };
 
   return (
@@ -139,9 +146,14 @@ function Crawling({ t, app, onDone, onBack }) {
           <div className="card fade-in" style={{ padding:"13px 16px", marginBottom:18, display:"flex", alignItems:"center", gap:10,
             borderColor:"var(--warning-soft)", background:"var(--warning-soft)", color:"var(--warning)" }}>
             <Icon name="clock" size={17} stroke={2.1}/>
-            <div style={{ fontSize:13.5, fontWeight:600 }}>
-              {queueInfo.position ? `${t("status_queued")} #${queueInfo.position}` : t("queue_starting")}
-              <span style={{ fontWeight:500 }}> · {t("queue_next")}</span>
+            <div style={{ fontSize:13.5, fontWeight:600, lineHeight:1.35 }}>
+              <div>
+                {queueInfo.position ? `${t("status_queued")} #${queueInfo.position}` : t("queue_starting")}
+                <span style={{ fontWeight:500 }}> · {t("queue_next")}</span>
+              </div>
+              {hasExistingData && (
+                <div style={{ fontWeight:500, color:"var(--text-2)", marginTop:2 }}>{t("queued_existing_data")}</div>
+              )}
             </div>
           </div>
         )}
@@ -154,11 +166,13 @@ function Crawling({ t, app, onDone, onBack }) {
             <Icon name="bell" size={16}/>{notified ? "✓ " : ""}{t("notify")}</button>
           {canOpenDashboard && (
             <button className="btn btn-primary fade-in" onClick={openDashboardNow}>
-              {t("skip_now")}<Icon name="chevron" size={16} stroke={2.2}/></button>
+              {isWaitingWithExistingData ? t("open_existing_dashboard") : t("skip_now")}<Icon name="chevron" size={16} stroke={2.2}/></button>
           )}
         </div>
         {canOpenDashboard && (
-          <p className="fade-in" style={{ fontSize:12.5, color:"var(--text-3)", textAlign:"center", marginTop:12 }}>{t("skip_hint")}</p>
+          <p className="fade-in" style={{ fontSize:12.5, color:"var(--text-3)", textAlign:"center", marginTop:12 }}>
+            {isWaitingWithExistingData ? t("existing_dashboard_hint") : t("skip_hint")}
+          </p>
         )}
       </div>
     </div>

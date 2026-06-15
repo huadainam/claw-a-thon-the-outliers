@@ -298,15 +298,20 @@ function makeRealCompareStats(id, stats, reviews, todos) {
   const latestDay = latestCompareDay(reviews);
   const rating = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
   const health = healthFromLabels(byLabel, total);
-  const openTodos = todos.filter(todo => !["done", "fixed", "ignored"].includes(todo.status));
-  const criticalTodos = openTodos.filter(todo => todo.severity === "critical").length;
+  // "Bug nghiêm trọng" = genuinely severe bug reviews (a 1-2★ bug report), not
+  // clusters that happen to be reported 10+ times. Counting by mention-based todo
+  // severity made apps with many distinct 1★ bugs (e.g. Zalopay) show 0, which is
+  // wrong — this counts the actual critical bug reviews instead.
+  const criticalBugs = reviews.filter(
+    r => r.label === "BUG_REPORT" && (Number(r.score) || 3) <= 2
+  ).length;
 
   return {
     health,
     rating,
     totalReviews: total,
     latestReviews: latestDay ? reviews.filter(r => compareReviewDay(r) === latestDay).length : 0,
-    critical: criticalTodos,
+    critical: criticalBugs,
     sentiment: sentimentFromLabels(byLabel, total),
     trend: trendFromReviews(reviews),
     cats: categoryPercents(byLabel, total),
@@ -434,14 +439,14 @@ function CompareResult({ t, selected, compareData }) {
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:18 }}>
         <div className="card" style={{ padding:"20px 22px" }}>
           <CardHead title={t("sentiment_split")}/>
-          <div style={{ marginTop:16, display:"flex", flexDirection:"column", gap:14 }}>
+          <div style={{ marginTop:18, display:"flex", flexDirection:"column", gap:18 }}>
             {stats.map(x => (
-              <div key={x.id}>
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                  <AppGlyph app={x.id} size={22}/>
-                  <span style={{ fontSize:13, fontWeight:600 }}>{x.a.name}</span>
-                </div>
-                <div style={{ display:"flex", height:18, borderRadius:6, overflow:"hidden", gap:1.5 }}>
+              <div key={x.id} style={{ display:"grid", gridTemplateColumns:"34px minmax(0, 1fr) 64px",
+                columnGap:10, rowGap:7, alignItems:"center", minHeight:52 }}>
+                <AppGlyph app={x.id} size={28}/>
+                <span style={{ fontSize:13.5, fontWeight:650, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{x.a.name}</span>
+                <span></span>
+                <div style={{ gridColumn:"2 / 4", display:"flex", height:14, borderRadius:6, overflow:"hidden", gap:1.5 }}>
                   <SegBar pct={x.s.sentiment.positive} color="var(--positive)"/>
                   <SegBar pct={x.s.sentiment.neutral} color="#c7c7cc"/>
                   <SegBar pct={x.s.sentiment.negative} color="var(--critical)"/>
@@ -449,7 +454,7 @@ function CompareResult({ t, selected, compareData }) {
               </div>
             ))}
           </div>
-          <div style={{ display:"flex", gap:16, marginTop:16, fontSize:12, color:"var(--text-2)", fontWeight:500 }}>
+          <div style={{ display:"flex", gap:16, marginTop:18, fontSize:12, color:"var(--text-2)", fontWeight:500, flexWrap:"wrap" }}>
             <Legend color="var(--positive)" label={t("sent_positive")}/>
             <Legend color="#c7c7cc" label={t("sent_neutral")}/>
             <Legend color="var(--critical)" label={t("sent_negative")}/>
@@ -458,20 +463,19 @@ function CompareResult({ t, selected, compareData }) {
 
         <div className="card" style={{ padding:"20px 22px" }}>
           <CardHead title={t("rating_dist")}/>
-          <div style={{ marginTop:16, display:"flex", flexDirection:"column", gap:13 }}>
+          <div style={{ marginTop:18, display:"flex", flexDirection:"column", gap:18 }}>
             {stats.map(x => (
-              <div key={x.id} style={{ display:"flex", alignItems:"center", gap:11 }}>
-                <AppGlyph app={x.id} size={24}/>
-                <div style={{ flex:1 }}>
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:4 }}>
-                    <span style={{ fontSize:13, fontWeight:600 }}>{x.a.name}</span>
-	                    <span className="mono" style={{ fontSize:13, fontWeight:700, color:"#f5a623" }}>★ {x.s.rating == null ? "—" : x.s.rating.toFixed(1)}</span>
-                  </div>
-                  <div style={{ display:"flex", height:8, borderRadius:4, overflow:"hidden", gap:1.5 }}>
-                    {[5,4,3,2,1].map(star => (
-                      <SegBar key={star} pct={x.s.stars[star]} color={star>=4?"var(--positive)":star===3?"var(--warning)":"var(--critical)"}/>
-                    ))}
-                  </div>
+              <div key={x.id} style={{ display:"grid", gridTemplateColumns:"34px minmax(0, 1fr) 64px",
+                columnGap:10, rowGap:7, alignItems:"center", minHeight:52 }}>
+                <AppGlyph app={x.id} size={28}/>
+                <span style={{ fontSize:13.5, fontWeight:650, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{x.a.name}</span>
+                <span className="mono" style={{ fontSize:13.5, fontWeight:700, color:"#f5a623", textAlign:"right", whiteSpace:"nowrap" }}>
+                  ★ {x.s.rating == null ? "—" : x.s.rating.toFixed(1)}
+                </span>
+                <div style={{ gridColumn:"2 / 4", display:"flex", height:14, borderRadius:6, overflow:"hidden", gap:1.5 }}>
+                  {[5,4,3,2,1].map(star => (
+                    <SegBar key={star} pct={x.s.stars[star]} color={star>=4?"var(--positive)":star===3?"var(--warning)":"var(--critical)"}/>
+                  ))}
                 </div>
               </div>
             ))}

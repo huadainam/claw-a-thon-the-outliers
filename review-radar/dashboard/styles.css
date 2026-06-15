@@ -211,6 +211,73 @@ input { font-family: inherit; }
   border-radius: var(--r-lg); box-shadow: var(--shadow-sm);
 }
 
+.kpi-info-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.kpi-info {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  background: rgba(0,0,0,0.045);
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+
+.kpi-info:hover,
+.kpi-info:focus-visible {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.kpi-info:focus-visible {
+  outline: 2px solid var(--accent-soft-2);
+  outline-offset: 2px;
+}
+
+.kpi-tip {
+  position: absolute;
+  z-index: 40;
+  right: 0;
+  bottom: calc(100% + 9px);
+  width: 228px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: rgba(29,29,31,0.96);
+  color: #fff;
+  box-shadow: var(--shadow-pop);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.kpi-tip::after {
+  content: "";
+  position: absolute;
+  right: 7px;
+  bottom: -5px;
+  width: 10px;
+  height: 10px;
+  background: rgba(29,29,31,0.96);
+  transform: rotate(45deg);
+}
+
+.kpi-info-wrap:hover .kpi-tip,
+.kpi-info-wrap:focus-within .kpi-tip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ============ Badges ============ */
 .badge {
   display: inline-flex; align-items: center; gap: 5px;
@@ -361,7 +428,7 @@ textarea.set-input { font-family: inherit; }
 .toast-wrap .toast {
   position: static; bottom: auto; left: auto; transform: none;
   z-index: auto; color: var(--text); text-shadow: none;
-  pointer-events: auto; cursor: pointer;
+  pointer-events: auto; cursor: default;
   display: flex; align-items: center; gap: 13px;
   min-width: 300px; max-width: 380px; padding: 12px 14px;
   border-radius: 18px;
@@ -383,9 +450,13 @@ textarea.set-input { font-family: inherit; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .toast-sub { font-size: 12.5px; color: var(--text-2); margin-top: 1px; }
-.toast-badge {
-  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
-  display: grid; place-items: center; color: #fff; background: var(--positive);
+.toast-close {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; color: var(--text-2);
+  background: rgba(0,0,0,0.05); transition: background .15s, color .15s, transform .15s;
+}
+.toast-close:hover {
+  background: rgba(0,0,0,0.1); color: var(--text); transform: scale(1.03);
 }
 @keyframes toastCardIn {
   from { opacity: 0; transform: translateX(46px) scale(0.94); }

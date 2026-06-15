@@ -43,6 +43,28 @@ def test_memory_store_reviews_are_chunked():
     chunk_sessions = [name for name in s.http.sessions if name.startswith("rr-reviews-chunk-")]
     assert len(chunk_sessions) == 2
 
+def test_memory_store_todos_are_chunked():
+    s = make_store()
+    s.TODOS_CHUNK_SIZE = 2
+    todos = [
+        {"id": "t1", "topic": "A", "status": "open"},
+        {"id": "t2", "topic": "B", "status": "open"},
+        {"id": "t3", "topic": "C", "status": "open"},
+    ]
+
+    s.save_todos(todos)
+
+    assert s.load_todos() == todos
+    assert "rr-todos-index" in s.http.sessions
+    chunk_sessions = [name for name in s.http.sessions if name.startswith("rr-todos-chunk-")]
+    assert len(chunk_sessions) == 2
+
+def test_memory_store_reads_legacy_todos_without_index():
+    s = make_store()
+    s.http.post_event("m1", "agent", "rr-todos", '[{"id":"legacy"}]')
+
+    assert s.load_todos() == [{"id": "legacy"}]
+
 def test_memory_store_review_count_reads_index_without_chunks():
     s = make_store()
     s.REVIEWS_CHUNK_SIZE = 2

@@ -40,6 +40,7 @@ function Icon({ name, size = 18, stroke = 1.7, className, style }) {
     settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 0 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H1a2 2 0 0 1 0-4h.1A1.6 1.6 0 0 0 2.6 7a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 7 2.6 1.6 1.6 0 0 0 8 1.1V1a2 2 0 0 1 4 0v.1A1.6 1.6 0 0 0 15 2.6a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V7a1.6 1.6 0 0 0 1.5 1H23a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" transform="scale(0.83) translate(2.4 2.4)"/></>,
     search: <><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></>,
     reviews: <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></>,
+    info: <><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></>,
     calendar: <><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></>,
     alert: <><path d="M10.3 3.3 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.3a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></>,
     check: <><path d="M20 6 9 17l-5-5"/></>,
@@ -137,7 +138,7 @@ function Stars({ rating, size = 13 }) {
 /* ---------- Sidebar ---------- */
 function Sidebar({ screen, lang, setLang, t, go, activeApp, dashSection, onDashNav, collapsed, onToggleNav }) {
   const inApp = screen === "dashboard";
-  const a = activeApp && window.DATA.APPS[activeApp];
+  const a = (activeApp && window.DATA.APPS[activeApp]) || { name: activeApp || "", platform: "—" };
   const row = activeApp && window.DATA.AVAILABLE.find(r => r.app === activeApp);
   // action items belonging to THIS app that still need attention
   const openActions = window.DATA.ACTIONS.filter(x => x.status === "open" || x.status === "in_progress").length;
@@ -321,18 +322,22 @@ function Modal({ open, onClose, children, width = 460 }) {
 }
 
 /* ---- Apple-style toast notifications (top-right) ---- */
+const TOAST_AUTO_DISMISS_MS = 20000;
+
 function ToastCard({ toast, onDismiss }) {
   const [leaving, setLeaving] = useState(false);
   const close = React.useCallback(() => {
+    if (leaving) return;
     setLeaving(true);
     setTimeout(() => onDismiss(toast.id), 300);
-  }, [toast.id, onDismiss]);
+  }, [leaving, toast.id, onDismiss]);
   useEffect(() => {
-    const id = setTimeout(close, 5200);
+    if (leaving) return;
+    const id = setTimeout(close, TOAST_AUTO_DISMISS_MS);
     return () => clearTimeout(id);
-  }, [close]);
+  }, [close, leaving]);
   return (
-    <div className={"toast" + (leaving ? " toast-leaving" : "")} onClick={close} role="status">
+    <div className={"toast" + (leaving ? " toast-leaving" : "")} role="status">
       <div className="toast-glyph">
         {window.DATA.APPS[toast.app]
           ? <AppGlyph app={toast.app} size={40} fontSize={17}/>
@@ -342,7 +347,9 @@ function ToastCard({ toast, onDismiss }) {
         <div className="toast-title">{toast.title}</div>
         <div className="toast-sub">{toast.sub}</div>
       </div>
-      <div className="toast-badge"><Icon name="check" size={13} stroke={3}/></div>
+      <button type="button" className="toast-close" onClick={close} aria-label="Close notification">
+        <Icon name="x" size={15} stroke={2.4}/>
+      </button>
     </div>
   );
 }

@@ -129,11 +129,18 @@
     };
   }
 
-  function isZaloPay(entry) {
+  function zaloPayRank(entry) {
     var id = String(entry.app || entry.app_id || '').toLowerCase();
+    var asId = String(entry.as_id || '').toLowerCase();
+    var gpId = String(entry.gp_id || '').toLowerCase();
     var spec = window.DATA.APPS[entry.app || entry.app_id] || {};
     var name = String(entry.title || spec.name || '').toLowerCase();
-    return id === '1112407590' || id.indexOf('zalopay') >= 0 || name.indexOf('zalopay') >= 0;
+    var merchantId = 'vn.com.vng.zalopay.mep.merchant';
+    var isMerchant = id === merchantId || gpId === merchantId || asId === '1444720973' ||
+      (name.indexOf('zalopay') >= 0 && name.indexOf('merchant') >= 0);
+    if (id === '1112407590' || asId === '1112407590' ||
+        (name.indexOf('zalopay') >= 0 && !isMerchant)) return 0;
+    return isMerchant ? 1 : 2;
   }
 
   function appName(entry) {
@@ -142,11 +149,18 @@
     return String(entry.title || spec.name || id || '').toLocaleLowerCase('vi');
   }
 
+  function isRefreshOn(entry) {
+    if (entry.hourlyRefreshEnabled != null) return entry.hourlyRefreshEnabled === true;
+    return entry.hourly_refresh_enabled === true;
+  }
+
+  // Gallery order: Zalopay consumer → ZaloPay Merchant → refresh ON → alphabetical.
   function sortAppsForGallery(items) {
     return (items || []).slice().sort(function(a, b) {
-      var az = isZaloPay(a), bz = isZaloPay(b);
-      if (az && !bz) return -1;
-      if (!az && bz) return 1;
+      var az = zaloPayRank(a), bz = zaloPayRank(b);
+      if (az !== bz) return az - bz;
+      var ar = isRefreshOn(a), br = isRefreshOn(b);
+      if (ar !== br) return ar ? -1 : 1;
       return appName(a).localeCompare(appName(b), 'vi', { sensitivity: 'base' });
     });
   }
@@ -265,18 +279,51 @@
     });
   }
 
+  var PRI_RANK = { critical: 3, high: 2, medium: 1, low: 0 };
+
+  // Priority of a single raw (backend) review — shared by makeReviews and
+  // makeActions so an action's priority stays consistent with the reviews inside
+  // it: a 1-2★ bug is "critical", any other bug is "high".
+  function rawReviewPriority(r) {
+    var score = r.score || 3;
+    if (r.label === 'BUG_REPORT') return score <= 2 ? 'critical' : 'high';
+    return 'medium';
+  }
+
   function makeActions(todos, reviews) {
     todos = todos || [];
     reviews = reviews || [];
-    var SEV_TO_PRI = { critical: 'critical', medium: 'high', low: 'medium' };
+    var VOLUME_TO_PRI = { critical: 'critical', medium: 'high', low: 'medium' };
     return todos.map(function(todo) {
       var samples = todo.sample_reviews || [];
       // Count only reviews inside the visible source window, so action items
       // created from current-day partial reviews stay hidden until T+1.
-      var linked = reviews.filter(function(r) { return todoMatchesReview(todo, r); }).length;
+      var linkedReviews = reviews.filter(function(r) { return todoMatchesReview(todo, r); });
+      var linked = linkedReviews.length;
+      // Action priority = the MOST severe linked review, escalated by how widely
+      // the cluster is reported. This is the real fix for severe bugs not showing
+      // under the "critical" filter: a serious 1★ bug counts as critical even when
+      // it has only been reported a couple of times, instead of being downgraded
+      // to "medium" purely because its mention count is below the volume threshold.
+      var topReviewPri = linkedReviews.reduce(function(acc, r) {
+        var p = rawReviewPriority(r);
+        return PRI_RANK[p] > PRI_RANK[acc] ? p : acc;
+      }, 'low');
+      var volumePri = VOLUME_TO_PRI[todo.severity] || 'medium';
+      var priority = PRI_RANK[topReviewPri] >= PRI_RANK[volumePri] ? topReviewPri : volumePri;
+      if (priority === 'low') priority = 'medium';
+      // Distinct priorities of the reviews INSIDE this cluster. The priority
+      // filter uses "contains" semantics: a to-do shows under a given priority if
+      // any of its reviews has that priority — so a cluster with both a "high" and
+      // a "critical" review appears under BOTH filters, not only the worst one.
+      var priSet = {};
+      linkedReviews.forEach(function(r) { priSet[rawReviewPriority(r)] = true; });
+      var priorities = Object.keys(priSet);
+      if (priorities.length === 0) priorities = [priority];
       return {
         id:       todo.id,
-        priority: SEV_TO_PRI[todo.severity] || 'medium',
+        priority: priority,
+        priorities: priorities,
         flag:     'need_fix',
         status:   todoStatusToActionStatus(todo.status),
         cat:      'bug',
@@ -333,7 +380,7 @@
       var score = r.score || 3;
       var cat   = LABEL_TO_CAT[r.label] || 'feedback';
       var sent  = score >= 4 ? 'positive' : score <= 2 ? 'negative' : 'neutral';
-      var pri   = (r.label === 'BUG_REPORT' && score <= 2) ? 'critical' : r.label === 'BUG_REPORT' ? 'high' : 'medium';
+      var pri   = rawReviewPriority(r);
       var flag  = r.label === 'BUG_REPORT' ? 'need_fix' : r.label === 'SPAM' ? 'spam_review' : 'need_reply';
       var content = r.content || '';
       var summary = content.length > 120 ? content.slice(0, 120) + '…' : content;
@@ -403,9 +450,14 @@
           upsertAppSpec(ba);
         });
         window.DATA.AVAILABLE = apps.map(function(ba){ return makeAvailableEntry(ba, null); });
+        // Mark that a real app list has loaded (even if empty) so the gallery can
+        // show a loading state — not a "no apps" empty state — until this resolves.
+        window.DATA.APPS_LOADED = true;
         return { hasActiveApp: !!data.active_app_id, appId: data.active_app_id, apps: apps };
       }).catch(function(e) {
         console.warn('[ARM_Bridge] init failed:', e);
+        // Leave APPS_LOADED false so the gallery keeps showing the loading state;
+        // the background poll will populate the list on its next successful tick.
         return { hasActiveApp: false, appId: null, apps: [] };
       });
     },
@@ -439,6 +491,7 @@
             trend:        null,
           };
         });
+        window.DATA.APPS_LOADED = true;
         return { apps: apps, activeAppId: data.active_app_id };
       }).catch(function(e) {
         console.warn('[ARM_Bridge] refreshApps failed:', e);
@@ -460,6 +513,18 @@
 
     runNow: function() {
       return this._post('/run', {});
+    },
+
+    cancelRun: function(appId) {
+      return this._post('/api/cancel', { app_id: appId });
+    },
+
+    getFeedback: function() {
+      return this._get('/api/feedback');
+    },
+
+    submitFeedback: function(entry) {
+      return this._post('/api/feedback', entry);
     },
 
     setHourlyRefresh: function(appId, enabled) {
@@ -528,6 +593,11 @@
         if (avIdx >= 0) window.DATA.AVAILABLE[avIdx] = avEntry;
         else window.DATA.AVAILABLE.push(avEntry);
         window.DATA.AVAILABLE = sortAppsForGallery(window.DATA.AVAILABLE);
+
+        // Mark which app's data currently lives in window.DATA so the dashboard
+        // can show a loading state (instead of the previous app's numbers) while
+        // switching apps, until this app's data is actually in place.
+        window.DATA.LOADED_APP_ID = appId;
 
         return { stats: stats, todos: todos, reviews: reviews };
       }).catch(function(e) {

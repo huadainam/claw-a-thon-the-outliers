@@ -7,8 +7,6 @@ function normalizeSearchText(value) {
     .trim();
 }
 
-const REVIEW_LIMIT_STORAGE_KEY = "arm_review_limit_v2";
-
 function formatHeroDate(date, lang) {
   return date.toLocaleDateString(lang === "vi" ? "vi-VN" : "en-US", {
     day:"2-digit", month:"2-digit", year:"numeric",
@@ -28,13 +26,8 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
   const [phase, setPhase] = useState("empty"); // empty | searching | results
   const [suggestions, setSuggestions] = useState([]);
   const [confirmed, setConfirmed] = useState(null);
-  const [reviewLimit, setReviewLimit] = useState(() => {
-    const v = parseInt(localStorage.getItem(REVIEW_LIMIT_STORAGE_KEY), 10);
-    return [50, 100, 200, 500, 1000].includes(v) ? v : 100;
-  });
+  const [reviewLimit, setReviewLimit] = useState(100);
   const inputRef = useRef(null);
-
-  useEffect(() => { localStorage.setItem(REVIEW_LIMIT_STORAGE_KEY, String(reviewLimit)); }, [reviewLimit]);
 
   useEffect(() => { inputRef.current && inputRef.current.focus(); }, []);
 
@@ -98,6 +91,7 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
   // this screen (scraping apps appear/finish) without remounting / losing search.
   void availVersion;
   const allAvailable = window.DATA.AVAILABLE || [];
+  const appsLoaded = window.DATA.APPS_LOADED === true;
   const isBusyStatus = status => status === "analyzing" || status === "queued";
   const scrapingApps = allAvailable.filter(r => isBusyStatus(r.status)).slice().sort((a, b) => {
     if (a.status === "analyzing" && b.status !== "analyzing") return -1;
@@ -179,7 +173,7 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
           <button className="btn btn-primary" style={{ padding:"0 24px", fontSize:15.5 }} onClick={runSearch} disabled={!query.trim()}>{t("s1_find")}</button>
         </div>
         <div style={{ marginTop:14, display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap" }}>
-          {["Zalopay","Shopee","MoMo"].map(s => (
+          {["Zalopay","Shopee","Facebook"].map(s => (
             <button key={s} onClick={() => { setQuery(s); doSearch(s); }}
               style={{ fontSize:13, fontWeight:600, color:"var(--text-2)", background:"rgba(0,0,0,0.04)", padding:"5px 12px", borderRadius:980 }}>{s}</button>
           ))}
@@ -200,9 +194,12 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
               );
             })}
           </div>
-          <div style={{ fontSize:12.5, color:"var(--text-3)", marginTop:9, display:"flex", alignItems:"center", gap:6, justifyContent:"center" }}>
-            <Icon name="clock" size={13}/>
-            <span>{t("review_count_note")}</span>
+          <div style={{ marginTop:9, display:"flex", justifyContent:"center" }}>
+            <div style={{ fontSize:12.5, color:"var(--text-3)", display:"flex", alignItems:"flex-start",
+              gap:6, maxWidth:480, textAlign:"left", lineHeight:1.45 }}>
+              <Icon name="clock" size={13} style={{ flexShrink:0, marginTop:2 }}/>
+              <span>{t("review_count_note")}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -443,7 +440,18 @@ function AppSelection({ t, lang, onConfirm, onOpenDashboard, onOpenCrawling, ava
         </>
       )}
 
-      {availableApps.length === 0 && scrapingApps.length === 0 && phase === "empty" && (
+      {/* Apps are still loading on first paint (F5) — show a loading state instead
+          of the "no apps yet, start searching" empty state, which is misleading
+          when the workspace actually has many available apps. */}
+      {!appsLoaded && availableApps.length === 0 && scrapingApps.length === 0 && phase === "empty" && (
+        <div className="fade-in" style={{ textAlign:"center", padding:"48px 0 40px", color:"var(--text-3)" }}>
+          <div style={{ width:26, height:26, borderRadius:"50%", margin:"0 auto 16px",
+            border:"3px solid rgba(0,113,227,0.2)", borderTopColor:"var(--accent)", animation:"spin 0.8s linear infinite" }}></div>
+          <div style={{ fontSize:15, fontWeight:600 }}>{t("loading_apps")}</div>
+        </div>
+      )}
+
+      {appsLoaded && availableApps.length === 0 && scrapingApps.length === 0 && phase === "empty" && (
         <div className="fade-in" style={{ textAlign:"center", padding:"48px 0 40px", color:"var(--text-3)" }}>
           <Icon name="search" size={34} style={{ marginBottom:14, opacity:0.4 }}/>
           <div style={{ fontSize:16, fontWeight:500, marginBottom:4 }}>{t("empty_title")}</div>

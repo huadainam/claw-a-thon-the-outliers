@@ -129,6 +129,7 @@ _SESS_META = "rr-meta"
 
 class MemoryStore(Store):
     REVIEWS_CHUNK_SIZE = 50
+    TODOS_CHUNK_SIZE = 25
 
     def __init__(self, memory_id: str, actor_id: str = "review-radar", http=None, app_id: str = None):
         self.memory_id = memory_id
@@ -171,6 +172,12 @@ class MemoryStore(Store):
 
     def _reviews_chunk_sess(self, generation, idx):
         return f"{_SESS_REVIEWS}-chunk-{generation}-{idx}"
+
+    def _todos_index_sess(self):
+        return f"{_SESS_TODOS}-index"
+
+    def _todos_chunk_sess(self, generation, idx):
+        return f"{_SESS_TODOS}-chunk-{generation}-{idx}"
 
     def _save_reviews(self, reviews: list):
         reviews = list(reviews or [])
@@ -221,10 +228,38 @@ class MemoryStore(Store):
         self._save_reviews(existing)
 
     def load_todos(self) -> list:
-        return self._load_doc(_SESS_TODOS, [])
+        index = self._load_doc(self._todos_index_sess(), None)
+        if not isinstance(index, dict) or index.get("version") != 1:
+            return self._load_doc(_SESS_TODOS, [])
+
+        generation = index.get("generation")
+        chunk_count = int(index.get("chunk_count") or 0)
+        total = int(index.get("count") or 0)
+        if not generation or chunk_count <= 0:
+            return []
+
+        todos = []
+        for idx in range(chunk_count):
+            chunk = self._load_doc(self._todos_chunk_sess(generation, idx), [])
+            if isinstance(chunk, list):
+                todos.extend(chunk)
+        return todos[:total]
 
     def save_todos(self, todos: list):
-        self._save_doc(_SESS_TODOS, todos)
+        todos = list(todos or [])
+        generation = uuid.uuid4().hex
+        chunks = [
+            todos[i:i + self.TODOS_CHUNK_SIZE]
+            for i in range(0, len(todos), self.TODOS_CHUNK_SIZE)
+        ]
+        for idx, chunk in enumerate(chunks):
+            self._save_doc(self._todos_chunk_sess(generation, idx), chunk)
+        self._save_doc(self._todos_index_sess(), {
+            "version": 1,
+            "generation": generation,
+            "chunk_count": len(chunks),
+            "count": len(todos),
+        })
 
     def load_meta(self) -> dict:
         return self._load_doc(_SESS_META, dict(DEFAULT_META))
@@ -237,6 +272,7 @@ class MemoryStore(Store):
         self._save_doc(_SESS_REVIEWS, [])
         self._save_reviews([])
         self._save_doc(_SESS_TODOS, [])
+        self.save_todos([])
         self._save_doc(_SESS_META, dict(DEFAULT_META))
 
 
@@ -342,11 +378,76 @@ class MemoryRegistry(Registry):
                              _json.dumps(reg, ensure_ascii=False))
 
 
+# ---- Feedback log (global, not per-app) -----------------------------------
+
+_SESS_FEEDBACK = "rr-feedback"
+FEEDBACK_CAP = 200
+
+class FeedbackStore(ABC):
+    @abstractmethod
+    def load(self) -> list: ...
+    @abstractmethod
+    def add(self, entry: dict) -> list: ...
+
+class LocalFeedbackStore(FeedbackStore):
+    def __init__(self, data_dir: str = "data"):
+        os.makedirs(data_dir, exist_ok=True)
+        self.path = os.path.join(data_dir, "feedback.json")
+
+    def load(self) -> list:
+        if not os.path.exists(self.path):
+            return []
+        try:
+            with open(self.path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data if isinstance(data, list) else []
+        except (json.JSONDecodeError, OSError):
+            return []
+
+    def add(self, entry: dict) -> list:
+        items = [entry] + self.load()
+        items = items[:FEEDBACK_CAP]
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(items, f, ensure_ascii=False, indent=2)
+        return items
+
+class MemoryFeedbackStore(FeedbackStore):
+    def __init__(self, memory_id: str, http, actor_id: str = "review-radar"):
+        self.memory_id = memory_id
+        self.http = http
+        self.actor_id = actor_id
+
+    def load(self) -> list:
+        events = self.http.list_events(self.memory_id, self.actor_id, _SESS_FEEDBACK)
+        if not events:
+            return []
+        try:
+            data = _json.loads(events[-1]["content"])
+            return data if isinstance(data, list) else []
+        except (ValueError, KeyError):
+            return []
+
+    def add(self, entry: dict) -> list:
+        items = [entry] + self.load()
+        items = items[:FEEDBACK_CAP]
+        self.http.post_event(self.memory_id, self.actor_id, _SESS_FEEDBACK,
+                             _json.dumps(items, ensure_ascii=False))
+        return items
+
+
 # ---- Factories -------------------------------------------------------------
 
 def _memory_http(cfg):
     from memory_http import MemoryHTTP
     return MemoryHTTP(cfg.memory_base_url)
+
+def get_feedback_store(cfg=None) -> FeedbackStore:
+    """Factory: the global feedback log chosen by config backend."""
+    from config import get_config
+    cfg = cfg or get_config()
+    if cfg.store_backend == "memory":
+        return MemoryFeedbackStore(memory_id=cfg.memory_id, http=_memory_http(cfg))
+    return LocalFeedbackStore()
 
 def get_store(app_id: str = None, cfg=None):
     """Factory: a Store (optionally scoped to one app) chosen by config backend."""

@@ -115,8 +115,66 @@ function makeFilteredTrend(reviews) {
   });
 }
 
+function normalizeDashboardParts(parts) {
+  const entries = Object.entries(parts);
+  const sum = entries.reduce((acc, entry) => acc + entry[1], 0);
+  if (sum === 100 || sum === 0) return parts;
+  const out = {};
+  entries.forEach(([key, value]) => { out[key] = value; });
+  const largest = entries.slice().sort((a, b) => b[1] - a[1])[0][0];
+  out[largest] = Math.max(0, Math.min(100, out[largest] + (100 - sum)));
+  return out;
+}
+
+function pctPart(count, total) {
+  return total ? Math.round((count / total) * 100) : 0;
+}
+
+function makeSentimentMix(reviews) {
+  const counts = { positive:0, neutral:0, negative:0 };
+  reviews.forEach(r => {
+    const key = counts[r.sentiment] != null ? r.sentiment : "neutral";
+    counts[key] += 1;
+  });
+  const total = reviews.length;
+  const pct = normalizeDashboardParts({
+    positive: pctPart(counts.positive, total),
+    neutral: pctPart(counts.neutral, total),
+    negative: pctPart(counts.negative, total),
+  });
+  return { total, counts, pct };
+}
+
+function makeRatingMix(reviews) {
+  const counts = { 5:0, 4:0, 3:0, 2:0, 1:0 };
+  let ratingTotal = 0;
+  let ratingCount = 0;
+  reviews.forEach(r => {
+    const raw = Number(r.rating);
+    if (!Number.isFinite(raw) || raw <= 0) return;
+    const rating = Math.max(1, Math.min(5, Math.round(raw)));
+    counts[rating] += 1;
+    ratingTotal += rating;
+    ratingCount += 1;
+  });
+  const pct = normalizeDashboardParts({
+    5: pctPart(counts[5], ratingCount),
+    4: pctPart(counts[4], ratingCount),
+    3: pctPart(counts[3], ratingCount),
+    2: pctPart(counts[2], ratingCount),
+    1: pctPart(counts[1], ratingCount),
+  });
+  return { total: ratingCount, average: ratingCount ? ratingTotal / ratingCount : null, counts, pct };
+}
+
 function actionMatchesReviewFilters(action, filters, filteredReviews) {
-  if (filters.priority != null && action.priority !== filters.priority) return false;
+  // "Contains" semantics: the to-do matches a priority filter if ANY review in
+  // its cluster has that priority (falls back to the aggregate priority for older
+  // entries without a `priorities` list).
+  if (filters.priority != null) {
+    const pris = (action.priorities && action.priorities.length) ? action.priorities : [action.priority];
+    if (pris.indexOf(filters.priority) < 0) return false;
+  }
   if (filters.status != null && action.status !== filters.status) return false;
   if (filters.cat != null && action.cat !== filters.cat) return false;
   const reviewDriven = [filters.rating, filters.sentiment, filters.platform, filters.actionId].some(v => v != null);
@@ -124,8 +182,8 @@ function actionMatchesReviewFilters(action, filters, filteredReviews) {
   return filteredReviews.some(r => (r.actionIds || []).includes(action.id));
 }
 
-function Dashboard({ t, app, onBack, view, onNav, onDataChanged }) {
-  const a = window.DATA.APPS[app];
+function Dashboard({ t, app, onBack, view, onNav, onDataChanged, loading }) {
+  const a = window.DATA.APPS[app] || { name: app || "", platform: "—" };
   const [range, setRange] = useState(30);
   const [freq, setFreq] = useState("1h");
   const [showSchedule, setShowSchedule] = useState(false);
@@ -135,6 +193,27 @@ function Dashboard({ t, app, onBack, view, onNav, onDataChanged }) {
   const [reviewCtx, setReviewCtx] = useState(null);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(false), 2600); };
+
+  // While switching apps, window.DATA still holds the previous app's numbers
+  // until this app's data finishes loading. Show a loading state instead of the
+  // wrong (stale) data — loadDashboard stamps LOADED_APP_ID once data is in place,
+  // and the dataVersion key bump remounts this view with the correct numbers.
+  if (loading || window.DATA.LOADED_APP_ID !== app) {
+    return (
+      <div>
+        <DashTopBar t={t} app={app} a={a} onBack={onBack} freq={freq} onConfigure={() => setShowSchedule(true)}
+          range={range} setRange={setRange} onFutureNote={() => showToast(t("future_note"))}
+          filters={reviewFilters} setFilters={setReviewFilters}/>
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+          padding:"140px 32px", gap:16, color:"var(--text-3)" }}>
+          <div style={{ width:26, height:26, borderRadius:"50%", border:"3px solid rgba(0,113,227,0.2)",
+            borderTopColor:"var(--accent)", animation:"spin 0.8s linear infinite" }}></div>
+          <div style={{ fontSize:14, fontWeight:600 }}>{t("loading_dashboard")}</div>
+        </div>
+      </div>
+    );
+  }
+
   const filterActive = Object.values(reviewFilters).some(v => v != null);
   const filteredReviews = window.DATA.REVIEWS.filter(r => reviewMatchesFilters(r, reviewFilters));
   const filteredActions = window.DATA.ACTIONS.filter(a => actionMatchesReviewFilters(a, reviewFilters, filteredReviews));
@@ -142,6 +221,9 @@ function Dashboard({ t, app, onBack, view, onNav, onDataChanged }) {
   const overviewKpis = filterActive ? makeFilteredKpis(filteredReviews, overviewActions) : window.DATA.KPIS;
   const overviewCategories = filterActive ? makeFilteredCategories(filteredReviews) : window.DATA.CATEGORIES;
   const overviewTrend = filterActive ? makeFilteredTrend(filteredReviews) : window.DATA.TREND;
+  const overviewReviews = filterActive ? filteredReviews : window.DATA.REVIEWS;
+  const sentimentMix = makeSentimentMix(overviewReviews);
+  const ratingMix = makeRatingMix(overviewReviews);
 
   // Jump to the Reviews page filtered to the category of an action item
   const viewReviewsFor = (action) => {
@@ -195,6 +277,39 @@ function Dashboard({ t, app, onBack, view, onNav, onDataChanged }) {
               </div>
             </div>
 
+            {/* Sentiment + rating distribution */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:20 }}>
+              <div className="card fade-up" style={{ padding:"20px 22px", animationDelay:".18s" }}>
+                <CardHead title={t("sentiment_split")} sub={t("sentiment_sub")}/>
+                <div style={{ marginTop:18 }}>
+                  <DashboardStackBar items={[
+                    { key:"positive", pct:sentimentMix.pct.positive, color:"var(--positive)" },
+                    { key:"neutral", pct:sentimentMix.pct.neutral, color:"#c7c7cc" },
+                    { key:"negative", pct:sentimentMix.pct.negative, color:"var(--critical)" },
+                  ]}/>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:10, marginTop:16 }}>
+                    <DashboardMixStat color="var(--positive)" label={t("sent_positive")} pct={sentimentMix.pct.positive} count={sentimentMix.counts.positive}/>
+                    <DashboardMixStat color="#c7c7cc" label={t("sent_neutral")} pct={sentimentMix.pct.neutral} count={sentimentMix.counts.neutral}/>
+                    <DashboardMixStat color="var(--critical)" label={t("sent_negative")} pct={sentimentMix.pct.negative} count={sentimentMix.counts.negative}/>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card fade-up" style={{ padding:"20px 22px", animationDelay:".2s" }}>
+                <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+                  <CardHead title={t("rating_dist")} sub={t("rating_sub")}/>
+                  <div className="mono" style={{ fontSize:22, fontWeight:800, color:"#f5a623", lineHeight:1 }}>
+                    ★ {ratingMix.average == null ? "—" : ratingMix.average.toFixed(1)}
+                  </div>
+                </div>
+                <div style={{ marginTop:17, display:"flex", flexDirection:"column", gap:9 }}>
+                  {[5,4,3,2,1].map(star => (
+                    <DashboardRatingRow key={star} star={star} pct={ratingMix.pct[star]} count={ratingMix.counts[star]}/>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* Priority actions (preview) */}
             <div className="card fade-up" style={{ padding:"20px 22px", marginBottom:20, animationDelay:".2s" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
@@ -234,6 +349,49 @@ function Dashboard({ t, app, onBack, view, onNav, onDataChanged }) {
       {toast && (
         <div className="toast"><Icon name="checkCircle" size={17} stroke={2.2} style={{ color:"var(--positive)" }}/>{toast}</div>
       )}
+    </div>
+  );
+}
+
+function DashboardStackBar({ items }) {
+  const active = (items || []).filter(item => item.pct > 0);
+  return (
+    <div style={{ display:"flex", height:18, borderRadius:7, overflow:"hidden", gap:1.5, background:"rgba(0,0,0,0.055)" }}>
+      {active.map(item => (
+        <div key={item.key} style={{ width:`${item.pct}%`, minWidth:item.pct > 0 ? 3 : 0, height:"100%", background:item.color }}
+          title={`${item.pct}%`}></div>
+      ))}
+    </div>
+  );
+}
+
+function DashboardMixStat({ color, label, pct, count }) {
+  return (
+    <div style={{ padding:"11px 12px", borderRadius:12, background:"var(--card-2)", minWidth:0 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:6, color:"var(--text-2)", fontSize:12, fontWeight:650, marginBottom:6 }}>
+        <span style={{ width:9, height:9, borderRadius:3, background:color, flexShrink:0 }}></span>
+        <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{label}</span>
+      </div>
+      <div style={{ display:"flex", alignItems:"baseline", gap:6 }}>
+        <span className="mono" style={{ fontSize:20, fontWeight:800, letterSpacing:"-0.02em" }}>{pct}%</span>
+        <span className="mono" style={{ fontSize:12, color:"var(--text-3)", fontWeight:650 }}>{dashboardCount(count)}</span>
+      </div>
+    </div>
+  );
+}
+
+function DashboardRatingRow({ star, pct, count }) {
+  const color = star >= 4 ? "var(--positive)" : star === 3 ? "var(--warning)" : "var(--critical)";
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"44px minmax(0, 1fr) 88px", gap:10, alignItems:"center" }}>
+      <div className="mono" style={{ fontSize:12.5, fontWeight:800, color:"#f5a623", whiteSpace:"nowrap" }}>{star}★</div>
+      <div style={{ height:10, borderRadius:5, background:"rgba(0,0,0,0.055)", overflow:"hidden" }}>
+        <div style={{ width:`${pct}%`, minWidth:pct > 0 ? 3 : 0, height:"100%", borderRadius:5, background:color }}></div>
+      </div>
+      <div style={{ textAlign:"right", whiteSpace:"nowrap" }}>
+        <span className="mono" style={{ fontSize:12.5, fontWeight:800 }}>{pct}%</span>
+        <span className="mono" style={{ fontSize:11.5, color:"var(--text-3)", fontWeight:650, marginLeft:5 }}>{dashboardCount(count)}</span>
+      </div>
     </div>
   );
 }
@@ -373,16 +531,27 @@ function KpiCard({ k, t, i }) {
   const toneColor = { neutral:"var(--accent)", critical:"var(--critical)", positive:"var(--positive)", warning:"var(--warning)" }[k.tone];
   const toneSoft = { neutral:"var(--accent-soft)", critical:"var(--critical-soft)", positive:"var(--positive-soft)", warning:"var(--warning-soft)" }[k.tone];
   const subText = k.subText || (k.dateKey ? `${t("sub_"+k.sub)} ${formatDateKeyForUi(k.dateKey, t)}` : t("sub_"+k.sub));
+  const healthFormula = k.id === "health" ? t("kpi_health_formula") : "";
   return (
     <div className="card fade-up" style={{ padding:"15px 16px", animationDelay:`${i*0.04}s`,
       display:"flex", flexDirection:"column", gap:11, minHeight:152 }}>
       <div style={{ width:32, height:32, borderRadius:9, background:toneSoft, color:toneColor, display:"grid", placeItems:"center" }}>
         <Icon name={k.icon} size={17}/>
       </div>
-      {/* label — reserved 2-line height so every card aligns */}
-      <div style={{ fontSize:12.5, color:"var(--text-2)", fontWeight:600, lineHeight:1.3, height:33,
-        display:"flex", alignItems:"flex-end" }}>
-        <span style={{ display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{t("kpi_"+k.id)}</span>
+      {/* label: reserve two lines, but align the first line across every card */}
+      <div style={{ fontSize:12.5, color:"var(--text-2)", fontWeight:600, lineHeight:1.3, height:34,
+        display:"flex", alignItems:"flex-start" }}>
+        <div style={{ display:"flex", alignItems:"flex-start", gap:5, minWidth:0, width:"100%" }}>
+          <span style={{ display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden", minWidth:0 }}>{t("kpi_"+k.id)}</span>
+          {healthFormula && (
+            <span className="kpi-info-wrap">
+              <button type="button" className="kpi-info" aria-label={healthFormula} title={healthFormula}>
+                <Icon name="info" size={12.5} stroke={2}/>
+              </button>
+              <span className="kpi-tip" role="tooltip">{healthFormula}</span>
+            </span>
+          )}
+        </div>
       </div>
       <div style={{ marginTop:"auto" }}>
         <div style={{ display:"flex", alignItems:"baseline", gap:1 }}>
@@ -551,7 +720,7 @@ function CardHead({ title, sub }) {
 
 /* ---------- Configure crawl schedule modal ---------- */
 function ConfigureScheduleModal({ t, app, open, onClose }) {
-  const a = window.DATA.APPS[app];
+  const a = window.DATA.APPS[app] || { name: app || "", platform: "—" };
   if (!open) return null;
 
   const appRow = window.DATA.AVAILABLE.find(row => row.app === app);

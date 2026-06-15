@@ -113,10 +113,12 @@ class MemoryHTTP:
             f"/actors/{actor_id}/sessions/{session_id}/events"
         )
 
-    def _send(self, method, url, attempts=3, **kwargs):
-        """Issue a request, retrying transient failures (network errors and 5xx)
-        with short backoff. The Memory service can return a 5xx on a cold read,
-        which otherwise surfaced as a 500 on the first dashboard load."""
+    def _send(self, method, url, attempts=5, **kwargs):
+        """Issue a request, retrying transient failures with backoff. The Memory
+        service can return a 5xx on a cold read or a 429 when many per-app reads
+        run concurrently (e.g. building the gallery for dozens of apps); both
+        otherwise surfaced as a 500 on the dashboard. 429s get a longer backoff
+        and honor Retry-After so the burst drains instead of failing outright."""
         last_exc = None
         for i in range(attempts):
             try:
@@ -126,6 +128,12 @@ class MemoryHTTP:
                 else:
                     send = getattr(self.session, method.lower())
                     resp = send(url, headers=self._headers(), timeout=30, **kwargs)
+                if resp.status_code == 429:
+                    last_exc = requests.HTTPError("429 Too Many Requests from Memory")
+                    retry_after = (resp.headers or {}).get("Retry-After", "")
+                    delay = float(retry_after) if str(retry_after).strip().isdigit() else 0.8 * (i + 1)
+                    time.sleep(min(delay, 5.0))
+                    continue
                 if resp.status_code >= 500:
                     last_exc = requests.HTTPError(f"{resp.status_code} from Memory")
                     time.sleep(0.4 * (i + 1))

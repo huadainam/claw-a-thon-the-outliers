@@ -22,7 +22,9 @@ function ActionsPage({ t, app, onBack, onViewReviews, onDataChanged }) {
   const set = (k, v) => setFilters({ ...filters, [k]: v });
 
   const rows = window.DATA.ACTIONS.filter(a =>
-    (filters.priority == null || a.priority === filters.priority) &&
+    // "Contains" semantics: match if any review in the cluster has the priority.
+    (filters.priority == null
+      || ((a.priorities && a.priorities.length ? a.priorities : [a.priority]).indexOf(filters.priority) >= 0)) &&
     (filters.status == null || a.status === filters.status) &&
     (filters.flag == null || a.flag === filters.flag)
   );

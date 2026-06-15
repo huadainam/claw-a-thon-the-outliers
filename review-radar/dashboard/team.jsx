@@ -58,6 +58,10 @@ function FeedbackBlock({ t }) {
   const [items, setItems] = useState([
     { type:"praise", name:"Minh P.", text_en:"The dashboard feels genuinely premium — love the calm look.", text_vi:"Dashboard nhìn rất cao cấp — thích cảm giác nhẹ nhàng.", rating:5 },
     { type:"idea", name:"An N.", text_en:"Would love a weekly email digest once Outlook is wired up.", text_vi:"Mong có email tổng hợp tuần khi tích hợp Outlook xong.", rating:4 },
+    { type:"bug", name:"Huy T.", text_en:"The trend chart sometimes overlaps the labels on small screens.", text_vi:"Biểu đồ xu hướng đôi khi đè lên nhãn ngày trên màn hình nhỏ.", rating:3 },
+    { type:"idea", name:"Lan V.", text_en:"Please add CSV export for the review detail table.", text_vi:"Mong có xuất CSV cho bảng chi tiết đánh giá.", rating:4 },
+    { type:"praise", name:"Quang Đ.", text_en:"Auto-grouping bugs into action items saves us so much time.", text_vi:"Tự gom bug thành việc cần xử lý tiết kiệm rất nhiều thời gian.", rating:5 },
+    { type:"idea", name:"Thảo N.", text_en:"A dark mode would be perfect for late-night monitoring.", text_vi:"Có chế độ tối thì theo dõi ban đêm sẽ tuyệt hơn.", rating:4 },
   ]);
 
   const types = [
@@ -66,15 +70,30 @@ function FeedbackBlock({ t }) {
     { id:"praise", icon:"heart", label:t("fb_praise") },
   ];
 
+  // Load the shared, persisted feedback log so it survives reloads and everyone
+  // sees the same entries. The dummy items above show only until this resolves
+  // (and stay as a friendly placeholder when no real feedback exists yet).
+  useEffect(() => {
+    let alive = true;
+    window.ARM_Bridge.getFeedback().then(list => {
+      if (alive && Array.isArray(list) && list.length) setItems(list);
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
   const submit = () => {
     if (!msg.trim()) return;
     const L = t._lang;
-    const entry = { type, name: name.trim() || (L==="vi"?"Ẩn danh":"Anonymous"), rating };
-    entry["text_"+L] = msg.trim();
-    entry["text_"+(L==="vi"?"en":"vi")] = msg.trim();
-    setItems([entry, ...items]);
+    const text = msg.trim();
+    const optimistic = { type, name: name.trim() || (L==="vi"?"Ẩn danh":"Anonymous"),
+                         rating, text_vi:text, text_en:text };
+    setItems([optimistic, ...items]);               // show instantly
     setSent(true); setMsg(""); setName(""); setRating(0); setType("idea");
     setTimeout(() => setSent(false), 2800);
+    // Persist to the shared store; reconcile with the authoritative list on success.
+    window.ARM_Bridge.submitFeedback({ type: optimistic.type, name: optimistic.name, text: text, rating: optimistic.rating })
+      .then(res => { if (res && Array.isArray(res.items)) setItems(res.items); })
+      .catch(() => { /* keep the optimistic entry if the network call fails */ });
   };
 
   return (

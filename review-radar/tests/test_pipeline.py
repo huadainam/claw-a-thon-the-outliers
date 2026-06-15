@@ -30,6 +30,34 @@ def test_pipeline_sets_meta_status_and_progress(tmp_path):
         "used_fallback": False,
     }
 
+def test_pipeline_cancel_keeps_partial_reviews(tmp_path):
+    store = LocalStore(data_dir=str(tmp_path))
+    store.save_config({"title": "Zalo", "gp_id": "g", "as_id": "a", "review_limit": 1000})
+    gp = [{"id": f"g{i}", "content": "lỗi", "score": 1, "source": "google_play",
+           "at": "2026-06-01"} for i in range(6)]
+    # Allow the first batch to classify, then request cancel before the next one.
+    state = {"calls": 0}
+
+    def should_cancel():
+        state["calls"] += 1
+        return state["calls"] > 1
+
+    result = run_pipeline(store=store, batch_size=2, should_cancel=should_cancel,
+                          **make_deps(gp, []))
+    assert result["cancelled"] is True
+    assert result["classified"] == 2
+    # The 2 reviews already classified are kept (not removed/reset).
+    assert len(store.load_reviews()) == 2
+    assert store.load_processed_ids() == {"g0", "g1"}
+    m = store.load_meta()
+    assert m["status"] == "idle"
+    # done == total so the progress bar reads complete instead of stuck partway.
+    assert m["progress"] == {"done": 2, "total": 2}
+    assert m["last_run"]["cancelled"] is True
+    assert m["last_run"]["classified_reviews"] == 2
+    # Partial reviews still feed the dashboard's grouped todos.
+    assert len(store.load_todos()) == 1
+
 def test_pipeline_processes_new_reviews(tmp_path):
     store = LocalStore(data_dir=str(tmp_path))
     store.save_config({"title": "Zalo", "gp_id": "g", "as_id": "a"})
@@ -71,6 +99,20 @@ def test_pipeline_skips_regroup_when_refresh_has_no_new_reviews(tmp_path):
     assert meta["last_run"]["crawled_reviews"] == 1
     assert meta["last_run"]["classified_reviews"] == 0
     assert meta["last_run"]["new_reviews"] == 0
+
+def test_pipeline_rebuilds_missing_todos_when_refresh_has_no_new_reviews(tmp_path):
+    store = LocalStore(data_dir=str(tmp_path))
+    store.save_config({"title": "Zalo", "gp_id": "g", "as_id": "a"})
+    store.append_reviews([{"id": "g1", "content": "lỗi", "label": "BUG_REPORT",
+                           "bug_topic": "Lỗi A", "source": "google_play", "at": "d"}])
+    store.save_processed_ids({"g1"})
+    gp = [{"id": "g1", "content": "lỗi", "score": 1, "source": "google_play", "at": "d"}]
+
+    result = run_pipeline(store=store, **make_deps(gp, []))
+
+    assert result == {"new_reviews": 0, "todos": 1, "used_fallback": False}
+    assert len(store.load_todos()) == 1
+    assert store.load_todos()[0]["topic"] == "Lỗi A"
 
 def test_pipeline_falls_back_to_cache_when_scrape_empty(tmp_path):
     store = LocalStore(data_dir=str(tmp_path))

@@ -14,27 +14,57 @@ function buildCrawlToastSub(dict, appRow) {
   const classified = Number(run.classified_reviews || 0);
   const newReviews = Number(run.new_reviews || 0);
   const fallbackClassified = (appRow.progress && appRow.progress.total) || 0;
+  // The real outcome of a refresh is how many genuinely NEW reviews were added —
+  // the crawled total includes reviews already in the store (duplicates), so the
+  // notification reports the new count, not the crawled count.
+  const added = classified || newReviews || fallbackClassified;
 
-  if (crawled > 0 && (classified > 0 || newReviews > 0)) {
-    return `${dict.toast_crawled} ${formatToastCount(crawled)} ${dict.reviews_word} · ${dict.toast_classified} ${formatToastCount(classified || fallbackClassified)} ${dict.toast_new_reviews}`;
+  if (added > 0) {
+    return `${dict.toast_added} ${formatToastCount(added)} ${dict.toast_new_reviews}`;
   }
   if (crawled > 0) {
-    return `${dict.toast_crawled} ${formatToastCount(crawled)} ${dict.reviews_word} · ${dict.toast_no_new_reviews}`;
-  }
-  if (fallbackClassified > 0) {
-    return `${dict.toast_classified} ${formatToastCount(fallbackClassified)} ${dict.toast_new_reviews}`;
+    return dict.toast_no_new_reviews;
   }
   return dict.toast_no_reviews_fetched || dict.toast_scrape_done;
 }
 
+const ROUTE_STORAGE_KEY = "arm_route_v1";
+const VALID_SCREENS = ["selection", "crawling", "dashboard", "reports", "compare", "team", "settings"];
+const VALID_DASH_VIEWS = ["overview", "actions", "reviews"];
+
+function readSavedRoute() {
+  try {
+    const raw = localStorage.getItem(ROUTE_STORAGE_KEY);
+    if (!raw) return {};
+    const route = JSON.parse(raw);
+    const screen = VALID_SCREENS.includes(route.screen) ? route.screen : "selection";
+    const dashView = VALID_DASH_VIEWS.includes(route.dashView) ? route.dashView : "overview";
+    return {
+      screen,
+      activeApp: route.activeApp ? String(route.activeApp) : null,
+      dashView,
+    };
+  } catch (_) {
+    return {};
+  }
+}
+
+function saveRoute(route) {
+  try {
+    localStorage.setItem(ROUTE_STORAGE_KEY, JSON.stringify(route));
+  } catch (_) {}
+}
+
 function App() {
+  const [savedRoute] = useState(() => readSavedRoute());
   const [lang, setLang] = useState(() => localStorage.getItem("arm_lang") || "vi");
   const [screen, setScreen] = useState("initializing");
-  const [activeApp, setActiveApp] = useState(null);
-  const [dashView, setDashView] = useState("overview");
+  const [activeApp, setActiveApp] = useState(savedRoute.activeApp || null);
+  const [dashView, setDashView] = useState(savedRoute.dashView || "overview");
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [dataVersion, setDataVersion] = useState(0);
   const [availVersion, setAvailVersion] = useState(0);  // bumps when app statuses refresh
+  const [dashboardLoadingApp, setDashboardLoadingApp] = useState(null);
   const [toasts, setToasts] = useState([]);
   const toastIdRef = useRef(0);
   const langRef = useRef(lang);
@@ -42,8 +72,12 @@ function App() {
 
   useEffect(() => { localStorage.setItem("arm_lang", lang); }, [lang]);
   useEffect(() => { localStorage.removeItem("arm_nav"); }, []);
+  useEffect(() => {
+    if (screen === "initializing") return;
+    saveRoute({ screen, activeApp, dashView });
+  }, [screen, activeApp, dashView]);
 
-  const dismissToast = (id) => setToasts(ts => ts.filter(x => x.id !== id));
+  const dismissToast = React.useCallback((id) => setToasts(ts => ts.filter(x => x.id !== id)), []);
   const isBusyStatus = (status) => status === "analyzing" || status === "queued";
 
   // Global poll: keep the gallery's per-app crawl status fresh and raise an
@@ -82,21 +116,46 @@ function App() {
         ].join(":")).join("|");
         if (sig !== lastSig) { lastSig = sig; setAvailVersion(v => v + 1); }
         const anyAnalyzing = apps.some(a => isBusyStatus(a.status));
-        timer = setTimeout(poll, anyAnalyzing ? 2500 : 6000);
+        // Match the detail view's 2s cadence while a crawl runs so the gallery
+        // progress bar stays in sync with it (not visibly lagging behind).
+        timer = setTimeout(poll, anyAnalyzing ? 2000 : 6000);
       }).catch(() => { if (!cancelled) timer = setTimeout(poll, 6000); });
     };
     timer = setTimeout(poll, 1200);
     return () => { cancelled = true; clearTimeout(timer); };
   }, []);
 
-  // Init: always land on the app gallery. The backend may still have an active
-  // app for scheduled crawls, but the first screen should be "all available apps"
-  // so users can choose what they want to inspect.
+  // Init: restore the user's last screen in this browser. The backend's active
+  // app is still used as a fallback, but F5 should keep users where they were.
   useEffect(() => {
-    window.ARM_Bridge.init().then(({ appId }) => {
-      if (appId) setActiveApp(appId);
+    const restore = (fallbackAppId, apps) => {
+      const screenToRestore = savedRoute.screen || "selection";
+      const savedAppExists = savedRoute.activeApp && (!apps || apps.some(a => a.app_id === savedRoute.activeApp));
+      const appToRestore = savedAppExists ? savedRoute.activeApp : fallbackAppId;
+
+      if (screenToRestore === "dashboard" && appToRestore) {
+        setActiveApp(appToRestore);
+        setScreen("dashboard");
+        loadDashboardWithRetry(appToRestore, 4, true).catch(console.warn);
+        return;
+      }
+      if (screenToRestore === "crawling" && appToRestore) {
+        setActiveApp(appToRestore);
+        setScreen("crawling");
+        return;
+      }
+      if (["reports", "compare", "team", "settings"].includes(screenToRestore)) {
+        if (appToRestore) setActiveApp(appToRestore);
+        setScreen(screenToRestore);
+        return;
+      }
+      if (appToRestore) setActiveApp(appToRestore);
       setScreen("selection");
-    }).catch(() => setScreen("selection"));
+    };
+
+    window.ARM_Bridge.init().then(({ appId, apps }) => {
+      restore(appId, apps);
+    }).catch(() => restore(savedRoute.activeApp, null));
   }, []);
 
   const t = useMemo(() => {
@@ -159,21 +218,33 @@ function App() {
   // return a transient error on the first cold read). Bumps dataVersion to
   // remount the dashboard once data is in. Without this, a failed first load
   // left the dashboard empty until the user manually backed out and re-entered.
-  const loadDashboardWithRetry = (appId, tries = 4) =>
-    window.ARM_Bridge.loadDashboard(appId).then(res => {
+  const loadDashboardWithRetry = (appId, tries = 4, showLoading = false) => {
+    if (showLoading && appId) {
+      // Force the dashboard into its loading state even when the same app's stale
+      // data is already in window.DATA from an earlier visit.
+      window.DATA.LOADED_APP_ID = null;
+      setDashboardLoadingApp(appId);
+    }
+    const attempt = (remaining) => window.ARM_Bridge.loadDashboard(appId).then(res => {
       if (res) { setDataVersion(v => v + 1); return res; }
-      if (tries > 1) {
-        return new Promise(r => setTimeout(r, 700)).then(() => loadDashboardWithRetry(appId, tries - 1));
+      if (remaining > 1) {
+        return new Promise(r => setTimeout(r, 700)).then(() => attempt(remaining - 1));
       }
       return null;
     });
+    return attempt(tries).finally(() => {
+      if (showLoading) {
+        setDashboardLoadingApp(cur => cur === appId ? null : cur);
+      }
+    });
+  };
 
   const handleOpenDashboard = (appId) => {
     setActiveApp(appId);
     setDashView("overview");
-    go("dashboard"); // show dashboard immediately; data fills in once loaded
+    go("dashboard"); // show the dashboard shell immediately; data fills in once loaded
     window.ARM_Bridge.setActive(appId).catch(() => {});
-    loadDashboardWithRetry(appId).catch(console.warn);
+    loadDashboardWithRetry(appId, 4, true).catch(console.warn);
   };
 
   // Called from Screen 1 when user clicks an app that is currently scraping
@@ -236,7 +307,8 @@ function App() {
         {screen === "dashboard" && (
           <Dashboard key={"dash"+(activeApp||"app")+lang+dataVersion}
             t={t} app={activeApp || "zalopay"} onBack={() => go("selection")}
-            view={dashView} onNav={onDashNav} onDataChanged={refreshActiveDashboard}/>
+            view={dashView} onNav={onDashNav} onDataChanged={refreshActiveDashboard}
+            loading={dashboardLoadingApp === (activeApp || "zalopay")}/>
         )}
         {screen === "reports" && (
           <ReportsPage key={"rep"+lang} t={t}/>

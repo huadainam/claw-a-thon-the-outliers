@@ -5,7 +5,7 @@ dụng nhanh hơn. Hệ thống thu thập review từ App Store và Google Play
 để phân loại nội dung, gom các bug giống nhau thành action item, tính mức độ ưu
 tiên, rồi đưa lên dashboard để team theo dõi.
 
-> claw-a-thon - Team The Outliers - built for GreenNode AgentBase.
+> claw-a-thon - Team The Outlier - built for GreenNode AgentBase.
 
 ## Review Radar Làm Gì?
 

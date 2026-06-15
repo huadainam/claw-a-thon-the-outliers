@@ -116,7 +116,13 @@ function makeFilteredTrend(reviews) {
 }
 
 function actionMatchesReviewFilters(action, filters, filteredReviews) {
-  if (filters.priority != null && action.priority !== filters.priority) return false;
+  // "Contains" semantics: the to-do matches a priority filter if ANY review in
+  // its cluster has that priority (falls back to the aggregate priority for older
+  // entries without a `priorities` list).
+  if (filters.priority != null) {
+    const pris = (action.priorities && action.priorities.length) ? action.priorities : [action.priority];
+    if (pris.indexOf(filters.priority) < 0) return false;
+  }
   if (filters.status != null && action.status !== filters.status) return false;
   if (filters.cat != null && action.cat !== filters.cat) return false;
   const reviewDriven = [filters.rating, filters.sentiment, filters.platform, filters.actionId].some(v => v != null);
@@ -135,6 +141,27 @@ function Dashboard({ t, app, onBack, view, onNav, onDataChanged }) {
   const [reviewCtx, setReviewCtx] = useState(null);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(false), 2600); };
+
+  // While switching apps, window.DATA still holds the previous app's numbers
+  // until this app's data finishes loading. Show a loading state instead of the
+  // wrong (stale) data — loadDashboard stamps LOADED_APP_ID once data is in place,
+  // and the dataVersion key bump remounts this view with the correct numbers.
+  if (window.DATA.LOADED_APP_ID !== app) {
+    return (
+      <div>
+        <DashTopBar t={t} app={app} a={a} onBack={onBack} freq={freq} onConfigure={() => setShowSchedule(true)}
+          range={range} setRange={setRange} onFutureNote={() => showToast(t("future_note"))}
+          filters={reviewFilters} setFilters={setReviewFilters}/>
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+          padding:"140px 32px", gap:16, color:"var(--text-3)" }}>
+          <div style={{ width:26, height:26, borderRadius:"50%", border:"3px solid rgba(0,113,227,0.2)",
+            borderTopColor:"var(--accent)", animation:"spin 0.8s linear infinite" }}></div>
+          <div style={{ fontSize:14, fontWeight:600 }}>{t("loading_dashboard")}</div>
+        </div>
+      </div>
+    );
+  }
+
   const filterActive = Object.values(reviewFilters).some(v => v != null);
   const filteredReviews = window.DATA.REVIEWS.filter(r => reviewMatchesFilters(r, reviewFilters));
   const filteredActions = window.DATA.ACTIONS.filter(a => actionMatchesReviewFilters(a, reviewFilters, filteredReviews));

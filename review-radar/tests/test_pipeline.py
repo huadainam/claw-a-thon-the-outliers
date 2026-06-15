@@ -30,6 +30,34 @@ def test_pipeline_sets_meta_status_and_progress(tmp_path):
         "used_fallback": False,
     }
 
+def test_pipeline_cancel_keeps_partial_reviews(tmp_path):
+    store = LocalStore(data_dir=str(tmp_path))
+    store.save_config({"title": "Zalo", "gp_id": "g", "as_id": "a", "review_limit": 1000})
+    gp = [{"id": f"g{i}", "content": "lỗi", "score": 1, "source": "google_play",
+           "at": "2026-06-01"} for i in range(6)]
+    # Allow the first batch to classify, then request cancel before the next one.
+    state = {"calls": 0}
+
+    def should_cancel():
+        state["calls"] += 1
+        return state["calls"] > 1
+
+    result = run_pipeline(store=store, batch_size=2, should_cancel=should_cancel,
+                          **make_deps(gp, []))
+    assert result["cancelled"] is True
+    assert result["classified"] == 2
+    # The 2 reviews already classified are kept (not removed/reset).
+    assert len(store.load_reviews()) == 2
+    assert store.load_processed_ids() == {"g0", "g1"}
+    m = store.load_meta()
+    assert m["status"] == "idle"
+    # done == total so the progress bar reads complete instead of stuck partway.
+    assert m["progress"] == {"done": 2, "total": 2}
+    assert m["last_run"]["cancelled"] is True
+    assert m["last_run"]["classified_reviews"] == 2
+    # Partial reviews still feed the dashboard's grouped todos.
+    assert len(store.load_todos()) == 1
+
 def test_pipeline_processes_new_reviews(tmp_path):
     store = LocalStore(data_dir=str(tmp_path))
     store.save_config({"title": "Zalo", "gp_id": "g", "as_id": "a"})

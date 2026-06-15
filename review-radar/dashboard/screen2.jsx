@@ -10,7 +10,18 @@ function Crawling({ t, app, onDone, onBack, onOpenDashboard }) {
     return ((row && row.totalReviews) || 0) > 0;
   });
   const [notified, setNotified] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const a = window.DATA.APPS[app] || { name: app };
+
+  const handleCancel = async () => {
+    if (cancelling) return;
+    setCancelling(true);
+    try { await window.ARM_Bridge.cancelRun(app); } catch (e) { /* keep going */ }
+    // Reviews already classified are kept server-side; open the dashboard so the
+    // user immediately sees the partial results that were collected.
+    if (onOpenDashboard) onOpenDashboard(app);
+    else onDone();
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -26,7 +37,12 @@ function Crawling({ t, app, onDone, onBack, onOpenDashboard }) {
         setHasExistingData((meta.total_reviews || 0) > 0);
 
         if (meta.status === "queued") {
-          setQueueInfo({ position: meta.queue_position, waitingCount: meta.queue_waiting_count });
+          // Only show the "waiting behind other apps" banner when something is
+          // genuinely ahead. If this app is next in line (nothing running/queued
+          // before it), just show the normal "preparing" step — no misleading
+          // "runs after the app ahead" message.
+          const ahead = meta.queue_ahead != null ? meta.queue_ahead : (meta.queue_position ? meta.queue_position - 1 : 0);
+          setQueueInfo(ahead > 0 ? { position: meta.queue_position, waitingCount: meta.queue_waiting_count, ahead } : null);
           setActive(1);
           setProgress(0);
         } else if (meta.status === "analyzing") {
@@ -160,8 +176,11 @@ function Crawling({ t, app, onDone, onBack, onOpenDashboard }) {
 
         <p style={{ fontSize:13.5, color:"var(--text-3)", textAlign:"center", lineHeight:1.5, maxWidth:480, margin:"6px auto 26px" }}>{t("s2_note")}</p>
 
-        <div style={{ display:"flex", gap:10, justifyContent:"center" }}>
+        <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
           <button className="btn btn-secondary" onClick={onBack}><Icon name="arrowLeft" size={16}/>{t("back_apps")}</button>
+          <button className="btn btn-secondary" onClick={handleCancel} disabled={cancelling}
+            style={{ color:"var(--critical)" }}>
+            <Icon name="x" size={16}/>{cancelling ? t("cancelling") : t("cancel_crawl")}</button>
           <button className={`btn ${notified ? "btn-secondary" : "btn-primary"}`} onClick={() => setNotified(true)}>
             <Icon name="bell" size={16}/>{notified ? "✓ " : ""}{t("notify")}</button>
           {canOpenDashboard && (

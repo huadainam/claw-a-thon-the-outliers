@@ -2,6 +2,7 @@ import os
 import glob
 import queue
 import time
+import uuid
 import unicodedata
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -16,11 +17,14 @@ REVIEW_DAY_TZ = timezone(timedelta(hours=7))
 _RUN_QUEUE = queue.Queue()
 _QUEUE_LOCK = threading.Lock()
 _QUEUED_KEYS = set()
+_CANCEL_KEYS = set()
 _QUEUE_WORKER_STARTED = False
 _RUNNING_KEY = None
 _APPS_CACHE_LOCK = threading.Lock()
 _APPS_FULL_CACHE = {"at": 0.0, "body": None}
+_APPS_LITE_CACHE = {"at": 0.0, "body": None}
 APPS_FULL_CACHE_SECONDS = 15
+APPS_ACTIVE_CACHE_SECONDS = 2
 SCHEDULED_REFRESH_INTERVAL = timedelta(hours=1)
 _METADATA_BACKFILL_LOCK = threading.Lock()
 _METADATA_BACKFILL_CACHE = {}
@@ -205,6 +209,19 @@ def _clear_apps_cache():
     with _APPS_CACHE_LOCK:
         _APPS_FULL_CACHE["at"] = 0.0
         _APPS_FULL_CACHE["body"] = None
+        _APPS_LITE_CACHE["at"] = 0.0
+        _APPS_LITE_CACHE["body"] = None
+
+def _crawl_active():
+    with _QUEUE_LOCK:
+        return _RUNNING_KEY is not None or bool(_QUEUED_KEYS)
+
+def _apps_cache_ttl():
+    # While a crawl is running/queued, per-app progress changes every few seconds,
+    # so the gallery must refresh quickly to stay in sync with the detail view's
+    # live progress. When idle, keep the longer cache to avoid rebuilding the
+    # (expensive) full app list on every poll.
+    return APPS_ACTIVE_CACHE_SECONDS if _crawl_active() else APPS_FULL_CACHE_SECONDS
 
 def _bool_flag(value, default=True):
     if value is None:
@@ -243,6 +260,32 @@ def _mark_queued(store):
     except Exception:
         pass
 
+def _is_cancel_requested(key):
+    with _QUEUE_LOCK:
+        return key in _CANCEL_KEYS
+
+def _mark_canceled_idle(store):
+    """Release an app back to idle after a cancel, preserving any reviews already
+    classified so they still count toward the dashboard (never reset/removed)."""
+    try:
+        current = store.load_meta() or {}
+        meta = {
+            "status": "idle",
+            "progress": current.get("progress", {"done": 0, "total": 0}),
+            "last_updated": _now(),
+            "cancelled": True,
+        }
+        last_run = current.get("last_run")
+        if last_run:
+            lr = dict(last_run)
+            lr["cancelled"] = True
+            meta["last_run"] = lr
+        if current.get("last_scheduled_refresh_at"):
+            meta["last_scheduled_refresh_at"] = current["last_scheduled_refresh_at"]
+        store.save_meta(meta)
+    except Exception:
+        pass
+
 def _queue_worker():
     global _RUNNING_KEY
     from pipeline import run_pipeline
@@ -255,11 +298,26 @@ def _queue_worker():
         else:
             key, store, review_limit = item
         with _QUEUE_LOCK:
-            _RUNNING_KEY = key
+            # Cancelled while still waiting in the queue: never start it, but keep
+            # whatever reviews the app already has.
+            cancelled_before_start = key in _CANCEL_KEYS
+            if cancelled_before_start:
+                _CANCEL_KEYS.discard(key)
+                _QUEUED_KEYS.discard(key)
+            else:
+                _RUNNING_KEY = key
+        if cancelled_before_start:
+            _mark_canceled_idle(store)
+            _clear_apps_cache()
+            _RUN_QUEUE.task_done()
+            continue
         try:
             while True:
-                result = run_pipeline(store=store, review_limit=review_limit)
+                result = run_pipeline(store=store, review_limit=review_limit,
+                                      should_cancel=lambda: _is_cancel_requested(key))
                 if not (isinstance(result, dict) and result.get("skipped")):
+                    break
+                if _is_cancel_requested(key):
                     break
                 time.sleep(2)
         except Exception as exc:
@@ -276,6 +334,7 @@ def _queue_worker():
         finally:
             with _QUEUE_LOCK:
                 _QUEUED_KEYS.discard(key)
+                _CANCEL_KEYS.discard(key)
                 if _RUNNING_KEY == key:
                     _RUNNING_KEY = None
             _clear_apps_cache()
@@ -322,10 +381,21 @@ def _queue_snapshot():
 def _queue_details(store, snapshot=None):
     snapshot = snapshot or _queue_snapshot()
     key = _store_queue_key(store)
+    position = snapshot["positions"].get(key)
+    running_key = snapshot["running_key"]
+    other_running = running_key is not None and running_key != key
+    # How many crawls will run BEFORE this one: any app currently running plus the
+    # apps queued ahead of it. 0 means it is next (or already running) — so the UI
+    # must not say "runs after the app ahead" when nothing is actually ahead.
+    if position is None:
+        ahead = 0
+    else:
+        ahead = (position - 1) + (1 if other_running else 0)
     return {
-        "queue_position": snapshot["positions"].get(key),
+        "queue_position": position,
         "queue_waiting_count": snapshot["waiting_count"],
-        "queue_running": snapshot["running_key"] == key,
+        "queue_running": running_key == key,
+        "queue_ahead": ahead,
     }
 
 def _scheduled_refresh_due(store, now=None, interval=None):
@@ -378,7 +448,8 @@ def _enqueue_scheduled_crawls(registry, store_factory, run_fn, now=None, interva
         enqueued += 1
     return enqueued
 
-def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
+def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None,
+               feedback_store=None):
     if registry is None:
         from storage import get_registry
         registry = get_registry()
@@ -390,6 +461,9 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
         resolve_fn = resolve_app
     if run_fn is None:
         run_fn = _default_run_fn
+    if feedback_store is None:
+        from storage import get_feedback_store
+        feedback_store = get_feedback_store()
 
     app = Flask(__name__, static_folder=DASHBOARD_DIR, static_url_path="")
 
@@ -405,11 +479,13 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
         return store_factory(aid) if aid else None
 
     def gallery_sort_key(app_obj):
+        # Gallery order: Zalopay first → apps with refresh ON → alphabetical.
         title = (app_obj.get("title") or app_obj.get("app_id") or "").lower()
         app_id = str(app_obj.get("app_id") or "").lower()
         is_zalopay = app_id == "1112407590" or "zalopay" in app_id or "zalopay" in title
+        refresh_on = _hourly_refresh_enabled(app_obj)
         ascii_title = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii")
-        return (0 if is_zalopay else 1, ascii_title)
+        return (0 if is_zalopay else 1, 0 if refresh_on else 1, ascii_title)
 
     def normalize_meta(store):
         meta = store.load_meta()
@@ -517,7 +593,7 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
             with _APPS_CACHE_LOCK:
                 cached = _APPS_FULL_CACHE.get("body")
                 age = time.monotonic() - float(_APPS_FULL_CACHE.get("at") or 0)
-                if cached is not None and age < APPS_FULL_CACHE_SECONDS:
+                if cached is not None and age < _apps_cache_ttl():
                     return _no_cache(jsonify(cached))
 
         reg = registry.load()
@@ -528,11 +604,22 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
         lite = request.args.get("lite") in ("1", "true", "yes")
 
         if lite:
+            if not app.config.get("TESTING"):
+                with _APPS_CACHE_LOCK:
+                    cached = _APPS_LITE_CACHE.get("body")
+                    age = time.monotonic() - float(_APPS_LITE_CACHE.get("at") or 0)
+                    if cached is not None and age < _apps_cache_ttl():
+                        return _no_cache(jsonify(cached))
+
             def build_lite_entry(a):
                 store = store_factory(a["app_id"])
                 entry = _gallery_app_entry(a, store)
-                if not app.config.get("TESTING"):
-                    entry = _maybe_backfill_gallery_metadata(entry, registry, store)
+                # NOTE: live metadata backfill (_maybe_backfill_gallery_metadata)
+                # is deliberately skipped here. It does network scraping (App Store
+                # / Google Play lookups) for apps missing an icon/developer, which
+                # is far too slow for the first-paint gallery. The full /api/apps
+                # poll that follows backfills those fields shortly after, so the
+                # initial load stays fast and the icons fill in moments later.
                 try:
                     meta = normalize_meta(store)
                 except Exception as exc:
@@ -559,7 +646,12 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
             else:
                 out = [build_lite_entry(a) for a in app_objs]
             out.sort(key=gallery_sort_key)
-            return _no_cache(jsonify({"active_app_id": active_app_id, "apps": out}))
+            body = {"active_app_id": active_app_id, "apps": out}
+            if not app.config.get("TESTING"):
+                with _APPS_CACHE_LOCK:
+                    _APPS_LITE_CACHE["at"] = time.monotonic()
+                    _APPS_LITE_CACHE["body"] = body
+            return _no_cache(jsonify(body))
 
         def build_entry(a):
             store = store_factory(a["app_id"])
@@ -608,6 +700,32 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
             return jsonify({"ok": False, "error": "no active app"}), 200
         run_fn(store)
         return jsonify({"ok": True, "started": True}), 200
+
+    @app.post("/api/cancel")
+    def cancel_run():
+        # Cancel an in-flight collect/classify run for one app. Reviews already
+        # classified are kept (the pipeline stops at the next batch boundary and
+        # still regroups), so they remain in the dashboard totals.
+        data = request.get_json(silent=True) or {}
+        app_id = data.get("app_id") or request.args.get("app_id") or registry.get_active()
+        store = store_factory(app_id) if app_id else None
+        if store is None:
+            return jsonify({"ok": False, "error": "no app"}), 200
+        key = _store_queue_key(store)
+        with _QUEUE_LOCK:
+            running = _RUNNING_KEY == key
+            queued = key in _QUEUED_KEYS
+            if running or queued:
+                _CANCEL_KEYS.add(key)
+        if not (running or queued):
+            try:
+                meta = normalize_meta(store)
+            except Exception:
+                meta = store.load_meta() or {}
+            return jsonify({"ok": True, "cancelling": False,
+                            "status": meta.get("status", "idle")}), 200
+        return jsonify({"ok": True, "cancelling": True,
+                        "running": running, "queued": queued}), 200
 
     def _no_cache(resp):
         # Same-URL JSON endpoints must never be served from the browser cache,
@@ -662,6 +780,45 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None):
     def get_reviews():
         store = request_store()
         return _no_cache(jsonify(_source_window_reviews(store.load_reviews()) if store else []))
+
+    @app.get("/api/feedback")
+    def get_feedback():
+        try:
+            items = feedback_store.load()
+        except Exception:
+            items = []
+        return _no_cache(jsonify(items))
+
+    @app.post("/api/feedback")
+    def post_feedback():
+        # Global product feedback — persisted in the shared store so it survives
+        # reloads and everyone on the workspace sees it.
+        data = request.get_json(silent=True) or {}
+        text = str(data.get("text") or "").strip()
+        if not text:
+            return jsonify({"ok": False, "error": "empty feedback"}), 200
+        ftype = data.get("type")
+        if ftype not in ("idea", "bug", "praise"):
+            ftype = "idea"
+        try:
+            rating = int(data.get("rating") or 0)
+        except (TypeError, ValueError):
+            rating = 0
+        rating = max(0, min(5, rating))
+        entry = {
+            "id": "fb-" + uuid.uuid4().hex[:12],
+            "type": ftype,
+            "name": (str(data.get("name") or "").strip())[:80],
+            "text_vi": text[:2000],
+            "text_en": text[:2000],
+            "rating": rating,
+            "at": _now(),
+        }
+        try:
+            items = feedback_store.add(entry)
+        except Exception as exc:
+            return jsonify({"ok": False, "error": str(exc)}), 200
+        return jsonify({"ok": True, "entry": entry, "items": items}), 200
 
     return app
 

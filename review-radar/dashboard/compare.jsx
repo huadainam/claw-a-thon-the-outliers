@@ -298,15 +298,20 @@ function makeRealCompareStats(id, stats, reviews, todos) {
   const latestDay = latestCompareDay(reviews);
   const rating = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
   const health = healthFromLabels(byLabel, total);
-  const openTodos = todos.filter(todo => !["done", "fixed", "ignored"].includes(todo.status));
-  const criticalTodos = openTodos.filter(todo => todo.severity === "critical").length;
+  // "Bug nghiêm trọng" = genuinely severe bug reviews (a 1-2★ bug report), not
+  // clusters that happen to be reported 10+ times. Counting by mention-based todo
+  // severity made apps with many distinct 1★ bugs (e.g. Zalopay) show 0, which is
+  // wrong — this counts the actual critical bug reviews instead.
+  const criticalBugs = reviews.filter(
+    r => r.label === "BUG_REPORT" && (Number(r.score) || 3) <= 2
+  ).length;
 
   return {
     health,
     rating,
     totalReviews: total,
     latestReviews: latestDay ? reviews.filter(r => compareReviewDay(r) === latestDay).length : 0,
-    critical: criticalTodos,
+    critical: criticalBugs,
     sentiment: sentimentFromLabels(byLabel, total),
     trend: trendFromReviews(reviews),
     cats: categoryPercents(byLabel, total),

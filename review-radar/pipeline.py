@@ -24,7 +24,7 @@ def _regroup(store, canonicalize_fn):
 
 def _run_summary(requested_reviews=0, crawled_reviews=0, new_reviews=0,
                  classified_reviews=0, total_reviews=0, used_fallback=False,
-                 error=None):
+                 error=None, cancelled=False):
     summary = {
         "requested_reviews": requested_reviews or 0,
         "crawled_reviews": crawled_reviews,
@@ -33,13 +33,15 @@ def _run_summary(requested_reviews=0, crawled_reviews=0, new_reviews=0,
         "total_reviews": total_reviews,
         "used_fallback": bool(used_fallback),
     }
+    if cancelled:
+        summary["cancelled"] = True
     if error:
         summary["error"] = str(error)
     return summary
 
 def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
                  review_limit=None,
-                 canonicalize_fn=None, batch_size=BATCH_SIZE):
+                 canonicalize_fn=None, batch_size=BATCH_SIZE, should_cancel=None):
     # default wiring (production)
     if store is None:
         from storage import get_store, get_registry
@@ -99,7 +101,14 @@ def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
             return {"new_reviews": 0, "todos": len(todos), "used_fallback": False}
 
         # Classify in batches so the review count + progress bar advance live.
+        # A cancel checked at each batch boundary stops further classification but
+        # KEEPS every review already appended, so the n reviews done so far stay in
+        # the store and count toward the dashboard.
+        cancelled = False
         for i in range(0, new_count, batch_size):
+            if should_cancel and should_cancel():
+                cancelled = True
+                break
             chunk = new_reviews[i:i + batch_size]
             classified = classify(chunk)
             store.append_reviews(classified)
@@ -114,14 +123,19 @@ def run_pipeline(store=None, scrape_gp=None, scrape_as=None, classify=None,
             store.save_meta(meta)
 
         # Canonicalize + group once at the end (correct clustering, one LLM call).
+        # Runs on cancel too, so the partial reviews feed the bug topics/todos.
         todos = _regroup(store, canonicalize_fn)
-        store.save_meta({"status": "idle", "progress": {"done": classified_count, "total": new_count},
+        # On cancel, treat the classified count as the total so the progress bar
+        # reads complete (done == total) instead of looking stuck at a partial slice.
+        final_total = classified_count if cancelled else new_count
+        store.save_meta({"status": "idle", "progress": {"done": classified_count, "total": final_total},
                          "last_updated": _now(),
                          "last_run": _run_summary(requested_reviews, crawled_count, new_count,
                                                   classified_count, len(store.load_reviews()),
-                                                  used_fallback)})
+                                                  used_fallback, cancelled=cancelled)})
 
-        return {"new_reviews": new_count, "todos": len(todos), "used_fallback": used_fallback}
+        return {"new_reviews": new_count, "classified": classified_count,
+                "todos": len(todos), "used_fallback": used_fallback, "cancelled": cancelled}
     except Exception as exc:
         # A failed LLM/API call used to leave meta.status="analyzing", which made
         # the UI polling screen look stuck forever. Keep any partial reviews that

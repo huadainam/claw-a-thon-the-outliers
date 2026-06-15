@@ -28,13 +28,23 @@ function DonutChart({ data, t, activeCat, onSelect }) {
         <svg viewBox={`0 0 ${size} ${size}`} style={{ display:"block", width:size, height:size }}>
           {segments.map((s, i) => {
             const dimmed = (activeCat && activeCat !== s.id) || (hover != null && hover !== i);
+            const handlers = {
+              style: { opacity: dimmed ? 0.28 : 1, cursor:"pointer", transition:"opacity .2s" },
+              onMouseEnter: () => setHover(i),
+              onMouseLeave: () => setHover(null),
+              onClick: () => onSelect(s.id === activeCat ? null : s.id),
+            };
+            // A single ~100% segment: render a stroked full ring. The arc-path
+            // approach leaves a seam/notch for a 360° sweep (degenerate arc), so
+            // draw a seamless circle instead.
+            if (s.frac >= 0.9999) {
+              return (
+                <circle key={s.id} cx={center} cy={center} r={(outerR + innerR) / 2}
+                  fill="none" stroke={s.color} strokeWidth={outerR - innerR} {...handlers} />
+              );
+            }
             const path = donutSlicePath(center, center, outerR, innerR, s.start, s.end);
-            return (
-              <path key={s.id} d={path} fill={s.color} fillRule="evenodd"
-                style={{ opacity: dimmed ? 0.28 : 1, cursor:"pointer", transition:"opacity .2s" }}
-                onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
-                onClick={() => onSelect(s.id === activeCat ? null : s.id)} />
-            );
+            return <path key={s.id} d={path} fill={s.color} fillRule="evenodd" {...handlers} />;
           })}
         </svg>
         <div style={{ position:"absolute", inset:0, display:"grid", placeItems:"center", textAlign:"center", pointerEvents:"none" }}>
@@ -126,7 +136,7 @@ function TrendChart({ data, t, range }) {
   const W = 760, H = 240, padL = 8, padR = 8, padT = 22, padB = 26;
   const iw = W - padL - padR, ih = H - padT - padB;
   const maxR = Math.max(1, Math.max(...slice.map(d => d.reviews)) * 1.12);
-  const barW = Math.min(26, (iw / slice.length) * 0.55);
+  const barW = Math.min(34, (iw / slice.length) * 0.7);
   const gap = iw / slice.length;
   const [hover, setHover] = useState(null);
 
@@ -139,6 +149,11 @@ function TrendChart({ data, t, range }) {
   }));
   const linePath = pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
   const areaPath = `${linePath} L${pts[pts.length-1].x} ${padT+ih} L${pts[0].x} ${padT+ih} Z`;
+
+  // Peak / trough of the health line — annotate the highest and lowest score.
+  const healthVals = pts.map(p => p.d.health);
+  const hiIdx = healthVals.indexOf(Math.max(...healthVals));
+  const loIdx = healthVals.indexOf(Math.min(...healthVals));
 
   return (
     <div style={{ position:"relative" }}>
@@ -154,11 +169,6 @@ function TrendChart({ data, t, range }) {
             <stop offset="100%" stopColor="#e6effb"/>
           </linearGradient>
         </defs>
-        {/* gridlines */}
-        {[0.25, 0.5, 0.75, 1].map(g => (
-          <line key={g} x1={padL} x2={W-padR} y1={padT + ih*(1-g)} y2={padT + ih*(1-g)}
-            stroke="rgba(0,0,0,0.05)" strokeWidth="1"/>
-        ))}
         {/* bars */}
         {slice.map((d, i) => {
           const h = (d.reviews / maxR) * ih;
@@ -181,6 +191,23 @@ function TrendChart({ data, t, range }) {
         {pts.map((p, i) => (hover === i || range === 7) && (
           <circle key={i} cx={p.x} cy={p.y} r={hover === i ? 4.5 : 2.6} fill="#fff" stroke="#0071e3" strokeWidth="2.4"/>
         ))}
+        {/* highest / lowest health markers + labels */}
+        {slice.length > 1 && hover == null && [{ idx: hiIdx, hi: true }, { idx: loIdx, hi: false }].map(({ idx, hi }) => {
+          if (idx < 0 || (!hi && loIdx === hiIdx)) return null;
+          const p = pts[idx];
+          const above = hi ? (p.y - 12 >= padT) : (p.y + 16 > padT + ih);
+          const ly = above ? p.y - 9 : p.y + 17;
+          const tx = Math.max(padL + 18, Math.min(W - padR - 18, p.x));
+          return (
+            <g key={hi ? "hi" : "lo"} style={{ pointerEvents:"none" }}>
+              <circle cx={p.x} cy={p.y} r={3.6} fill={hi ? "#0071e3" : "#8aa0b8"} stroke="#fff" strokeWidth="1.6"/>
+              <text x={tx} y={ly} fontSize="10.5" fontWeight="700" textAnchor="middle"
+                fill={hi ? "#0071e3" : "var(--text-3)"}>
+                {(hi ? t("trend_high") : t("trend_low"))} {p.d.health}
+              </text>
+            </g>
+          );
+        })}
         {/* x labels — sparse */}
         {slice.map((d, i) => {
           const every = range === 7 ? 1 : range === 90 ? 12 : 5;

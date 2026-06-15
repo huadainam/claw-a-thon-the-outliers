@@ -1,4 +1,4 @@
-from storage import LocalStore, LocalRegistry
+from storage import LocalStore, LocalRegistry, LocalFeedbackStore
 from app import create_app, _enqueue_scheduled_crawls, _queue_positions, REVIEW_DAY_TZ
 from datetime import datetime, timezone, timedelta
 
@@ -9,6 +9,7 @@ def make_client(tmp_path, **overrides):
         if app_id not in stores:
             stores[app_id] = LocalStore(data_dir=str(tmp_path), app_id=app_id)
         return stores[app_id]
+    overrides.setdefault("feedback_store", LocalFeedbackStore(data_dir=str(tmp_path)))
     app = create_app(registry=registry, store_factory=factory, **overrides)
     app.config["TESTING"] = True
     return app.test_client(), registry, factory
@@ -16,6 +17,30 @@ def make_client(tmp_path, **overrides):
 def test_health_always_200(tmp_path):
     client, _, _ = make_client(tmp_path)
     assert client.get("/health").status_code == 200
+
+def test_feedback_persists_and_lists(tmp_path):
+    client, _, _ = make_client(tmp_path)
+    assert client.get("/api/feedback").get_json() == []
+    res = client.post("/api/feedback", json={
+        "type": "bug", "name": "Huy", "text": "Nút gửi đôi khi không phản hồi", "rating": 3,
+    }).get_json()
+    assert res["ok"] is True
+    assert res["entry"]["type"] == "bug"
+    assert res["entry"]["text_vi"] == "Nút gửi đôi khi không phản hồi"
+    assert res["entry"]["rating"] == 3
+    assert res["entry"]["id"].startswith("fb-")
+    # Newest first, and persisted for the next read.
+    listed = client.get("/api/feedback").get_json()
+    assert len(listed) == 1
+    assert listed[0]["name"] == "Huy"
+
+def test_feedback_rejects_empty_and_clamps(tmp_path):
+    client, _, _ = make_client(tmp_path)
+    assert client.post("/api/feedback", json={"text": "   "}).get_json()["ok"] is False
+    res = client.post("/api/feedback", json={"text": "x", "type": "weird", "rating": 99}).get_json()
+    assert res["entry"]["type"] == "idea"   # invalid type falls back
+    assert res["entry"]["rating"] == 5      # clamped to 0..5
+    assert client.get("/api/feedback").get_json()[0]["text_vi"] == "x"
 
 def test_resolve_endpoint(tmp_path):
     def fake_resolve(name):

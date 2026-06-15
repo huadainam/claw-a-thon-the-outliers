@@ -14,15 +14,16 @@ function buildCrawlToastSub(dict, appRow) {
   const classified = Number(run.classified_reviews || 0);
   const newReviews = Number(run.new_reviews || 0);
   const fallbackClassified = (appRow.progress && appRow.progress.total) || 0;
+  // The real outcome of a refresh is how many genuinely NEW reviews were added —
+  // the crawled total includes reviews already in the store (duplicates), so the
+  // notification reports the new count, not the crawled count.
+  const added = classified || newReviews || fallbackClassified;
 
-  if (crawled > 0 && (classified > 0 || newReviews > 0)) {
-    return `${dict.toast_crawled} ${formatToastCount(crawled)} ${dict.reviews_word} · ${dict.toast_classified} ${formatToastCount(classified || fallbackClassified)} ${dict.toast_new_reviews}`;
+  if (added > 0) {
+    return `${dict.toast_added} ${formatToastCount(added)} ${dict.toast_new_reviews}`;
   }
   if (crawled > 0) {
-    return `${dict.toast_crawled} ${formatToastCount(crawled)} ${dict.reviews_word} · ${dict.toast_no_new_reviews}`;
-  }
-  if (fallbackClassified > 0) {
-    return `${dict.toast_classified} ${formatToastCount(fallbackClassified)} ${dict.toast_new_reviews}`;
+    return dict.toast_no_new_reviews;
   }
   return dict.toast_no_reviews_fetched || dict.toast_scrape_done;
 }
@@ -82,7 +83,9 @@ function App() {
         ].join(":")).join("|");
         if (sig !== lastSig) { lastSig = sig; setAvailVersion(v => v + 1); }
         const anyAnalyzing = apps.some(a => isBusyStatus(a.status));
-        timer = setTimeout(poll, anyAnalyzing ? 2500 : 6000);
+        // Match the detail view's 2s cadence while a crawl runs so the gallery
+        // progress bar stays in sync with it (not visibly lagging behind).
+        timer = setTimeout(poll, anyAnalyzing ? 2000 : 6000);
       }).catch(() => { if (!cancelled) timer = setTimeout(poll, 6000); });
     };
     timer = setTimeout(poll, 1200);

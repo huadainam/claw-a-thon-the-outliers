@@ -182,7 +182,7 @@ function actionMatchesReviewFilters(action, filters, filteredReviews) {
   return filteredReviews.some(r => (r.actionIds || []).includes(action.id));
 }
 
-function Dashboard({ t, app, onBack, view, onNav, onDataChanged }) {
+function Dashboard({ t, app, onBack, view, onNav, onDataChanged, loading }) {
   const a = window.DATA.APPS[app] || { name: app || "", platform: "—" };
   const [range, setRange] = useState(30);
   const [freq, setFreq] = useState("1h");
@@ -198,7 +198,7 @@ function Dashboard({ t, app, onBack, view, onNav, onDataChanged }) {
   // until this app's data finishes loading. Show a loading state instead of the
   // wrong (stale) data — loadDashboard stamps LOADED_APP_ID once data is in place,
   // and the dataVersion key bump remounts this view with the correct numbers.
-  if (window.DATA.LOADED_APP_ID !== app) {
+  if (loading || window.DATA.LOADED_APP_ID !== app) {
     return (
       <div>
         <DashTopBar t={t} app={app} a={a} onBack={onBack} freq={freq} onConfigure={() => setShowSchedule(true)}
@@ -531,16 +531,27 @@ function KpiCard({ k, t, i }) {
   const toneColor = { neutral:"var(--accent)", critical:"var(--critical)", positive:"var(--positive)", warning:"var(--warning)" }[k.tone];
   const toneSoft = { neutral:"var(--accent-soft)", critical:"var(--critical-soft)", positive:"var(--positive-soft)", warning:"var(--warning-soft)" }[k.tone];
   const subText = k.subText || (k.dateKey ? `${t("sub_"+k.sub)} ${formatDateKeyForUi(k.dateKey, t)}` : t("sub_"+k.sub));
+  const healthFormula = k.id === "health" ? t("kpi_health_formula") : "";
   return (
     <div className="card fade-up" style={{ padding:"15px 16px", animationDelay:`${i*0.04}s`,
       display:"flex", flexDirection:"column", gap:11, minHeight:152 }}>
       <div style={{ width:32, height:32, borderRadius:9, background:toneSoft, color:toneColor, display:"grid", placeItems:"center" }}>
         <Icon name={k.icon} size={17}/>
       </div>
-      {/* label — reserved 2-line height so every card aligns */}
-      <div style={{ fontSize:12.5, color:"var(--text-2)", fontWeight:600, lineHeight:1.3, height:33,
-        display:"flex", alignItems:"flex-end" }}>
-        <span style={{ display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{t("kpi_"+k.id)}</span>
+      {/* label: reserve two lines, but align the first line across every card */}
+      <div style={{ fontSize:12.5, color:"var(--text-2)", fontWeight:600, lineHeight:1.3, height:34,
+        display:"flex", alignItems:"flex-start" }}>
+        <div style={{ display:"flex", alignItems:"flex-start", gap:5, minWidth:0, width:"100%" }}>
+          <span style={{ display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden", minWidth:0 }}>{t("kpi_"+k.id)}</span>
+          {healthFormula && (
+            <span className="kpi-info-wrap">
+              <button type="button" className="kpi-info" aria-label={healthFormula} title={healthFormula}>
+                <Icon name="info" size={12.5} stroke={2}/>
+              </button>
+              <span className="kpi-tip" role="tooltip">{healthFormula}</span>
+            </span>
+          )}
+        </div>
       </div>
       <div style={{ marginTop:"auto" }}>
         <div style={{ display:"flex", alignItems:"baseline", gap:1 }}>

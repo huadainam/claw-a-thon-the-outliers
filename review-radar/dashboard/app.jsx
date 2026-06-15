@@ -64,6 +64,7 @@ function App() {
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [dataVersion, setDataVersion] = useState(0);
   const [availVersion, setAvailVersion] = useState(0);  // bumps when app statuses refresh
+  const [dashboardLoadingApp, setDashboardLoadingApp] = useState(null);
   const [toasts, setToasts] = useState([]);
   const toastIdRef = useRef(0);
   const langRef = useRef(lang);
@@ -135,7 +136,7 @@ function App() {
       if (screenToRestore === "dashboard" && appToRestore) {
         setActiveApp(appToRestore);
         setScreen("dashboard");
-        loadDashboardWithRetry(appToRestore).catch(console.warn);
+        loadDashboardWithRetry(appToRestore, 4, true).catch(console.warn);
         return;
       }
       if (screenToRestore === "crawling" && appToRestore) {
@@ -217,21 +218,33 @@ function App() {
   // return a transient error on the first cold read). Bumps dataVersion to
   // remount the dashboard once data is in. Without this, a failed first load
   // left the dashboard empty until the user manually backed out and re-entered.
-  const loadDashboardWithRetry = (appId, tries = 4) =>
-    window.ARM_Bridge.loadDashboard(appId).then(res => {
+  const loadDashboardWithRetry = (appId, tries = 4, showLoading = false) => {
+    if (showLoading && appId) {
+      // Force the dashboard into its loading state even when the same app's stale
+      // data is already in window.DATA from an earlier visit.
+      window.DATA.LOADED_APP_ID = null;
+      setDashboardLoadingApp(appId);
+    }
+    const attempt = (remaining) => window.ARM_Bridge.loadDashboard(appId).then(res => {
       if (res) { setDataVersion(v => v + 1); return res; }
-      if (tries > 1) {
-        return new Promise(r => setTimeout(r, 700)).then(() => loadDashboardWithRetry(appId, tries - 1));
+      if (remaining > 1) {
+        return new Promise(r => setTimeout(r, 700)).then(() => attempt(remaining - 1));
       }
       return null;
     });
+    return attempt(tries).finally(() => {
+      if (showLoading) {
+        setDashboardLoadingApp(cur => cur === appId ? null : cur);
+      }
+    });
+  };
 
   const handleOpenDashboard = (appId) => {
     setActiveApp(appId);
     setDashView("overview");
-    go("dashboard"); // show dashboard immediately; data fills in once loaded
+    go("dashboard"); // show the dashboard shell immediately; data fills in once loaded
     window.ARM_Bridge.setActive(appId).catch(() => {});
-    loadDashboardWithRetry(appId).catch(console.warn);
+    loadDashboardWithRetry(appId, 4, true).catch(console.warn);
   };
 
   // Called from Screen 1 when user clicks an app that is currently scraping
@@ -294,7 +307,8 @@ function App() {
         {screen === "dashboard" && (
           <Dashboard key={"dash"+(activeApp||"app")+lang+dataVersion}
             t={t} app={activeApp || "zalopay"} onBack={() => go("selection")}
-            view={dashView} onNav={onDashNav} onDataChanged={refreshActiveDashboard}/>
+            view={dashView} onNav={onDashNav} onDataChanged={refreshActiveDashboard}
+            loading={dashboardLoadingApp === (activeApp || "zalopay")}/>
         )}
         {screen === "reports" && (
           <ReportsPage key={"rep"+lang} t={t}/>

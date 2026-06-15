@@ -361,7 +361,7 @@ textarea.set-input { font-family: inherit; }
 .toast-wrap .toast {
   position: static; bottom: auto; left: auto; transform: none;
   z-index: auto; color: var(--text); text-shadow: none;
-  pointer-events: auto; cursor: pointer;
+  pointer-events: auto; cursor: default;
   display: flex; align-items: center; gap: 13px;
   min-width: 300px; max-width: 380px; padding: 12px 14px;
   border-radius: 18px;
@@ -383,9 +383,13 @@ textarea.set-input { font-family: inherit; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .toast-sub { font-size: 12.5px; color: var(--text-2); margin-top: 1px; }
-.toast-badge {
-  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
-  display: grid; place-items: center; color: #fff; background: var(--positive);
+.toast-close {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; color: var(--text-2);
+  background: rgba(0,0,0,0.05); transition: background .15s, color .15s, transform .15s;
+}
+.toast-close:hover {
+  background: rgba(0,0,0,0.1); color: var(--text); transform: scale(1.03);
 }
 @keyframes toastCardIn {
   from { opacity: 0; transform: translateX(46px) scale(0.94); }

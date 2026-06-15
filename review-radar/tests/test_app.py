@@ -1,6 +1,18 @@
 from storage import LocalStore, LocalRegistry, LocalFeedbackStore
+import app as app_module
 from app import create_app, _enqueue_scheduled_crawls, _queue_positions, REVIEW_DAY_TZ
 from datetime import datetime, timezone, timedelta
+
+def clear_queue_state():
+    with app_module._QUEUE_LOCK:
+        app_module._QUEUED_KEYS.clear()
+        app_module._CANCEL_KEYS.clear()
+        app_module._SCHEDULED_KEYS.clear()
+        app_module._RUNNING_KEY = None
+    with app_module._RUN_QUEUE.mutex:
+        app_module._RUN_QUEUE.queue.clear()
+        app_module._RUN_QUEUE.unfinished_tasks = 0
+        app_module._RUN_QUEUE.all_tasks_done.notify_all()
 
 def make_client(tmp_path, **overrides):
     registry = LocalRegistry(data_dir=str(tmp_path))
@@ -345,6 +357,100 @@ def test_scheduled_crawl_skips_apps_without_explicit_hourly_refresh(tmp_path):
     assert count == 0
     assert calls == []
 
+def test_disabling_hourly_refresh_clears_existing_scheduled_queue(tmp_path):
+    clear_queue_state()
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo", "hourly_refresh_enabled": True})
+    store = factory("com.zing.zalo")
+    key = app_module._store_queue_key(store)
+    store.save_meta({
+        "status": "queued",
+        "progress": {"done": 0, "total": 100},
+        "last_updated": datetime.now(timezone.utc).isoformat(),
+    })
+    with app_module._QUEUE_LOCK:
+        app_module._QUEUED_KEYS.add(key)
+        app_module._SCHEDULED_KEYS.add(key)
+    app_module._RUN_QUEUE.put((key, store, 100, True))
+
+    try:
+        resp = client.patch("/api/apps/com.zing.zalo", json={"hourly_refresh_enabled": False})
+
+        assert resp.status_code == 200
+        assert registry.get_app("com.zing.zalo")["hourly_refresh_enabled"] is False
+        assert store.load_config()["hourly_refresh_enabled"] is False
+        assert store.load_meta()["status"] == "idle"
+        assert store.load_meta()["refresh_disabled"] is True
+        with app_module._QUEUE_LOCK:
+            assert key not in app_module._QUEUED_KEYS
+            assert key not in app_module._SCHEDULED_KEYS
+            assert key not in app_module._CANCEL_KEYS
+        with app_module._RUN_QUEUE.mutex:
+            assert [item[0] for item in app_module._RUN_QUEUE.queue] == []
+    finally:
+        clear_queue_state()
+
+def test_disabling_hourly_refresh_does_not_cancel_manual_queue(tmp_path):
+    clear_queue_state()
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo", "hourly_refresh_enabled": True})
+    store = factory("com.zing.zalo")
+    key = app_module._store_queue_key(store)
+    store.save_meta({
+        "status": "queued",
+        "progress": {"done": 0, "total": 100},
+        "last_updated": datetime.now(timezone.utc).isoformat(),
+    })
+    with app_module._QUEUE_LOCK:
+        app_module._QUEUED_KEYS.add(key)
+    app_module._RUN_QUEUE.put((key, store, 100, False))
+
+    try:
+        resp = client.patch("/api/apps/com.zing.zalo", json={"hourly_refresh_enabled": False})
+
+        assert resp.status_code == 200
+        assert store.load_config()["hourly_refresh_enabled"] is False
+        assert store.load_meta()["status"] == "queued"
+        with app_module._QUEUE_LOCK:
+            assert key in app_module._QUEUED_KEYS
+            assert key not in app_module._SCHEDULED_KEYS
+            assert key not in app_module._CANCEL_KEYS
+        with app_module._RUN_QUEUE.mutex:
+            assert [item[0] for item in app_module._RUN_QUEUE.queue] == [key]
+    finally:
+        clear_queue_state()
+
+def test_scheduler_cleans_disabled_app_already_in_scheduled_queue(tmp_path):
+    clear_queue_state()
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Zalo", "gp_id": "com.zing.zalo", "hourly_refresh_enabled": True})
+    store = factory("com.zing.zalo")
+    key = app_module._store_queue_key(store)
+    with app_module._QUEUE_LOCK:
+        app_module._QUEUED_KEYS.add(key)
+        app_module._SCHEDULED_KEYS.add(key)
+    app_module._RUN_QUEUE.put((key, store, 100, True))
+    registry.update_app("com.zing.zalo", {"hourly_refresh_enabled": False})
+    calls = []
+
+    try:
+        count = _enqueue_scheduled_crawls(
+            registry,
+            factory,
+            lambda s: calls.append(s.load_config().get("title")),
+        )
+
+        assert count == 0
+        assert calls == []
+        assert store.load_meta()["status"] == "idle"
+        with app_module._QUEUE_LOCK:
+            assert key not in app_module._QUEUED_KEYS
+            assert key not in app_module._SCHEDULED_KEYS
+        with app_module._RUN_QUEUE.mutex:
+            assert [item[0] for item in app_module._RUN_QUEUE.queue] == []
+    finally:
+        clear_queue_state()
+
 def test_queue_positions_are_one_indexed_by_waiting_order():
     assert _queue_positions(["app-a", "app-b", "app-c"]) == {
         "app-a": 1,
@@ -483,7 +589,7 @@ def test_apps_recovers_orphan_queued_meta(tmp_path):
     assert app["status"] == "idle"
     assert factory("918751511").load_meta()["status"] == "idle"
 
-def test_stats_keeps_recent_analyzing_meta(tmp_path):
+def test_stats_recovers_recent_analyzing_meta_without_running_worker(tmp_path):
     client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
     client.post("/api/track", json={"title": "Momo", "as_id": "918751511"})
     factory("918751511").save_meta({
@@ -493,6 +599,28 @@ def test_stats_keeps_recent_analyzing_meta(tmp_path):
     })
 
     body = client.get("/api/stats?app_id=918751511").get_json()
+
+    assert body["meta"]["status"] == "idle"
+    assert body["meta"]["progress"] == {"done": 30, "total": 500}
+
+def test_stats_keeps_recent_analyzing_meta_when_worker_is_running(tmp_path):
+    clear_queue_state()
+    client, registry, factory = make_client(tmp_path, run_fn=lambda s: None)
+    client.post("/api/track", json={"title": "Momo", "as_id": "918751511"})
+    store = factory("918751511")
+    key = app_module._store_queue_key(store)
+    store.save_meta({
+        "status": "analyzing",
+        "progress": {"done": 30, "total": 500},
+        "last_updated": datetime.now(timezone.utc).isoformat(),
+    })
+    with app_module._QUEUE_LOCK:
+        app_module._RUNNING_KEY = key
+
+    try:
+        body = client.get("/api/stats?app_id=918751511").get_json()
+    finally:
+        clear_queue_state()
 
     assert body["meta"]["status"] == "analyzing"
     assert body["meta"]["progress"] == {"done": 30, "total": 500}

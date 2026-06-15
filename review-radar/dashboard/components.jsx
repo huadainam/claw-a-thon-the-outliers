@@ -321,18 +321,22 @@ function Modal({ open, onClose, children, width = 460 }) {
 }
 
 /* ---- Apple-style toast notifications (top-right) ---- */
+const TOAST_AUTO_DISMISS_MS = 20000;
+
 function ToastCard({ toast, onDismiss }) {
   const [leaving, setLeaving] = useState(false);
   const close = React.useCallback(() => {
+    if (leaving) return;
     setLeaving(true);
     setTimeout(() => onDismiss(toast.id), 300);
-  }, [toast.id, onDismiss]);
+  }, [leaving, toast.id, onDismiss]);
   useEffect(() => {
-    const id = setTimeout(close, 5200);
+    if (leaving) return;
+    const id = setTimeout(close, TOAST_AUTO_DISMISS_MS);
     return () => clearTimeout(id);
-  }, [close]);
+  }, [close, leaving]);
   return (
-    <div className={"toast" + (leaving ? " toast-leaving" : "")} onClick={close} role="status">
+    <div className={"toast" + (leaving ? " toast-leaving" : "")} role="status">
       <div className="toast-glyph">
         {window.DATA.APPS[toast.app]
           ? <AppGlyph app={toast.app} size={40} fontSize={17}/>
@@ -342,7 +346,9 @@ function ToastCard({ toast, onDismiss }) {
         <div className="toast-title">{toast.title}</div>
         <div className="toast-sub">{toast.sub}</div>
       </div>
-      <div className="toast-badge"><Icon name="check" size={13} stroke={3}/></div>
+      <button type="button" className="toast-close" onClick={close} aria-label="Close notification">
+        <Icon name="x" size={15} stroke={2.4}/>
+      </button>
     </div>
   );
 }

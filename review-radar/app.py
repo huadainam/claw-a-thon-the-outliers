@@ -6,7 +6,7 @@ import uuid
 import unicodedata
 import threading
 from concurrent.futures import ThreadPoolExecutor
-from collections import Counter
+from collections import Counter, deque
 from datetime import datetime, timezone, timedelta
 from flask import Flask, jsonify, request
 from storage import merge_app_metadata
@@ -18,6 +18,7 @@ _RUN_QUEUE = queue.Queue()
 _QUEUE_LOCK = threading.Lock()
 _QUEUED_KEYS = set()
 _CANCEL_KEYS = set()
+_SCHEDULED_KEYS = set()
 _QUEUE_WORKER_STARTED = False
 _RUNNING_KEY = None
 _APPS_CACHE_LOCK = threading.Lock()
@@ -316,6 +317,85 @@ def _mark_canceled_idle(store):
     except Exception:
         pass
 
+def _mark_refresh_disabled_idle(store):
+    try:
+        current = store.load_meta() or {}
+        meta = {
+            "status": "idle",
+            "progress": current.get("progress", {"done": 0, "total": 0}),
+            "last_updated": _now(),
+            "refresh_disabled": True,
+        }
+        for key in ("last_run", "last_scheduled_refresh_at"):
+            if current.get(key):
+                meta[key] = current[key]
+        store.save_meta(meta)
+    except Exception:
+        pass
+
+def _store_hourly_refresh_enabled(store):
+    try:
+        return _hourly_refresh_enabled(store.load_config() or {})
+    except Exception:
+        return False
+
+def _discard_waiting_queue_keys(keys):
+    if not keys:
+        return 0
+    keys = set(keys)
+    with _RUN_QUEUE.mutex:
+        kept = deque(item for item in _RUN_QUEUE.queue if item[0] not in keys)
+        removed = len(_RUN_QUEUE.queue) - len(kept)
+        if removed:
+            _RUN_QUEUE.queue = kept
+            _RUN_QUEUE.unfinished_tasks = max(0, _RUN_QUEUE.unfinished_tasks - removed)
+            if _RUN_QUEUE.unfinished_tasks == 0:
+                _RUN_QUEUE.all_tasks_done.notify_all()
+            _RUN_QUEUE.not_full.notify_all()
+    return removed
+
+def _cancel_scheduled_refresh_for_store(store, force_idle=False):
+    key = _store_queue_key(store)
+    with _QUEUE_LOCK:
+        was_running = _RUNNING_KEY == key
+        was_queued = key in _QUEUED_KEYS
+        was_scheduled = key in _SCHEDULED_KEYS
+        if was_scheduled:
+            _CANCEL_KEYS.add(key)
+    removed = _discard_waiting_queue_keys({key}) if was_scheduled else 0
+    if was_scheduled:
+        with _QUEUE_LOCK:
+            still_running = _RUNNING_KEY == key
+            _QUEUED_KEYS.discard(key)
+            _SCHEDULED_KEYS.discard(key)
+            if not still_running and removed:
+                _CANCEL_KEYS.discard(key)
+    should_force_orphan_idle = force_idle and not (was_running or was_queued)
+    if should_force_orphan_idle or was_scheduled or removed:
+        _mark_refresh_disabled_idle(store)
+        _clear_apps_cache()
+    return {
+        "running": was_running,
+        "queued": was_queued,
+        "scheduled": was_scheduled,
+        "removed": removed,
+    }
+
+def _cleanup_disabled_scheduled_refreshes(registry, store_factory):
+    cleaned = 0
+    with _QUEUE_LOCK:
+        active_keys = set(_QUEUED_KEYS) | set(_SCHEDULED_KEYS)
+        if _RUNNING_KEY:
+            active_keys.add(_RUNNING_KEY)
+    for app_obj in registry.list_apps():
+        app_id = app_obj.get("app_id")
+        if not app_id or _hourly_refresh_enabled(app_obj) or str(app_id) not in active_keys:
+            continue
+        result = _cancel_scheduled_refresh_for_store(store_factory(app_id))
+        if result["scheduled"] or result["removed"]:
+            cleaned += 1
+    return cleaned
+
 def _queue_worker():
     global _RUNNING_KEY
     from pipeline import run_pipeline
@@ -325,19 +405,28 @@ def _queue_worker():
         if len(item) == 2:
             key, store = item
             review_limit = None
-        else:
+            scheduled = False
+        elif len(item) == 3:
             key, store, review_limit = item
+            scheduled = False
+        else:
+            key, store, review_limit, scheduled = item
+        scheduled_disabled = scheduled and not _store_hourly_refresh_enabled(store)
         with _QUEUE_LOCK:
             # Cancelled while still waiting in the queue: never start it, but keep
             # whatever reviews the app already has.
-            cancelled_before_start = key in _CANCEL_KEYS
+            cancelled_before_start = key in _CANCEL_KEYS or scheduled_disabled
             if cancelled_before_start:
                 _CANCEL_KEYS.discard(key)
                 _QUEUED_KEYS.discard(key)
+                _SCHEDULED_KEYS.discard(key)
             else:
                 _RUNNING_KEY = key
         if cancelled_before_start:
-            _mark_canceled_idle(store)
+            if scheduled_disabled:
+                _mark_refresh_disabled_idle(store)
+            else:
+                _mark_canceled_idle(store)
             _clear_apps_cache()
             _RUN_QUEUE.task_done()
             continue
@@ -365,6 +454,7 @@ def _queue_worker():
             with _QUEUE_LOCK:
                 _QUEUED_KEYS.discard(key)
                 _CANCEL_KEYS.discard(key)
+                _SCHEDULED_KEYS.discard(key)
                 if _RUNNING_KEY == key:
                     _RUNNING_KEY = None
             _clear_apps_cache()
@@ -378,21 +468,29 @@ def _ensure_queue_worker():
         threading.Thread(target=_queue_worker, daemon=True).start()
         _QUEUE_WORKER_STARTED = True
 
-def _default_run_fn(store, review_limit=None):
+def _default_run_fn(store, review_limit=None, scheduled=False):
     """Production runner: enqueue pipeline work so multiple app selections do
     not get dropped by the pipeline's single-run lock."""
+    if scheduled and not _store_hourly_refresh_enabled(store):
+        _mark_refresh_disabled_idle(store)
+        _clear_apps_cache()
+        return
     _ensure_queue_worker()
     key = _store_queue_key(store)
     with _QUEUE_LOCK:
         if key in _QUEUED_KEYS:
             return
         _QUEUED_KEYS.add(key)
+        if scheduled:
+            _SCHEDULED_KEYS.add(key)
+        else:
+            _SCHEDULED_KEYS.discard(key)
     _mark_queued(store)
-    _RUN_QUEUE.put((key, store, review_limit))
+    _RUN_QUEUE.put((key, store, review_limit, scheduled))
 
 def _scheduled_run_fn(store):
     from config import get_config
-    _default_run_fn(store, review_limit=get_config().refresh_review_limit)
+    _default_run_fn(store, review_limit=get_config().refresh_review_limit, scheduled=True)
 
 def _queue_positions(waiting_keys):
     return {key: idx + 1 for idx, key in enumerate(waiting_keys)}
@@ -463,6 +561,7 @@ def _mark_scheduled_refresh(store, when=None):
 
 def _enqueue_scheduled_crawls(registry, store_factory, run_fn, now=None, interval=None):
     now = now or datetime.now(timezone.utc)
+    _cleanup_disabled_scheduled_refreshes(registry, store_factory)
     apps = [
         app
         for app in registry.list_apps()
@@ -536,16 +635,11 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None,
         status = meta.get("status")
         if status not in ("analyzing", "queued"):
             return meta
-        raw = meta.get("last_updated")
-        try:
-            last = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
-            if last.tzinfo is None:
-                last = last.replace(tzinfo=timezone.utc)
-        except (TypeError, ValueError):
-            last = None
+        key = _store_queue_key(store)
+        with _QUEUE_LOCK:
+            is_queued_in_this_process = key in _QUEUED_KEYS
+            is_running_in_this_process = _RUNNING_KEY == key
         if status == "queued":
-            with _QUEUE_LOCK:
-                is_queued_in_this_process = _store_queue_key(store) in _QUEUED_KEYS
             if is_queued_in_this_process:
                 return meta
             recovered = dict(meta)
@@ -555,9 +649,11 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None,
             store.save_meta(recovered)
             return recovered
 
-        if last and datetime.now(timezone.utc) - last <= ANALYZING_STALE_AFTER:
+        if is_running_in_this_process:
             return meta
 
+        # Recent meta is not enough: if no worker owns the app in this process,
+        # the crawl was interrupted and should not linger in the queue UI.
         recovered = dict(meta)
         recovered["status"] = "idle"
         recovered["last_updated"] = datetime.now(timezone.utc).isoformat()
@@ -624,7 +720,10 @@ def create_app(registry=None, store_factory=None, resolve_fn=None, run_fn=None,
             updated = registry.update_app(app_id, patch)
             if updated is None:
                 return jsonify({"ok": False, "error": "app not found"}), 404
-            store_factory(app_id).save_config(updated)
+            store = store_factory(app_id)
+            store.save_config(updated)
+            if "hourly_refresh_enabled" in patch and not patch["hourly_refresh_enabled"]:
+                _cancel_scheduled_refresh_for_store(store, force_idle=True)
             _clear_apps_cache()
 
         return jsonify({"ok": True, "app": updated}), 200

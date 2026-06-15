@@ -9,7 +9,6 @@ function Crawling({ t, app, onDone, onBack, onOpenDashboard }) {
     const row = (window.DATA.AVAILABLE || []).find(r => r.app === app);
     return ((row && row.totalReviews) || 0) > 0;
   });
-  const [notified, setNotified] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const a = window.DATA.APPS[app] || { name: app };
 
@@ -181,8 +180,6 @@ function Crawling({ t, app, onDone, onBack, onOpenDashboard }) {
           <button className="btn btn-secondary" onClick={handleCancel} disabled={cancelling}
             style={{ color:"var(--critical)" }}>
             <Icon name="x" size={16}/>{cancelling ? t("cancelling") : t("cancel_crawl")}</button>
-          <button className={`btn ${notified ? "btn-secondary" : "btn-primary"}`} onClick={() => setNotified(true)}>
-            <Icon name="bell" size={16}/>{notified ? "✓ " : ""}{t("notify")}</button>
           {canOpenDashboard && (
             <button className="btn btn-primary fade-in" onClick={openDashboardNow}>
               {isWaitingWithExistingData ? t("open_existing_dashboard") : t("skip_now")}<Icon name="chevron" size={16} stroke={2.2}/></button>

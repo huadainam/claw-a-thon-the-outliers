@@ -76,7 +76,7 @@ function App() {
     saveRoute({ screen, activeApp, dashView });
   }, [screen, activeApp, dashView]);
 
-  const dismissToast = (id) => setToasts(ts => ts.filter(x => x.id !== id));
+  const dismissToast = React.useCallback((id) => setToasts(ts => ts.filter(x => x.id !== id)), []);
   const isBusyStatus = (status) => status === "analyzing" || status === "queued";
 
   // Global poll: keep the gallery's per-app crawl status fresh and raise an

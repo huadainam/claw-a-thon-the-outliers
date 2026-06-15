@@ -1,5 +1,12 @@
 # INSTRUCTION: Build Review Radar Agent
 
+> **Lưu ý lịch sử:** File này là prompt/kế hoạch build ban đầu, không còn là tài
+> liệu source of truth cho kiến trúc hiện tại. Source hiện đã chuyển sang Flask
+> `app.py`, dashboard React/Babel nhiều file, multi-app storage, AgentBase Memory,
+> feedback persistence, compare data thật và date range filter đồng bộ. Khi cần
+> đọc tài liệu hiện hành, dùng `README.md` và
+> `docs/superpowers/specs/2026-06-11-review-radar-design.md`.
+
 ## Mục tiêu
 
 Xây dựng một AI agent tên **Review Radar** với chức năng:

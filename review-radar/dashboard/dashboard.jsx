@@ -52,6 +52,59 @@ function latestReviewDayKey(reviews) {
   }, "");
 }
 
+function selectedRangeBounds(reviews, range) {
+  const days = Number(range);
+  if (!Number.isFinite(days) || days <= 0) return null;
+
+  const sourceDate = window.DATA && window.DATA.SOURCE_DATE;
+  const endKey = (sourceDate && (sourceDate.cutoffKey || sourceDate.key)) || latestReviewDayKey(reviews || []);
+  if (!endKey) return null;
+
+  const end = new Date(`${endKey}T00:00:00`);
+  if (Number.isNaN(end.getTime())) return null;
+
+  const start = new Date(end);
+  start.setDate(start.getDate() - days + 1);
+  return { startKey:dateKeyFromDate(start), endKey };
+}
+
+function filterReviewsByDateRange(reviews, range) {
+  const list = reviews || [];
+  const bounds = selectedRangeBounds(list, range);
+  if (!bounds) return list.slice();
+  return list.filter(review => {
+    const day = reviewDayKey(review);
+    return day && day >= bounds.startKey && day <= bounds.endKey;
+  });
+}
+
+function scopeActionsToReviews(actions, reviews) {
+  const counts = {};
+  (reviews || []).forEach(review => {
+    (review.actionIds || []).forEach(id => {
+      counts[id] = (counts[id] || 0) + 1;
+    });
+  });
+  return (actions || []).map(action => ({
+    ...action,
+    reviews: counts[action.id] || 0,
+  })).filter(action => action.reviews > 0);
+}
+
+function selectedRangeLabel(t, range) {
+  const key = `date_${range}`;
+  const label = t(key);
+  return label === key ? t("date_range") : label;
+}
+
+function withRangeAwareKpiText(kpis, t, range) {
+  const label = selectedRangeLabel(t, range);
+  return kpis.map(kpi => {
+    if (kpi.id === "total" || kpi.id === "fixed") return { ...kpi, subText:label };
+    return kpi;
+  });
+}
+
 function makeFilteredKpis(reviews, actions) {
   const total = reviews.length;
   const latestKey = latestReviewDayKey(reviews);
@@ -59,10 +112,10 @@ function makeFilteredKpis(reviews, actions) {
   const bugs = reviews.filter(r => r.cat === "bug").length;
   const fixed = actions.filter(a => a.status === "fixed").length;
   const pending = actions.filter(a => a.status === "open").length;
-  const positive = reviews.filter(r => r.sentiment === "positive").length;
-  const negative = reviews.filter(r => r.sentiment === "negative").length + bugs;
+  const positive = reviews.filter(r => r.cat === "positive").length;
+  const complaints = reviews.filter(r => r.cat === "negative").length;
   const denom = Math.max(1, reviews.length);
-  const healthScore = Math.round(Math.max(0, Math.min(100, ((positive - negative * 0.5) / denom * 50) + 70)));
+  const healthScore = Math.round(Math.max(0, Math.min(100, ((positive - 0.5 * (complaints + bugs)) / denom * 50) + 70)));
   return [
     { id:"total",    value:dashboardCount(total), raw:total, icon:"reviews", trend:null, sub:"all_time", tone:"neutral" },
     { id:"latest",   value:dashboardCount(latest), raw:latest, icon:"calendar", trend:null, sub:"source_latest_day", dateKey:latestKey, tone:"neutral" },
@@ -177,9 +230,8 @@ function actionMatchesReviewFilters(action, filters, filteredReviews) {
   }
   if (filters.status != null && action.status !== filters.status) return false;
   if (filters.cat != null && action.cat !== filters.cat) return false;
-  const reviewDriven = [filters.rating, filters.sentiment, filters.platform, filters.actionId].some(v => v != null);
-  if (!reviewDriven) return true;
-  return filteredReviews.some(r => (r.actionIds || []).includes(action.id));
+  if (filters.actionId != null && action.id !== filters.actionId) return false;
+  return true;
 }
 
 function Dashboard({ t, app, onBack, view, onNav, onDataChanged, loading }) {
@@ -214,14 +266,16 @@ function Dashboard({ t, app, onBack, view, onNav, onDataChanged, loading }) {
     );
   }
 
-  const filterActive = Object.values(reviewFilters).some(v => v != null);
-  const filteredReviews = window.DATA.REVIEWS.filter(r => reviewMatchesFilters(r, reviewFilters));
-  const filteredActions = window.DATA.ACTIONS.filter(a => actionMatchesReviewFilters(a, reviewFilters, filteredReviews));
-  const overviewActions = filterActive ? filteredActions : window.DATA.ACTIONS;
-  const overviewKpis = filterActive ? makeFilteredKpis(filteredReviews, overviewActions) : window.DATA.KPIS;
-  const overviewCategories = filterActive ? makeFilteredCategories(filteredReviews) : window.DATA.CATEGORIES;
-  const overviewTrend = filterActive ? makeFilteredTrend(filteredReviews) : window.DATA.TREND;
-  const overviewReviews = filterActive ? filteredReviews : window.DATA.REVIEWS;
+  const rangedReviews = filterReviewsByDateRange(window.DATA.REVIEWS, range);
+  const rangedActions = scopeActionsToReviews(window.DATA.ACTIONS, rangedReviews);
+  const filteredReviews = rangedReviews.filter(r => reviewMatchesFilters(r, reviewFilters));
+  const filteredActions = scopeActionsToReviews(window.DATA.ACTIONS, filteredReviews)
+    .filter(a => actionMatchesReviewFilters(a, reviewFilters, filteredReviews));
+  const overviewActions = filteredActions;
+  const overviewKpis = withRangeAwareKpiText(makeFilteredKpis(filteredReviews, overviewActions), t, range);
+  const overviewCategories = makeFilteredCategories(filteredReviews);
+  const overviewTrend = makeFilteredTrend(filteredReviews);
+  const overviewReviews = filteredReviews;
   const sentimentMix = makeSentimentMix(overviewReviews);
   const ratingMix = makeRatingMix(overviewReviews);
 
@@ -328,18 +382,20 @@ function Dashboard({ t, app, onBack, view, onNav, onDataChanged, loading }) {
 
             {/* Review detail table */}
             <div className="fade-up" style={{ animationDelay:".25s" }}>
-              <ReviewTable t={t} filters={reviewFilters} setFilters={setReviewFilters}/>
+              <ReviewTable t={t} filters={reviewFilters} setFilters={setReviewFilters} reviews={rangedReviews}/>
             </div>
           </React.Fragment>
         )}
 
         {view === "actions" && (
-          <ActionsPage t={t} app={app} onBack={() => { setReviewCtx(null); setReviewFilters(emptyFilters); onNav("overview"); }} onViewReviews={viewReviewsFor} onDataChanged={onDataChanged}/>
+          <ActionsPage t={t} app={app} actions={rangedActions}
+            onBack={() => { setReviewCtx(null); setReviewFilters(emptyFilters); onNav("overview"); }}
+            onViewReviews={viewReviewsFor} onDataChanged={onDataChanged}/>
         )}
 
         {view === "reviews" && (
           <ReviewsPage t={t} onBack={() => { setReviewCtx(null); setReviewFilters(emptyFilters); onNav("overview"); }} filters={reviewFilters} setFilters={setReviewFilters}
-            ctx={reviewCtx} onClearCtx={() => { setReviewCtx(null); setReviewFilters(emptyFilters); }}/>
+            reviews={rangedReviews} ctx={reviewCtx} onClearCtx={() => { setReviewCtx(null); setReviewFilters(emptyFilters); }}/>
         )}
       </div>
 
@@ -527,38 +583,10 @@ function DateRangeDropdown({ t, value, onChange, onCustom }) {
 }
 
 /* ---------- KPI card ---------- */
-function HealthFormulaTooltip({ t }) {
-  const scoreLabel = t._lang === "vi" ? "Điểm" : "Score";
-  return (
-    <span className="health-formula">
-      <span className="hf-title">{t("kpi_health_formula_title")}</span>
-      <span className="hf-equation" aria-hidden="true">
-        <span className="hf-score">{scoreLabel}</span>
-        <span>=</span>
-        <span>clamp</span>
-        <span>(</span>
-        <span>70 + 50 ×</span>
-        <span className="hf-frac">
-          <span className="hf-num">P - 0.5 × (C + B)</span>
-          <span className="hf-den">N</span>
-        </span>
-        <span>, 0-100)</span>
-      </span>
-      <span className="hf-legend">
-        <span><b>P</b> = {t("kpi_health_p")}</span>
-        <span><b>C</b> = {t("kpi_health_c")}</span>
-        <span><b>B</b> = {t("kpi_health_b")}</span>
-        <span><b>N</b> = {t("kpi_health_n")}</span>
-      </span>
-    </span>
-  );
-}
-
 function KpiCard({ k, t, i }) {
   const toneColor = { neutral:"var(--accent)", critical:"var(--critical)", positive:"var(--positive)", warning:"var(--warning)" }[k.tone];
   const toneSoft = { neutral:"var(--accent-soft)", critical:"var(--critical-soft)", positive:"var(--positive-soft)", warning:"var(--warning-soft)" }[k.tone];
   const subText = k.subText || (k.dateKey ? `${t("sub_"+k.sub)} ${formatDateKeyForUi(k.dateKey, t)}` : t("sub_"+k.sub));
-  const healthFormula = k.id === "health" ? t("kpi_health_formula") : "";
   return (
     <div className="card fade-up" style={{ padding:"15px 16px", animationDelay:`${i*0.04}s`,
       display:"flex", flexDirection:"column", gap:11, minHeight:152 }}>
@@ -570,14 +598,6 @@ function KpiCard({ k, t, i }) {
         display:"flex", alignItems:"flex-start" }}>
         <div style={{ display:"flex", alignItems:"flex-start", gap:5, minWidth:0, width:"100%" }}>
           <span style={{ display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden", minWidth:0 }}>{t("kpi_"+k.id)}</span>
-          {healthFormula && (
-            <span className="kpi-info-wrap">
-              <button type="button" className="kpi-info" aria-label={healthFormula} title={healthFormula}>
-                <Icon name="info" size={12.5} stroke={2}/>
-              </button>
-              <span className="kpi-tip kpi-formula-tip" role="tooltip"><HealthFormulaTooltip t={t}/></span>
-            </span>
-          )}
         </div>
       </div>
       <div style={{ marginTop:"auto" }}>

@@ -1,9 +1,10 @@
 /* ============ Review Detail Table (expandable rows) ============ */
-function ReviewTable({ t, filters, setFilters, title, sub }) {
+function ReviewTable({ t, filters, setFilters, title, sub, reviews }) {
   const [expanded, setExpanded] = useState(null);
   const [pageSize, setPageSize] = useState(50);
   const rows = useMemo(() => {
-    return window.DATA.REVIEWS.filter(r =>
+    const sourceRows = reviews || window.DATA.REVIEWS;
+    return sourceRows.filter(r =>
       (filters.rating == null || r.rating === filters.rating) &&
       (filters.cat == null || r.cat === filters.cat) &&
       (filters.priority == null || r.priority === filters.priority) &&
@@ -12,7 +13,7 @@ function ReviewTable({ t, filters, setFilters, title, sub }) {
       (filters.platform == null || r.platform === filters.platform) &&
       (filters.actionId == null || (r.actionIds || []).includes(filters.actionId))
     );
-  }, [filters]);
+  }, [filters, reviews]);
   const visibleRows = pageSize === "all" ? rows : rows.slice(0, pageSize);
 
   return (

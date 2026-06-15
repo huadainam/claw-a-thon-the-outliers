@@ -3,20 +3,16 @@
 - **Ngày gốc:** 2026-06-11
 - **Cập nhật:** phản ánh source code hiện tại
 - **Team:** The Outliers
-- **Deploy target:** GreenNode AgentBase Custom Agent Runtime, public always-on
-
----
+- **Runtime target:** GreenNode AgentBase Custom Agent Runtime
 
 ## 1. Mục Tiêu Sản Phẩm
 
 Review Radar là một AI agent giúp team sản phẩm đọc review mobile app nhanh hơn.
-Hệ thống thu thập review từ App Store và Google Play, dùng AI để phân loại, gom
+Hệ thống thu thập review từ App Store và Google Play, dùng LLM để phân loại, gom
 bug report thành nhóm, tính mức độ nghiêm trọng, và hiển thị trên dashboard.
 
 Mục tiêu không phải thay thế con người ra quyết định. Mục tiêu là biến một dòng
-review lớn thành một danh sách vấn đề để team có thể đọc, ưu tiên và xử lý.
-
----
+review lớn thành danh sách vấn đề có thể đọc, ưu tiên và xử lý.
 
 ## 2. Tóm Tắt Cho Người Non-Tech
 
@@ -29,7 +25,7 @@ Người dùng có thể báo cùng một lỗi bằng nhiều cách khác nhau:
 "Mở app lên lại bắt đăng nhập"
 ```
 
-Review Radar sẽ cố gắng nhận ra đây là cùng một chủ đề:
+Review Radar cố gắng nhận ra đây là cùng một chủ đề:
 
 ```text
 Lỗi đăng nhập
@@ -37,8 +33,6 @@ Lỗi đăng nhập
 
 Sau đó hệ thống đếm số lần lỗi này được nhắc tới. Nếu nhiều người gặp cùng một
 lỗi, bug đó được đẩy lên mức ưu tiên cao hơn.
-
----
 
 ## 3. Flow Tổng Quan
 
@@ -80,17 +74,15 @@ Dashboard
 Người dùng xem KPI, action items, review detail
 ```
 
----
-
 ## 4. Kiến Trúc Hiện Tại
 
 Ứng dụng là một Flask server duy nhất chạy ở port `8080`.
 
 Server này làm 3 việc:
 
-1. Serve dashboard React trong `dashboard/`.
+1. Serve dashboard React trong `review-radar/dashboard/`.
 2. Cung cấp REST API cho dashboard.
-3. Chạy scheduler mỗi giờ khi start với `--serve`.
+3. Chạy scheduler khi start với `--serve`.
 
 ```text
                  Browser
@@ -110,13 +102,10 @@ Server này làm 3 việc:
  LocalStore / MemoryStore  Scraper + LLM + Grouper
 ```
 
----
-
 ## 5. Frontend Hiện Tại
 
-Khác với spec ban đầu, frontend hiện tại không còn là vanilla HTML + Chart.js.
-
-Dashboard hiện dùng:
+Frontend không còn là vanilla HTML + Chart.js như plan ban đầu. Dashboard hiện
+dùng:
 
 - React 18 qua CDN.
 - ReactDOM qua CDN.
@@ -129,46 +118,60 @@ Dashboard hiện dùng:
 
 | File | Vai trò |
 |---|---|
-| `index.html` | Load React, Babel, CSS, data bridge, JSX files |
+| `index.html` | Load React, Babel, CSS, data bridge và JSX files |
 | `app.jsx` | App shell, routing UI, language state, polling status |
 | `api-bridge.js` | Gọi backend API và map data sang `window.DATA` |
 | `data.js` | I18N, fallback/mock data, demo config |
 | `screen1.jsx` | Search, selection, app gallery |
 | `screen2.jsx` | Crawl progress screen |
-| `dashboard.jsx` | Overview, actions, reviews shell |
+| `dashboard.jsx` | Overview, dashboard-level filters, actions/reviews shell |
 | `charts.jsx` | Donut chart và trend chart bằng SVG |
 | `table.jsx` | Review explorer |
 | `subviews.jsx` | Full Actions và Reviews pages |
-| `reports.jsx` | Demo/future reports UI |
-| `compare.jsx` | Demo comparison UI |
-| `settings.jsx` | Demo settings/integrations UI |
-| `team.jsx` | Team và feedback UI |
+| `reports.jsx` | Reports UI cho phase tiếp theo |
+| `compare.jsx` | Compare Apps, đọc data backend thật |
+| `settings.jsx` | Settings/integrations UI cho phase tiếp theo |
+| `team.jsx` | Team page và feedback form |
 
 ### Màn hình đã nối backend thật
 
 - Search app.
 - Track app.
-- Available apps.
-- Crawl progress.
+- Available apps/gallery.
+- Crawl progress và cancel.
 - Dashboard overview.
-- Action item data.
+- Action item data và status update.
 - Review explorer.
+- Compare Apps, lấy dữ liệu từ `/api/stats`, `/api/reviews`, `/api/todos`.
+- Team feedback, persist qua `/api/feedback`.
 
 ### Màn hình demo/future
 
 - Reports.
 - Scheduled reports.
-- Integrations.
-- Team feedback persistence.
-- Compare mock metrics.
+- Settings integrations.
+- Export comparison.
 
----
+## 6. Date Range Và Source Window
 
-## 6. Backend Modules
+Backend áp dụng source window để tránh tính review trong ngày hiện tại khi store
+chưa đồng bộ hết dữ liệu. Cutoff hiện tại là ngày hôm qua theo GMT+7. Vì vậy UI
+có thể hiển thị "Dữ liệu tới 14/06/2026" nếu ngày hiện tại là 15/06/2026.
+
+Frontend có date range `7N / 30N / 90N`. Range này hiện được áp dụng đồng bộ cho:
+
+- KPI cards.
+- Category/donut chart.
+- Trend chart.
+- Action preview trên overview.
+- Actions page.
+- Reviews page/table.
+
+## 7. Backend Modules
 
 | File | Vai trò |
 |---|---|
-| `app.py` | Flask routes, active app handling, seed bootstrap, scheduler |
+| `app.py` | Flask routes, active app handling, queue/cancel, seed bootstrap, scheduler |
 | `pipeline.py` | Điều phối scrape -> classify -> canonicalize -> group |
 | `scraper.py` | Resolve app, normalize review schema |
 | `scraper_live.py` | Live calls tới Google Play scraper và iTunes APIs/RSS |
@@ -182,9 +185,7 @@ Dashboard hiện dùng:
 | `regroup_seed.py` | Rebuild todos trong seed bằng canonical topics |
 | `migrate_to_memory.py` | Copy local JSON data lên AgentBase Memory |
 
----
-
-## 7. API Hiện Tại
+## 8. API Hiện Tại
 
 | Method | Path | Mô tả |
 |---|---|---|
@@ -193,26 +194,28 @@ Dashboard hiện dùng:
 | `POST` | `/api/resolve` | Tìm app theo tên, trả về matched/ambiguous/not_found |
 | `POST` | `/api/track` | Add/update app, set active, start pipeline async |
 | `GET` | `/api/apps` | List tracked apps kèm crawl status/progress |
+| `GET` | `/api/apps?lite=1` | Lightweight gallery payload |
+| `PATCH` | `/api/apps/<app_id>` | Update app config, hiện dùng cho hourly refresh |
 | `POST` | `/api/active` | Set active app |
 | `POST` | `/run` | Chạy pipeline thủ công cho active app |
+| `POST` | `/api/cancel` | Hủy queued/running crawl cho một app |
 | `GET` | `/api/stats?app_id=<id>` | Metrics, label counts, bug_by_day, meta |
 | `GET` | `/api/todos?app_id=<id>` | Bug action items |
-| `PATCH` | `/api/todos/<id>` | Update todo status trên active app |
+| `PATCH` | `/api/todos/<todo_id>?app_id=<id>` | Update todo status theo app |
 | `GET` | `/api/reviews?app_id=<id>` | Classified reviews |
+| `GET` | `/api/feedback` | Đọc feedback dùng chung |
+| `POST` | `/api/feedback` | Gửi feedback dùng chung |
 
-Read endpoints như `/api/stats`, `/api/todos`, `/api/reviews` có hỗ trợ
-`?app_id=<id>`. Những URL riêng theo app này giúp dashboard tránh hiện nhầm data
-khi user chuyển app.
+Read endpoints như `/api/stats`, `/api/todos`, `/api/reviews` hỗ trợ
+`?app_id=<id>` và fallback về active app nếu không truyền `app_id`.
 
----
-
-## 8. Storage Hiện Tại
+## 9. Storage Hiện Tại
 
 Tất cả state đi qua `storage.py`.
 
 ### LocalStore
 
-Dùng cho dev và demo local. Mỗi app có folder riêng:
+Dùng cho dev offline và regression test:
 
 ```text
 review-radar/data/
@@ -228,8 +231,19 @@ review-radar/data/
 
 ### MemoryStore
 
-Dùng cho AgentBase Memory. Mỗi loại state được lưu như một session/event stream.
-Khi có `app_id`, session ID được suffix theo app để tách data từng app.
+Dùng cho deploy và workflow test chung của team. Mỗi loại state được lưu qua
+AgentBase Memory. Khi có `app_id`, session key được tách theo app để tránh lẫn
+dữ liệu.
+
+Khi test local với CSDL server, `.env` nên dùng:
+
+```bash
+STORE_BACKEND=memory
+MEMORY_ID=<team-memory-id>
+MEMORY_BASE_URL=https://agentbase.api.vngcloud.vn/memory
+```
+
+`STORE_BACKEND=local` chỉ nên dùng khi cần chạy tách khỏi dữ liệu server.
 
 ### Registry
 
@@ -237,16 +251,15 @@ Registry quản lý:
 
 - app nào đã được track
 - app nào đang active
-- metadata của app: title, icon, developer, store IDs, review_limit
+- metadata app: title, icon, developer, store IDs, review_limit
+- hourly refresh flag
 
 Có 2 backend:
 
 - `LocalRegistry`
 - `MemoryRegistry`
 
----
-
-## 9. Data Schema Chính
+## 10. Data Schema Chính
 
 ### App config
 
@@ -259,7 +272,8 @@ Có 2 backend:
   "gp_id": null,
   "as_id": "1112407590",
   "stores": ["app_store"],
-  "review_limit": 100
+  "review_limit": 100,
+  "hourly_refresh_enabled": true
 }
 ```
 
@@ -279,175 +293,148 @@ Có 2 backend:
 }
 ```
 
-### Todo / bug group
+### Todo / action item
 
 ```json
 {
-  "id": "uuid",
-  "topic": "Lỗi đăng nhập",
+  "id": "todo-abc",
+  "title": "Lỗi đăng nhập",
+  "count": 12,
   "severity": "critical",
-  "mention_count": 12,
-  "sample_reviews": ["..."],
-  "sources": ["app_store", "google_play"],
-  "first_seen": "2026-06-11",
-  "last_seen": "2026-06-11",
-  "status": "open"
+  "status": "open",
+  "review_ids": ["review-id-1", "review-id-2"]
 }
 ```
 
-### Meta / progress
+### Meta
 
 ```json
 {
-  "status": "analyzing",
-  "progress": {
-    "done": 30,
-    "total": 100
-  },
-  "last_updated": "2026-06-11T08:00:00+00:00"
+  "status": "idle",
+  "progress": {"done": 100, "total": 100},
+  "last_run": "2026-06-15T07:30:00Z",
+  "last_updated": "2026-06-15T07:30:00Z",
+  "error": null
 }
 ```
 
----
+## 11. Pipeline Behavior
 
-## 10. Pipeline Chi Tiết
+Pipeline chính trong `pipeline.py`:
 
-```text
-run_pipeline(store)
- |
- +-- load app config
- |
- +-- scrape Google Play nếu có gp_id
- |
- +-- scrape App Store nếu có as_id
- |
- +-- so sánh review IDs với processed_ids
- |
- +-- save meta: analyzing, progress 0/N
- |
- +-- classify new reviews theo batch 30
- |
- +-- append classified reviews
- |
- +-- update processed_ids
- |
- +-- canonicalize toàn bộ bug topics
- |
- +-- group BUG_REPORT reviews
- |
- +-- merge với existing todos
- |      |
- |      +-- giữ old todo id
- |      +-- giữ old done/open status
- |      +-- update mention_count/severity/samples
- |
- +-- save todos
- |
- +-- save meta: idle
+1. Load app config.
+2. Scrape review từ các store có ID.
+3. Deduplicate bằng processed IDs.
+4. Classify từng review bằng LLM.
+5. Canonicalize bug topic để gom các câu diễn đạt khác nhau.
+6. Merge review mới với review cũ.
+7. Group bug reports thành todos.
+8. Save reviews, todos, processed IDs và meta.
+
+Pipeline có queue trong `app.py` để tránh nhiều run cùng lúc cho cùng một app.
+`/api/cancel` đánh dấu cancel key; worker dừng ở batch boundary, giữ lại phần
+review đã xử lý và regroup trước khi lưu.
+
+Scheduler chỉ chạy khi start app với `--serve`. Scheduler check định kỳ app nào
+cần hourly refresh, dựa trên flag của app và meta lần chạy gần nhất.
+
+## 12. Seed Data
+
+`review-radar/seed/` chứa dữ liệu đã phân tích sẵn. Khi store trống,
+`bootstrap_from_seed(get_registry(), get_store)` sẽ copy seed vào backend đang
+dùng. Điều này giúp demo có dữ liệu ngay cả khi live crawl chậm hoặc store bị
+throttle.
+
+## 13. Current Feature Status
+
+### Đã chạy thật
+
+- Resolve/search app.
+- Track app mới.
+- Multi-app registry.
+- Crawl App Store / Google Play.
+- Deduplicate review đã xử lý.
+- LLM classify.
+- LLM canonicalize bug topic.
+- Group bug và tính severity.
+- Dashboard overview bằng data backend.
+- Date range filter cho KPI/chart/actions/reviews.
+- Action status update qua API.
+- Compare Apps bằng data backend.
+- Feedback persistence qua API.
+- Hourly refresh flag theo app.
+- Cancel queued/running crawl.
+- Seed bootstrap.
+- LocalStore và MemoryStore.
+
+### Future/demo UI
+
+- Reports và scheduled reports.
+- Settings integrations.
+- Export comparison.
+- Một nút `Mark as Fixed` trong review detail vẫn là UI-only; luồng persist chính
+  là status menu trong action row.
+
+## 14. Local Run
+
+```bash
+cd review-radar
+python3 -m venv .venv
+./.venv/bin/pip install -r requirements.txt
+cp .env.example .env
+./.venv/bin/python app.py --serve
 ```
 
-Nếu scrape trả về rỗng, pipeline sẽ không crash. Nó regroup lại cached reviews
-hiện có để dashboard không bị trống nếu đã có data trước đó.
+Mở:
 
----
+```text
+http://127.0.0.1:8080/
+```
 
-## 11. App Resolution
+Nếu chỉ chạy `./.venv/bin/python app.py`, dashboard/API vẫn chạy nhưng scheduler
+không bật.
 
-`resolve_app(name)` search trên 2 nguồn:
+## 15. Environment Variables
 
-- Google Play search qua `google-play-scraper`.
-- App Store search qua iTunes Search API.
-
-Kết quả được merge và tính điểm gần đúng bằng title similarity.
-
-Trả về 3 trạng thái:
-
-| Status | Ý nghĩa |
+| Biến | Ý nghĩa |
 |---|---|
-| `matched` | Có app khớp tốt, UI hiện nút confirm |
-| `ambiguous` | Có nhiều ứng viên gần đúng, UI hiện suggestions |
-| `not_found` | Không tìm thấy ứng viên phù hợp |
+| `OPENAI_API_KEY` | API key cho LLM endpoint |
+| `OPENAI_BASE_URL` | Base URL của LLM endpoint |
+| `MODEL_NAME` | Model dùng cho classify/canonicalize |
+| `REVIEW_LIMIT` | Số review scrape mỗi store khi track/chạy thủ công |
+| `REFRESH_REVIEW_LIMIT` | Số review scrape mỗi store khi hourly refresh |
+| `STORE_BACKEND` | `local` hoặc `memory` |
+| `MEMORY_ID` | AgentBase Memory store ID khi dùng MemoryStore |
+| `MEMORY_BASE_URL` | AgentBase Memory API base URL |
 
-Resolve chỉ tìm app. Pipeline chỉ chạy sau khi user chọn/confirm app.
+## 16. Test Coverage
 
----
+Test suite nằm trong `review-radar/tests/` và bao phủ:
 
-## 12. Seed Và Bootstrap
+- Flask app routes và API behavior.
+- Pipeline success/error/cancel behavior.
+- Config loading.
+- LocalStore, MemoryStore, Memory HTTP client.
+- Multi-app storage.
+- Bootstrap seed.
+- Resolve/scrape normalization.
+- Classifier/canonicalize fallback behavior.
+- Grouper/severity logic.
 
-`review-radar/seed/` gồm 13 app đã được crawl và phân tích sẵn.
-
-Khi app khởi động:
-
-```text
-if live registry is empty:
-    copy seed registry and per-app data into live store
-else:
-    do nothing
-```
-
-Nguyên tắc này giữ lại thay đổi của user. Ví dụ, nếu user đã mark một bug là
-done, lần restart sau sẽ không bị seed overwrite.
-
----
-
-## 13. Deployment
-
-Docker image:
-
-```text
-python:3.11-slim
-WORKDIR /app
-pip install -r requirements.txt
-COPY . .
-CMD ["python", "app.py", "--serve"]
-```
-
-Khi chạy với `--serve`:
-
-- bootstraps seed data nếu cần
-- serve dashboard/API
-- start hourly scheduler thread
-
-Health check:
-
-```text
-GET /health
-```
-
----
-
-## 14. Testing
-
-Test suite hiện có 58 tests, bao phủ:
-
-- config defaults/env
-- storage local/memory
-- registry multi-app
-- app resolve
-- scraper normalization
-- classifier parse/fallback
-- canonicalize parse/fallback
-- grouper severity/merge
-- pipeline dedup/cache fallback/progress
-- Flask API shape
-- seed/bootstrap behavior
-
-Run:
+Chạy:
 
 ```bash
 cd review-radar
 ./.venv/bin/python -m pytest -q
 ```
 
----
+## 17. Những Điểm Cần Nhớ Khi Demo
 
-## 15. Known Gaps / Future Work
-
-- `PATCH /api/todos/<id>` hiện patch active app; frontend nên truyền `app_id`
-  hoặc backend nên hỗ trợ patch theo app để tránh nhầm khi multi-app.
-- Một số nút "Mark as Fixed" trong UI chỉ đổi local state, chưa gọi API.
-- Reports, integrations, compare metrics và feedback persistence đang ở mức
-  demo/future UI.
-- Dashboard phụ thuộc CDN React/Babel nếu chưa vendor assets.
-- Plan doc cũ vẫn là historical implementation plan, không phải source of truth
-  cho kiến trúc hiện tại.
+- Với local test chung, dùng `STORE_BACKEND=memory` để đọc CSDL server.
+- Source cutoff là ngày hôm qua theo GMT+7, nên "Dữ liệu tới" có thể không phải
+  ngày hiện tại.
+- Date range 7/30/90 hiện đã tác động tới KPI, chart, actions và reviews.
+- Compare Apps đã dùng dữ liệu backend thật, nhưng export comparison vẫn là
+  future.
+- Team feedback đã persist qua API.
+- Reports và integrations vẫn là phase tiếp theo.

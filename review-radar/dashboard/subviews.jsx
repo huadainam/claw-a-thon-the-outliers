@@ -17,18 +17,19 @@ function PageHeader({ t, title, sub, onBack, right }) {
 }
 
 /* ---------- Full Action Items page ---------- */
-function ActionsPage({ t, app, onBack, onViewReviews, onDataChanged }) {
+function ActionsPage({ t, app, actions, onBack, onViewReviews, onDataChanged }) {
   const [filters, setFilters] = useState({ priority:null, status:null, flag:null });
   const set = (k, v) => setFilters({ ...filters, [k]: v });
+  const sourceActions = actions || window.DATA.ACTIONS;
 
-  const rows = window.DATA.ACTIONS.filter(a =>
+  const rows = sourceActions.filter(a =>
     // "Contains" semantics: match if any review in the cluster has the priority.
     (filters.priority == null
       || ((a.priorities && a.priorities.length ? a.priorities : [a.priority]).indexOf(filters.priority) >= 0)) &&
     (filters.status == null || a.status === filters.status) &&
     (filters.flag == null || a.flag === filters.flag)
   );
-  const openCount = window.DATA.ACTIONS.filter(a => a.status === "open" || a.status === "in_progress").length;
+  const openCount = sourceActions.filter(a => a.status === "open" || a.status === "in_progress").length;
 
   const priOpts  = ["critical","high","medium","low"].map(p => ({ value:p, label:t("pri_"+p) }));
   const stOpts   = ["open","in_progress","fixed","ignored"].map(s => ({ value:s, label:t("st_"+s) }));
@@ -50,7 +51,7 @@ function ActionsPage({ t, app, onBack, onViewReviews, onDataChanged }) {
           <button className="btn btn-ghost btn-xs" onClick={() => setFilters({ priority:null, status:null, flag:null })} style={{ color:"var(--text-2)" }}>
             <Icon name="x" size={13} stroke={2.4}/>{t("clear_all")}</button>
         )}
-        <span className="mono" style={{ marginLeft:"auto", fontSize:13, color:"var(--text-3)", fontWeight:500 }}>{t("showing")} {rows.length} {t("of")} {window.DATA.ACTIONS.length}</span>
+        <span className="mono" style={{ marginLeft:"auto", fontSize:13, color:"var(--text-3)", fontWeight:500 }}>{t("showing")} {rows.length} {t("of")} {sourceActions.length}</span>
       </div>
 
       <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
@@ -67,7 +68,7 @@ function ActionsPage({ t, app, onBack, onViewReviews, onDataChanged }) {
 }
 
 /* ---------- Full Reviews page ---------- */
-function ReviewsPage({ t, onBack, filters, setFilters, ctx, onClearCtx }) {
+function ReviewsPage({ t, onBack, filters, setFilters, reviews, ctx, onClearCtx }) {
   return (
     <div className="fade-up">
       <PageHeader t={t} onBack={onBack} title={t("nav_reviews")} sub={t("reviews_page_sub")}/>
@@ -86,7 +87,7 @@ function ReviewsPage({ t, onBack, filters, setFilters, ctx, onClearCtx }) {
         </div>
       )}
 
-      <ReviewTable t={t} filters={filters} setFilters={setFilters} title={t("nav_reviews")} sub={t("table_sub")}/>
+      <ReviewTable t={t} filters={filters} setFilters={setFilters} reviews={reviews} title={t("nav_reviews")} sub={t("table_sub")}/>
     </div>
   );
 }
